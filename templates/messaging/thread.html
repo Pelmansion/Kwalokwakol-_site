@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Messagerie</h1>
+    <p>Conversation avec {{ vendor.name }}</p>
+  </section>
+  <section class="container cart">
+    <div class="message-list">
+      {% for message in messages %}
+        <div class="message-card">
+          <strong>{{ message.sender.username }}</strong>
+          <p>{{ message.body }}</p>
+          <span class="muted">{{ message.created_at }}</span>
+        </div>
+      {% empty %}
+        <p class="empty">Aucun message.</p>
+      {% endfor %}
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn" type="submit">Envoyer</button>
+    </form>
+  </section>
+{% endblock %}

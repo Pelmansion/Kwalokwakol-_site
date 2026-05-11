@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Connexion administration</h1>
+    <p class="muted">
+      Espace réservé aux comptes <strong>Admin</strong> et <strong>Super admin</strong> de la plateforme.
+    </p>
+  </section>
+  <section class="container auth-card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn" type="submit">Se connecter</button>
+    </form>
+  </section>
+{% endblock %}
+

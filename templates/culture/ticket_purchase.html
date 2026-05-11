@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Acheter des billets · {{ event.title }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎫 Acheter mes billets</h1>
+      <p>{{ event.title }} · {{ event.starts_at|date:"l j F Y · H\hi" }}</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:event_detail' event.slug %}">← Retour</a>
+  </header>
+
+  <form method="post" class="ticket-purchase-form">
+    {% csrf_token %}
+
+    <div class="ticket-purchase-form__categories">
+      <h2>1. Choisissez votre catégorie</h2>
+      <div class="ticket-cat-grid">
+        {% for c in categories %}
+          <label class="ticket-cat-radio {% if c.is_sold_out %}is-disabled{% endif %}">
+            <input type="radio" name="category_id" value="{{ c.pk }}" {% if forloop.first and not c.is_sold_out %}checked{% endif %} {% if c.is_sold_out %}disabled{% endif %} required>
+            <span class="ticket-cat-radio__bar" style="background: {{ c.color }}"></span>
+            <span class="ticket-cat-radio__body">
+              <strong>{{ c.name }}</strong>
+              <em>{{ c.description }}</em>
+              <span class="ticket-cat-radio__remaining">
+                {% if c.is_sold_out %}Épuisé{% else %}{{ c.quantity_remaining }} restant(s){% endif %}
+              </span>
+            </span>
+            <span class="ticket-cat-radio__price">{{ c.price_fcfa|floatformat:0 }} FCFA</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ticket-purchase-form__buyer">
+      <h2>2. Vos informations</h2>
+      <div class="form-grid">
+        <label>Nom complet
+          {{ form.buyer_name }}
+          {{ form.buyer_name.errors }}
+        </label>
+        <label>Email
+          {{ form.buyer_email }}
+          {{ form.buyer_email.errors }}
+        </label>
+        <label>Téléphone (WhatsApp)
+          {{ form.buyer_phone }}
+        </label>
+        <label>Nombre de billets
+          {{ form.quantity }}
+          {{ form.quantity.errors }}
+        </label>
+      </div>
+    </div>
+
+    <div class="ticket-purchase-form__submit">
+      <button type="submit" class="btn btn--lg">Continuer vers le paiement →</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

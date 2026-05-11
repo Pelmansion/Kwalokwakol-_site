@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription prestataire — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Offrir vos services</span>
+    <h1>Inscription prestataire</h1>
+    <p>Proposez vos compétences et rencontrez des clients qui recherchent votre expertise.</p>
+  </section>
+
+  <section class="container vendor-register">
+    {% if form.errors or signup_form and signup_form.errors %}
+      <div class="alert alert--error" role="alert">
+        <strong>L'inscription n'a pas abouti.</strong>
+        {% if signup_form and signup_form.non_field_errors %}
+          <ul class="alert__list">
+            {% for err in signup_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <ul class="alert__list">
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        {% if not form.non_field_errors %}
+          {% if not signup_form or not signup_form.non_field_errors %}
+            <p>Veuillez corriger les erreurs indiquées dans le formulaire ci-dessous.</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="vendor-form">
+      {% csrf_token %}
+
+      {% if not user.is_authenticated and signup_form %}
+        <div class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon">🔐</div>
+            <div>
+              <h2>Informations de connexion</h2>
+              <p class="muted">Ces identifiants vous permettront d'accéder à votre espace prestataire.</p>
+            </div>
+          </div>
+          <div class="form-section__body form-section__body--signup">
+            {{ signup_form.as_p }}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">🤝</div>
+          <div>
+            <h2>Informations sur le prestataire</h2>
+            <p class="muted">Tous les champs marqués d'un astérisque <span class="required">*</span> sont obligatoires.</p>
+          </div>
+        </div>
+        <div class="form-section__body form-grid form-grid--2">
+          <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Nom du prestataire <span class="required">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="error">{{ form.name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email <span class="required">*</span></label>
+            {{ form.email }}
+            {% if form.email.help_text %}<small class="help-text">{{ form.email.help_text }}</small>{% endif %}
+            {% if form.email.errors %}<div class="error">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.phone.id_for_label }}">Téléphone</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="error">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.location.id_for_label }}">Localisation</label>
+            {{ form.location }}
+            {% if form.location.errors %}<div class="error">{{ form.location.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            <small class="help-text">Présentez votre parcours, vos compétences, ce qui vous rend unique.</small>
+            {% if form.description.errors %}<div class="error">{{ form.description.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">🪪</div>
+          <div>
+            <h2>Documents d'identité</h2>
+            <p class="muted">Indispensables pour vérifier votre identité et instaurer la confiance.</p>
+          </div>
+        </div>
+        <div class="form-section__body form-grid form-grid--2">
+          <div class="form-group form-group--full">
+            <label for="{{ form.id_number.id_for_label }}">Numéro d'identité <span class="required">*</span></label>
+            {{ form.id_number }}
+            {% if form.id_number.help_text %}<small class="help-text">{{ form.id_number.help_text }}</small>{% endif %}
+            {% if form.id_number.errors %}<div class="error">{{ form.id_number.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.id_document_front.id_for_label }}">Pièce d'identité recto <span class="required">*</span></label>
+            {{ form.id_document_front }}
+            {% if form.id_document_front.help_text %}<small class="help-text">{{ form.id_document_front.help_text }}</small>{% endif %}
+            {% if form.id_document_front.errors %}<div class="error">{{ form.id_document_front.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.id_document_back.id_for_label }}">Pièce d'identité verso <span class="required">*</span></label>
+            {{ form.id_document_back }}
+            {% if form.id_document_back.help_text %}<small class="help-text">{{ form.id_document_back.help_text }}</small>{% endif %}
+            {% if form.id_document_back.errors %}<div class="error">{{ form.id_document_back.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="{{ form.profile_photo.id_for_label }}">Photo de profil</label>
+            {{ form.profile_photo }}
+            <small class="help-text">Une photo professionnelle inspire confiance aux futurs clients.</small>
+            {% if form.profile_photo.errors %}<div class="error">{{ form.profile_photo.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">✨</div>
+          <div>
+            <h2>Informations complémentaires</h2>
+            <p class="muted">Détaillez votre offre pour mieux attirer vos prochains clients.</p>
+          </div>
+        </div>
+        <div class="form-section__body">
+          <div class="form-group">
+            <label for="{{ form.services_overview.id_for_label }}">Aperçu des services</label>
+            {{ form.services_overview }}
+            <small class="help-text">Quelles prestations proposez-vous ? Quels sont vos domaines d'expertise ?</small>
+            {% if form.services_overview.errors %}<div class="error">{{ form.services_overview.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.portfolio_url.id_for_label }}">URL du portfolio</label>
+            {{ form.portfolio_url }}
+            <small class="help-text">Site web, Behance, LinkedIn, Instagram…</small>
+            {% if form.portfolio_url.errors %}<div class="error">{{ form.portfolio_url.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--checkbox">
+            <label class="checkbox-label">
+              {{ form.display_services_as_provider }}
+              <span>{{ form.display_services_as_provider.label }}</span>
+            </label>
+            {% if form.display_services_as_provider.help_text %}<small class="help-text">{{ form.display_services_as_provider.help_text }}</small>{% endif %}
+            {% if form.display_services_as_provider.errors %}<div class="error">{{ form.display_services_as_provider.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn--primary btn--large" type="submit">Créer mon profil →</button>
+        <p class="muted form-actions__note">
+          En créant votre profil, vous acceptez nos <a href="/page/conditions-generales/">conditions générales</a>.
+        </p>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}Nouvelle chanson{% else %}Modifier {{ song.title }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>{% if is_new %}🎵 Nouvelle chanson{% else %}🎵 Modifier la chanson{% endif %}</h1>
+      <p>{{ artist.stage_name }}</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:artist_songs' %}">← Mes chansons</a>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="culture-form">
+    {% csrf_token %}
+    <div class="culture-form__grid">
+      <label class="culture-form__full">Titre *
+        {{ form.title }}
+        {{ form.title.errors }}
+      </label>
+      <label>Genre
+        {{ form.genre }}
+      </label>
+      <label>Date de sortie
+        {{ form.release_date }}
+      </label>
+      <label>Pochette (image)
+        {{ form.cover_image }}
+      </label>
+      <label>Fichier audio (MP3) *
+        {{ form.audio_file }}
+        {{ form.audio_file.errors }}
+      </label>
+      <label>Durée (secondes)
+        {{ form.duration_seconds }}
+        <small>Optionnel — pour afficher la durée</small>
+      </label>
+      <label>Tarification
+        {{ form.pricing }}
+      </label>
+      <label>Prix (si payant) en FCFA
+        {{ form.price_fcfa }}
+        {{ form.price_fcfa.errors }}
+      </label>
+      <label class="culture-form__full">
+        {{ form.allow_streaming }} Autoriser l'écoute en streaming sur le site
+      </label>
+      <label class="culture-form__full">Description
+        {{ form.description }}
+      </label>
+      <label class="culture-form__full">Paroles (optionnel)
+        {{ form.lyrics }}
+      </label>
+      <label class="culture-form__full">
+        {{ form.is_published }} Publier maintenant (visible publiquement)
+      </label>
+    </div>
+    <div class="culture-form__actions">
+      <button class="btn btn--lg" type="submit">{% if is_new %}Ajouter la chanson{% else %}Enregistrer{% endif %}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

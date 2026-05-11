@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Activer mon profil artiste · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎤 Activer mon profil artiste</h1>
+      <p>Présentez-vous, ajoutez votre univers, vos réseaux. Vous pourrez ensuite publier votre musique et vos concerts.</p>
+    </div>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="culture-form">
+    {% csrf_token %}
+    <div class="culture-form__grid">
+      <label>Nom de scène *
+        {{ form.stage_name }}
+        {{ form.stage_name.errors }}
+      </label>
+      <label>Genre principal
+        {{ form.primary_genre }}
+      </label>
+      <label>Ville
+        {{ form.city }}
+      </label>
+      <label>Région
+        {{ form.region }}
+      </label>
+      <label class="culture-form__full">Biographie
+        {{ form.bio }}
+      </label>
+      <label>Portrait
+        {{ form.portrait }}
+      </label>
+      <label>Photo de couverture
+        {{ form.cover_photo }}
+      </label>
+      <label>Téléphone
+        {{ form.phone }}
+      </label>
+      <label>WhatsApp
+        {{ form.whatsapp }}
+      </label>
+      <label>Email artistique
+        {{ form.email }}
+      </label>
+      <label>Site web
+        {{ form.website }}
+      </label>
+      <label>Facebook {{ form.facebook }}</label>
+      <label>Instagram {{ form.instagram }}</label>
+      <label>YouTube {{ form.youtube }}</label>
+      <label>TikTok {{ form.tiktok }}</label>
+      <label>Spotify {{ form.spotify }}</label>
+    </div>
+    <div class="culture-form__actions">
+      <button class="btn btn--lg" type="submit">Activer mon profil</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

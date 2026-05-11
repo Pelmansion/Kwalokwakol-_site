@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Artistes locaux · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎤 Artistes</h1>
+      <p>Découvrez les artistes de votre région</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:home' %}">← Retour Culture</a>
+  </header>
+
+  <form class="culture-filters" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Nom, ville, région...">
+    <select name="genre">
+      <option value="">Tous les genres</option>
+      {% for g in genres %}
+        <option value="{{ g.slug }}" {% if g.slug == genre_slug %}selected{% endif %}>{{ g.icon }} {{ g.name }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="region" value="{{ region }}" placeholder="Région">
+    <button class="btn" type="submit">Filtrer</button>
+  </form>
+
+  {% if artists %}
+    <div class="artist-grid">
+      {% for artist in artists %}
+        {% include "culture/_artist_card.html" with artist=artist %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>Aucun artiste ne correspond à votre recherche.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

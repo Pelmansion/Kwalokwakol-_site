@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{% if plan %}Modifier{% else %}Nouvelle{% endif %} formule d'abonnement{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Administration</span>
+        <h1>{% if plan %}Modifier la formule{% else %}Nouvelle formule{% endif %}</h1>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_plans' %}">← Toutes les formules</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <form method="post" class="form-section">
+      {% csrf_token %}
+      <div class="form-section__body">
+        <div class="form-grid form-grid--2">
+          <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Nom <span class="required">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="field-error">{{ form.name.errors|join:', ' }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.monthly_amount.id_for_label }}">Montant mensuel (FCFA) <span class="required">*</span></label>
+            {{ form.monthly_amount }}
+            {% if form.monthly_amount.errors %}<div class="field-error">{{ form.monthly_amount.errors|join:', ' }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.target.id_for_label }}">Cible</label>
+            {{ form.target }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.display_order.id_for_label }}">Ordre d'affichage</label>
+            {{ form.display_order }}
+          </div>
+          <div class="form-group form-group--full">
+            <label for="{{ form.tagline.id_for_label }}">Slogan court</label>
+            {{ form.tagline }}
+          </div>
+          <div class="form-group form-group--full">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+          </div>
+          <div class="form-group form-group--full">
+            <label for="{{ form.features.id_for_label }}">Fonctionnalités (une par ligne)</label>
+            {{ form.features }}
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+              {{ form.is_active }} <span>Formule active</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+              {{ form.is_featured }} <span>★ Mettre en avant</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_plans' %}">Annuler</a>
+        <button class="btn btn--primary" type="submit">💾 Enregistrer</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

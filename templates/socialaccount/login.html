@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+  <section class="container auth-page">
+    <div class="auth-card auth-card--centered">
+      <div class="auth-icon">
+        <span>🔐</span>
+      </div>
+      {% if process == "connect" %}
+        <h1 class="auth-title">Associer un compte Google</h1>
+        <p class="auth-subtitle">
+          Vous êtes sur le point d'associer votre compte <strong>{{ provider.name }}</strong> à votre compte KwaloK.
+        </p>
+      {% else %}
+        <h1 class="auth-title">Connexion via {{ provider.name }}</h1>
+        <p class="auth-subtitle">
+          Vous allez être redirigé vers {{ provider.name }} pour vous connecter en toute sécurité.
+        </p>
+      {% endif %}
+
+      <form method="post" class="auth-form">
+        {% csrf_token %}
+        <button class="btn btn--primary-wide" type="submit">Continuer</button>
+      </form>
+
+      <p class="auth-alt">
+        <a href="{% url 'accounts:login' %}">Retour à la page de connexion</a>
+      </p>
+    </div>
+  </section>
+{% endblock %}

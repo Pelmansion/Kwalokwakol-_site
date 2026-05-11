@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  .report-wrap { padding: 28px 0 48px; background: #f8fafc; }
+  .report-title { margin: 0 0 6px 0; font-size: 1.75rem; font-weight: 800; color: #0d9488; letter-spacing: -0.03em; }
+  .report-title::after { content: ""; display: block; width: 48px; height: 3px; background: linear-gradient(90deg, #0d9488, #14b8a6); border-radius: 2px; margin-top: 10px; }
+  .report-subtitle { margin: 0 0 28px 0; font-size: 0.95rem; color: #64748b; }
+  .report-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 28px; }
+  .report-kpi { background: #fff; border-radius: 12px; padding: 22px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+  .report-kpi:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+  .report-kpi__value { display: block; font-size: 1.85rem; font-weight: 800; color: #0d9488; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .report-kpi__value small { font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+  .report-kpi--highlight .report-kpi__value { color: #0f766e; }
+  .report-kpi__label { display: block; font-size: 0.85rem; color: #64748b; font-weight: 600; margin-top: 6px; }
+  .report-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 24px; }
+  .report-card__title { margin: 0 0 18px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
+  .report-empty { margin: 0; padding: 20px; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 10px; border: 2px dashed #e2e8f0; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .report-table th, .report-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  .report-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .report-table tbody tr:hover { background: #f8fafc; }
+  .report-table .text-right { text-align: right; }
+  @media (max-width: 600px) { .report-kpi-row { grid-template-columns: 1fr; } }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+  .pagination a, .pagination span { padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; text-decoration: none; color: #0d9488; font-weight: 600; border: 1px solid #e2e8f0; background: #fff; }
+  .pagination a:hover { background: #f0fdfa; border-color: #0d9488; }
+  .pagination .current { background: #0d9488; color: #fff; border-color: #0d9488; }
+  .pagination .disabled { color: #94a3b8; pointer-events: none; }
+</style>
+{% endblock %}
+{% block content %}
+  <section class="report-wrap container">
+    <h1 class="report-title">Vue globale</h1>
+    <p class="report-subtitle">Vendeurs, prestataires, commandes et chiffre d'affaires en un coup d'œil.</p>
+
+    <div class="report-kpi-row">
+      <div class="report-kpi">
+        <span class="report-kpi__value">{{ total_vendors }}</span>
+        <span class="report-kpi__label">Vendeurs actifs</span>
+      </div>
+      <div class="report-kpi">
+        <span class="report-kpi__value">{{ total_providers }}</span>
+        <span class="report-kpi__label">Prestataires actifs</span>
+      </div>
+      <div class="report-kpi">
+        <span class="report-kpi__value">{{ total_orders }}</span>
+        <span class="report-kpi__label">Commandes</span>
+      </div>
+      <div class="report-kpi report-kpi--highlight">
+        <span class="report-kpi__value">{{ global_revenue|floatformat:0 }} <small>FCFA</small></span>
+        <span class="report-kpi__label">Chiffre d'affaires global</span>
+      </div>
+    </div>
+
+    <div class="report-card" style="background: linear-gradient(135deg, #fff 0%, #fffaf6 100%); border-left: 4px solid #c2410c;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+        <h2 class="report-card__title" style="border: none; margin: 0; padding: 0;">💳 Abonnements mensuels</h2>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="{% url 'subscriptions:admin_list' %}" style="padding: 8px 18px; background: #c2410c; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: .9rem;">Gérer les abonnements →</a>
+          <a href="{% url 'subscriptions:admin_plans' %}" style="padding: 8px 18px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: .9rem;">⚙️ Formules</a>
+        </div>
+      </div>
+      <div class="report-kpi-row" style="margin: 0;">
+        <div class="report-kpi">
+          <span class="report-kpi__value">{{ sub_stats.active|default:0 }}</span>
+          <span class="report-kpi__label">Abonnés actifs</span>
+        </div>
+        <div class="report-kpi">
+          <span class="report-kpi__value" style="color: #d97706;">{{ sub_stats.pending|default:0 }}</span>
+          <span class="report-kpi__label">En attente de paiement</span>
+        </div>
+        <div class="report-kpi">
+          <span class="report-kpi__value" style="color: #dc2626;">{{ sub_stats.past_due|default:0 }}</span>
+          <span class="report-kpi__label">Expirés</span>
+        </div>
+        <div class="report-kpi report-kpi--highlight">
+          <span class="report-kpi__value" style="color: #c2410c;">{{ sub_stats.monthly_revenue|default:0|floatformat:0 }} <small>FCFA</small></span>
+          <span class="report-kpi__label">Revenus mensuels récurrents</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Vendeurs par chiffre d'affaires</h2>
+      {% if top_vendors_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Nom du vendeur</th>
+              <th class="text-right">Chiffre d'affaires</th>
+              <th class="text-right">Nombre de commandes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in top_vendors_page %}
+              <tr>
+                <td><strong>{{ top_vendors_page.start_index|add:forloop.counter0 }}</strong></td>
+                <td><strong>{{ v.name }}</strong></td>
+                <td class="text-right"><strong>{{ v.revenue|floatformat:0 }} FCFA</strong></td>
+                <td class="text-right">{{ v.order_count }} commande{{ v.order_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if top_vendors_page.has_other_pages %}
+          <nav class="pagination" aria-label="Vendeurs par CA">
+            {% if top_vendors_page.has_previous %}
+              <a href="?top_vendors_page={{ top_vendors_page.previous_page_number }}{% if request.GET.top_providers_page %}&top_providers_page={{ request.GET.top_providers_page }}{% endif %}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">‹ Préc.</a>
+            {% else %}
+              <span class="disabled">‹ Préc.</span>
+            {% endif %}
+            <span class="current">Page {{ top_vendors_page.number }} / {{ top_vendors_page.paginator.num_pages }}</span>
+            {% if top_vendors_page.has_next %}
+              <a href="?top_vendors_page={{ top_vendors_page.next_page_number }}{% if request.GET.top_providers_page %}&top_providers_page={{ request.GET.top_providers_page }}{% endif %}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">Suiv. ›</a>
+            {% else %}
+              <span class="disabled">Suiv. ›</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun vendeur vérifié.</p>
+      {% endif %}
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Prestataires par demandes</h2>
+      {% if top_providers_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Nom du prestataire</th>
+              <th class="text-right">Demandes validées</th>
+              <th class="text-right">Total demandes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in top_providers_page %}
+              <tr>
+                <td><strong>{{ top_providers_page.start_index|add:forloop.counter0 }}</strong></td>
+                <td><strong>{{ p.name }}</strong></td>
+                <td class="text-right"><strong>{{ p.approved_count }}</strong></td>
+                <td class="text-right">{{ p.request_count }} demande{{ p.request_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if top_providers_page.has_other_pages %}
+          <nav class="pagination" aria-label="Prestataires par demandes">
+            {% if top_providers_page.has_previous %}
+              <a href="?top_providers_page={{ top_providers_page.previous_page_number }}{% if request.GET.top_vendors_page %}&top_vendors_page={{ request.GET.top_vendors_page }}{% endif %}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">‹ Préc.</a>
+            {% else %}
+              <span class="disabled">‹ Préc.</span>
+            {% endif %}
+            <span class="current">Page {{ top_providers_page.number }} / {{ top_providers_page.paginator.num_pages }}</span>
+            {% if top_providers_page.has_next %}
+              <a href="?top_providers_page={{ top_providers_page.next_page_number }}{% if request.GET.top_vendors_page %}&top_vendors_page={{ request.GET.top_vendors_page }}{% endif %}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">Suiv. ›</a>
+            {% else %}
+              <span class="disabled">Suiv. ›</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun prestataire vérifié.</p>
+      {% endif %}
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Vendeurs à valider</h2>
+      {% if vendors_pending_page.object_list %}
+        <div class="table-card">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Numéro d'identité</th>
+                <th>Localisation</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for vendor in vendors_pending_page %}
+                <tr>
+                  <td><strong>{{ vendor.name }}</strong></td>
+                  <td>
+                    <div>{{ vendor.phone|default:"—" }}</div>
+                    <div class="muted">{{ vendor.email|default:"—" }}</div>
+                  </td>
+                  <td>
+                    <div>{{ vendor.id_number|default:"—" }}</div>
+                    <a href="{% url 'accounts:view_vendor_details' vendor.id %}" class="link" style="font-size: 0.85rem;">Voir les documents</a>
+                  </td>
+                  <td>{{ vendor.location|default:"—" }}</td>
+                  <td><span class="badge badge--warning">{{ vendor.get_verification_status_display }}</span></td>
+                  <td>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                      <a href="{% url 'accounts:view_vendor_details' vendor.id %}" class="btn btn--small btn--ghost">Détails</a>
+                      <a href="{% url 'subscriptions:admin_set_amount' 'vendor' vendor.id %}" class="btn btn--small btn--ghost" style="color: #c2410c;">💳 Tarif</a>
+                      <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--success" type="submit">Valider</button></form>
+                      <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--ghost" type="submit">Refuser</button></form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if vendors_pending_page.has_other_pages %}
+          <nav class="pagination" aria-label="Vendeurs à valider">
+            {% if vendors_pending_page.has_previous %}
+              <a href="?vendors_page={{ vendors_pending_page.previous_page_number }}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">‹ Préc.</a>
+            {% else %}
+              <span class="disabled">‹ Préc.</span>
+            {% endif %}
+            <span class="current">Page {{ vendors_pending_page.number }} / {{ vendors_pending_page.paginator.num_pages }}</span>
+            {% if vendors_pending_page.has_next %}
+              <a href="?vendors_page={{ vendors_pending_page.next_page_number }}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">Suiv. ›</a>
+            {% else %}
+              <span class="disabled">Suiv. ›</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun vendeur en attente.</p>
+      {% endif %}
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Prestataires à valider</h2>
+      {% if providers_pending_page.object_list %}
+        <div class="table-card">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Numéro d'identité</th>
+                <th>Localisation</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for provider in providers_pending_page %}
+                <tr>
+                  <td><strong>{{ provider.name }}</strong></td>
+                  <td>
+                    <div>{{ provider.phone|default:"—" }}</div>
+                    <div class="muted">{{ provider.email|default:"—" }}</div>
+                  </td>
+                  <td>
+                    <div>{{ provider.id_number|default:"—" }}</div>
+                    <a href="{% url 'accounts:view_service_provider_details' provider.id %}" class="link" style="font-size: 0.85rem;">Voir les documents</a>
+                  </td>
+                  <td>{{ provider.location|default:"—" }}</td>
+                  <td><span class="badge badge--warning">{{ provider.get_verification_status_display }}</span></td>
+                  <td>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                      <a href="{% url 'accounts:view_service_provider_details' provider.id %}" class="btn btn--small btn--ghost">Détails</a>
+                      <a href="{% url 'subscriptions:admin_set_amount' 'provider' provider.id %}" class="btn btn--small btn--ghost" style="color: #c2410c;">💳 Tarif</a>
+                      <form method="post" action="{% url 'accounts:moderate_service_provider' provider.id 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--success" type="submit">Valider</button></form>
+                      <form method="post" action="{% url 'accounts:moderate_service_provider' provider.id 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--ghost" type="submit">Refuser</button></form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if providers_pending_page.has_other_pages %}
+          <nav class="pagination" aria-label="Prestataires à valider">
+            {% if providers_pending_page.has_previous %}
+              <a href="?providers_page={{ providers_pending_page.previous_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">‹ Préc.</a>
+            {% else %}
+              <span class="disabled">‹ Préc.</span>
+            {% endif %}
+            <span class="current">Page {{ providers_pending_page.number }} / {{ providers_pending_page.paginator.num_pages }}</span>
+            {% if providers_pending_page.has_next %}
+              <a href="?providers_page={{ providers_pending_page.next_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.users_page %}&users_page={{ request.GET.users_page }}{% endif %}">Suiv. ›</a>
+            {% else %}
+              <span class="disabled">Suiv. ›</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun prestataire en attente.</p>
+      {% endif %}
+    </div>
+
+    {% if users_page %}
+      <div class="report-card">
+        <h2 class="report-card__title">Utilisateurs</h2>
+        <p class="muted" style="margin-bottom:12px">Gestion réservée au super admin.</p>
+        <div class="table-card">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Contact</th>
+                <th>Rôle</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users_page %}
+                <tr>
+                  <td><strong>{{ u.username }}</strong></td>
+                  <td>{% if u.email %}{{ u.email }}{% else %}—{% endif %}</td>
+                  <td>{% if u.userprofile %}<span class="badge">{{ u.userprofile.get_role_display }}</span>{% else %}<span class="badge">Client</span>{% endif %}</td>
+                  <td class="text-right">
+                    <form method="post" action="{% url 'accounts:set_user_role' u.id %}" style="display:inline-flex;align-items:center;gap:8px">{% csrf_token %}
+                      <select name="role">{% for value, label in role_choices %}<option value="{{ value }}" {% if u.userprofile.role == value or not u.userprofile and value == 'customer' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                      <button class="btn btn--small" type="submit">Mettre à jour</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if users_page.has_other_pages %}
+          <nav class="pagination" aria-label="Utilisateurs">
+            {% if users_page.has_previous %}
+              <a href="?users_page={{ users_page.previous_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}">‹ Préc.</a>
+            {% else %}
+              <span class="disabled">‹ Préc.</span>
+            {% endif %}
+            <span class="current">Page {{ users_page.number }} / {{ users_page.paginator.num_pages }}</span>
+            {% if users_page.has_next %}
+              <a href="?users_page={{ users_page.next_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}">Suiv. ›</a>
+            {% else %}
+              <span class="disabled">Suiv. ›</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

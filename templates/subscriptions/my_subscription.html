@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Mon abonnement{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero subscription-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">
+          Espace {% if subscription.vendor %}vendeur{% else %}prestataire{% endif %}
+        </span>
+        <h1>Mon abonnement</h1>
+        <p class="dashboard-hero__tagline">
+          {% if subscription.is_active_now %}
+            ✓ Votre compte est actif. Profitez de toutes les fonctionnalités de la plateforme.
+          {% elif subscription.status == 'pending' %}
+            {% if subscription.monthly_amount %}
+              Votre abonnement est prêt. Réglez <strong>{{ subscription.monthly_amount|floatformat:0 }} FCFA</strong> pour activer votre espace.
+            {% else %}
+              Votre dossier est en cours d'examen. L'administrateur va bientôt fixer votre montant d'abonnement.
+            {% endif %}
+          {% elif subscription.status == 'past_due' %}
+            ⚠️ Votre abonnement a expiré. Renouvelez-le pour continuer à utiliser votre espace.
+          {% else %}
+            Votre abonnement a été annulé.
+          {% endif %}
+        </p>
+      </div>
+      <div class="dashboard-hero__actions">
+        {% if vendor %}
+          <a class="btn btn--ghost" href="{% url 'marketplace:dashboard' %}">← Dashboard</a>
+        {% elif provider %}
+          <a class="btn btn--ghost" href="{% url 'marketplace:service_provider_dashboard' %}">← Dashboard</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="sub-status-card
+      {% if subscription.is_active_now %}sub-status-card--active
+      {% elif subscription.status == 'past_due' %}sub-status-card--expired
+      {% elif subscription.status == 'cancelled' %}sub-status-card--cancelled
+      {% else %}sub-status-card--pending{% endif %}">
+
+      <div class="sub-status-card__top">
+        <div>
+          <div class="sub-status-card__status-label">Statut de l'abonnement</div>
+          <div class="sub-status-card__status-row">
+            <span class="badge {% if subscription.status == 'active' %}badge--success{% elif subscription.status == 'past_due' or subscription.status == 'cancelled' %}badge--danger{% else %}badge--warning{% endif %}">
+              {% if subscription.status == 'active' %}✓ Actif
+              {% elif subscription.status == 'past_due' %}⚠ Expiré
+              {% elif subscription.status == 'cancelled' %}✗ Annulé
+              {% else %}⏳ En attente de paiement{% endif %}
+            </span>
+            {% if subscription.plan %}
+              <span class="sub-status-card__plan-name">Formule : <strong>{{ subscription.plan.name }}</strong></span>
+            {% else %}
+              <span class="sub-status-card__plan-name">Tarif personnalisé</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if subscription.monthly_amount %}
+          <div class="sub-status-card__amount-block">
+            <div class="sub-status-card__status-label">Montant mensuel</div>
+            <div class="sub-amount-big">{{ subscription.monthly_amount|floatformat:0 }} <small>FCFA</small></div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="subscription-summary">
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Prochaine échéance</span>
+          <span class="subscription-summary__value {% if subscription.is_active_now %}subscription-summary__value--accent{% endif %}">
+            {% if subscription.current_period_end %}
+              {{ subscription.current_period_end|date:"d/m/Y" }}
+            {% else %}—{% endif %}
+          </span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Jours restants</span>
+          <span class="subscription-summary__value">
+            {% with days=subscription.days_remaining %}
+              {% if days is None %}—{% else %}{{ days }} jour{{ days|pluralize }}{% endif %}
+            {% endwith %}
+          </span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Abonné depuis</span>
+          <span class="subscription-summary__value">
+            {% if subscription.started_at %}{{ subscription.started_at|date:"d/m/Y" }}{% else %}—{% endif %}
+          </span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Paiements réalisés</span>
+          <span class="subscription-summary__value">
+            {{ payments|length }}
+          </span>
+        </div>
+      </div>
+
+      <div class="sub-cta-row">
+        {% if subscription.needs_payment and subscription.monthly_amount %}
+          <form method="post" action="{% url 'subscriptions:start_payment' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--primary">
+              💳 Payer {{ subscription.monthly_amount|floatformat:0 }} FCFA
+            </button>
+          </form>
+          <a class="btn btn--ghost" href="{% url 'subscriptions:choose_plan' %}">Changer de formule</a>
+        {% elif subscription.is_active_now %}
+          <form method="post" action="{% url 'subscriptions:start_payment' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--ghost">🔄 Renouveler dès maintenant</button>
+          </form>
+          <a class="btn btn--ghost" href="{% url 'subscriptions:choose_plan' %}">Changer de formule</a>
+        {% elif not subscription.monthly_amount %}
+          <div class="sub-banner sub-banner--warning" style="flex: 1;">
+            <div>
+              <span class="sub-banner__title">⏳ En attente de validation</span>
+              <div class="muted" style="margin-top: 2px; font-size: 0.9rem;">
+                L'administrateur doit d'abord fixer le montant de votre abonnement.
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if payments %}
+    <section class="container dash-section">
+      <div class="dash-section__head">
+        <h2>Historique des paiements</h2>
+        <p class="dash-section__subtitle">Suivez vos règlements d'abonnement</p>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="payments-table" style="min-width: 680px;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Référence</th>
+              <th>Méthode</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Période</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+              <tr>
+                <td>{{ payment.created_at|date:"d/m/Y H:i" }}</td>
+                <td><code>{{ payment.reference|default:"—" }}</code></td>
+                <td>{{ payment.get_provider_display }}</td>
+                <td><strong>{{ payment.amount|floatformat:0 }} FCFA</strong></td>
+                <td>
+                  <span class="badge {% if payment.status == 'success' %}badge--success{% elif payment.status == 'failed' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size: 0.72rem;">
+                    {{ payment.get_status_display }}
+                  </span>
+                </td>
+                <td style="font-size: 0.88rem; color: var(--muted);">
+                  {% if payment.period_start and payment.period_end %}
+                    {{ payment.period_start|date:"d/m" }} → {{ payment.period_end|date:"d/m/Y" }}
+                  {% else %}—{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

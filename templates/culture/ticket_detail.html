@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Billet · {{ ticket.event.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+  body * { visibility: hidden; }
+  .ticket-print, .ticket-print * { visibility: visible; }
+  .ticket-print { position: absolute; top:0; left:0; width: 100%; }
+  .no-print { display: none !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head no-print">
+    <div>
+      <h1>🎫 Votre billet</h1>
+      <p>Présentez ce billet à l'entrée du concert</p>
+    </div>
+    <div style="display:flex; gap: 10px;">
+      <button onclick="window.print()" class="btn">🖨 Imprimer / PDF</button>
+      <a class="btn btn--ghost" href="{% url 'culture:my_tickets' %}">Mes billets</a>
+    </div>
+  </header>
+
+  <article class="ticket-print">
+    <div class="ticket-card" style="border-left-color: {{ ticket.category.color }}">
+      <div class="ticket-card__main">
+        <div class="ticket-card__brand">
+          <img src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloK" height="36">
+          <span>KwaloK Culture · Billet électronique</span>
+        </div>
+        <h2 class="ticket-card__title">{{ ticket.event.title }}</h2>
+
+        <div class="ticket-card__info">
+          <div>
+            <small>Date</small>
+            <strong>{{ ticket.event.starts_at|date:"l j F Y" }}</strong>
+            <span>{{ ticket.event.starts_at|date:"H\hi" }}</span>
+          </div>
+          <div>
+            <small>Lieu</small>
+            <strong>{{ ticket.event.venue_name }}</strong>
+            <span>{{ ticket.event.city }}</span>
+          </div>
+          <div>
+            <small>Catégorie</small>
+            <strong style="color: {{ ticket.category.color }}">{{ ticket.category.name }}</strong>
+            <span>{{ ticket.amount_fcfa|floatformat:0 }} FCFA</span>
+          </div>
+        </div>
+
+        <div class="ticket-card__buyer">
+          <small>Détenteur</small>
+          <strong>{{ ticket.buyer_name }}</strong>
+          <span>{{ ticket.buyer_email }}{% if ticket.buyer_phone %} · {{ ticket.buyer_phone }}{% endif %}</span>
+        </div>
+
+        <div class="ticket-card__ref">
+          Référence : <code>{{ ticket.reference }}</code><br>
+          Statut :
+          {% if ticket.status == "valid" %}<span class="badge badge--free">Valide</span>
+          {% elif ticket.status == "used" %}<span class="badge badge--paid">Utilisé le {{ ticket.used_at|date:"j/m/Y H:i" }}</span>
+          {% elif ticket.status == "pending" %}<span class="badge">En attente</span>
+          {% else %}<span class="badge">{{ ticket.get_status_display }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="ticket-card__qr">
+        <div class="ticket-card__qr-code">{{ qr_svg|safe }}</div>
+        <p>Scannez ce QR à l'entrée<br>pour valider votre billet</p>
+        <small>Code : {{ ticket.reference|stringformat:"s"|slice:":8" }}…</small>
+      </div>
+    </div>
+
+    <p class="ticket-print-note no-print">
+      💡 Vous pouvez imprimer ce billet ou le présenter directement depuis votre téléphone.
+      Le contrôleur scannera simplement le QR code à l'entrée du concert.
+    </p>
+  </article>
+</section>
+{% endblock %}

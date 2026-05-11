@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+{% load marketplace_tags %}
+
+{% block title %}Mon panier — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container jumia-cart">
+    {% if items %}
+      <div class="jumia-cart__layout">
+        <div class="jumia-cart__main">
+          <div class="cart-panel">
+            <div class="cart-panel__header">
+              <h1>Panier <span class="cart-panel__count">({{ items|length }})</span></h1>
+            </div>
+
+            <ul class="cart-items">
+              {% for item in items %}
+                <li class="cart-item" id="cart-item-{{ item.product.id }}">
+                  <a href="{% url 'store:product_detail' item.product.slug %}" class="cart-item__thumb">
+                    {% if item.product.media.first %}
+                      <img src="{{ item.product.media.first.url }}" alt="{{ item.product.name }}" loading="lazy">
+                    {% elif item.product.image_url %}
+                      <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" loading="lazy">
+                    {% else %}
+                      <div class="cart-item__placeholder">📦</div>
+                    {% endif %}
+                  </a>
+
+                  <div class="cart-item__info">
+                    <a href="{% url 'store:product_detail' item.product.slug %}" class="cart-item__name">
+                      {{ item.product.name }}
+                    </a>
+                    <div class="cart-item__meta">
+                      {% if item.product.category %}<span>{{ item.product.category.name }}</span>{% endif %}
+                      {% if item.product.stock > 0 %}
+                        <span class="cart-item__stock cart-item__stock--in">● En stock</span>
+                      {% else %}
+                        <span class="cart-item__stock cart-item__stock--out">● Rupture</span>
+                      {% endif %}
+                    </div>
+
+                    <div class="cart-item__actions">
+                      <a href="{% url 'store:remove_from_cart' item.product.id %}" class="cart-item__remove" title="Supprimer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                        Supprimer
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="cart-item__side">
+                    <div class="cart-item__price">
+                      <span class="cart-item__price-now" id="line-{{ item.product.id }}">
+                        {{ item.line_total|floatformat:0 }}
+                      </span>
+                      <span class="cart-item__currency">FCFA</span>
+                    </div>
+                    <div class="cart-item__unit-price muted">
+                      {{ item.product.price|floatformat:0 }} FCFA / unité
+                    </div>
+
+                    <div class="qty-selector" data-product-id="{{ item.product.id }}">
+                      <button type="button" class="qty-selector__btn js-qty-dec" aria-label="Diminuer">−</button>
+                      <input
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        value="{{ item.quantity }}"
+                        class="qty-selector__input js-cart-qty"
+                        data-update-url="{% url 'store:update_cart' item.product.id %}"
+                        data-line-target="line-{{ item.product.id }}"
+                      >
+                      <button type="button" class="qty-selector__btn js-qty-inc" aria-label="Augmenter">+</button>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          {% if user|is_client %}
+            <div class="cart-panel" id="checkout-form">
+              <div class="cart-panel__header">
+                <h2>Informations de livraison</h2>
+                <p class="muted">Complétez vos informations pour finaliser la commande.</p>
+              </div>
+              <form class="checkout-form" method="post" action="{% url 'store:checkout' %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label>Nom complet</label>
+                    {{ form.full_name }}
+                    {{ form.full_name.errors }}
+                  </div>
+                  <div class="form-field">
+                    <label>Téléphone</label>
+                    {{ form.phone }}
+                    {{ form.phone.errors }}
+                  </div>
+                  <div class="form-field">
+                    <label>Email</label>
+                    {{ form.email }}
+                    {{ form.email.errors }}
+                  </div>
+                  <div class="form-field">
+                    <label>Adresse</label>
+                    {{ form.address }}
+                    {{ form.address.errors }}
+                  </div>
+                  <div class="form-field">
+                    <label>Ville</label>
+                    {{ form.city }}
+                    {{ form.city.errors }}
+                  </div>
+                  <div class="form-field">
+                    <label>Livraison</label>
+                    {{ form.delivery_option }}
+                    {{ form.delivery_option.errors }}
+                  </div>
+                  <div class="form-field form-field--full">
+                    <label>Moyen de paiement</label>
+                    {{ form.payment_method }}
+                    {{ form.payment_method.errors }}
+                    <p class="muted" style="font-size:0.85rem; margin-top:8px;">
+                      💡 Pour le moment, seul le paiement en espèces à la livraison est disponible.
+                    </p>
+                  </div>
+                </div>
+                <button class="btn btn--cta btn--block" type="submit">
+                  Valider la commande — <span>{{ total|floatformat:0 }} FCFA</span>
+                </button>
+              </form>
+            </div>
+          {% elif user.is_authenticated %}
+            <div class="cart-panel">
+              <h3>🔒 Accès restreint</h3>
+              <p class="muted">Seuls les comptes clients peuvent passer une commande.</p>
+            </div>
+          {% else %}
+            <div class="cart-panel cart-panel--center">
+              <div style="font-size:2rem;">🔐</div>
+              <h3>Connexion requise</h3>
+              <p class="muted">Connectez-vous pour finaliser votre commande.</p>
+              <a class="btn btn--cta" href="{% url 'accounts:login' %}?next={% url 'store:cart_detail' %}">Se connecter</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <aside class="jumia-cart__aside">
+          <div class="cart-summary">
+            <h3>RÉSUMÉ DU PANIER</h3>
+            <div class="summary-row">
+              <span>Sous-total</span>
+              <strong id="cart-total">{{ total|floatformat:0 }} FCFA</strong>
+            </div>
+            <div class="summary-row summary-row--muted">
+              <span>Livraison</span>
+              <span>Calculée à l'étape suivante</span>
+            </div>
+            {% if user|is_client %}
+              <a href="#checkout-form" class="btn btn--cta btn--block">
+                Commander (<span id="cart-total-btn">{{ total|floatformat:0 }}</span> FCFA)
+              </a>
+            {% elif user.is_authenticated %}
+              <button class="btn btn--cta btn--block" disabled>Commande indisponible</button>
+            {% else %}
+              <a class="btn btn--cta btn--block" href="{% url 'accounts:login' %}?next={% url 'store:cart_detail' %}">
+                Se connecter pour commander
+              </a>
+            {% endif %}
+
+            <ul class="cart-summary__perks">
+              <li>🚚 Livraison sécurisée</li>
+              <li>💳 Paiement à la livraison disponible</li>
+              <li>↩️ Retour possible sous 7 jours</li>
+            </ul>
+          </div>
+
+          <a href="{% url 'store:product_list' %}" class="cart-back">← Continuer mes achats</a>
+        </aside>
+      </div>
+
+      {% if suggestions %}
+        <section class="cart-suggestions">
+          <div class="cart-suggestions__header">
+            <h2>Vous aimerez aussi</h2>
+            <a href="{% url 'store:product_list' %}" class="link">Voir tout →</a>
+          </div>
+          <div class="cart-suggestions__grid">
+            {% for product in suggestions %}
+              <a href="{% url 'store:product_detail' product.slug %}" class="suggestion-card">
+                <div class="suggestion-card__image">
+                  {% if product.media.first %}
+                    <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
+                  {% elif product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+                  {% else %}
+                    <div class="suggestion-card__placeholder">📦</div>
+                  {% endif %}
+                </div>
+                <div class="suggestion-card__body">
+                  <h4>{{ product.name|truncatechars:40 }}</h4>
+                  <p class="suggestion-card__price">{{ product.price|floatformat:0 }} FCFA</p>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+    {% else %}
+      <div class="cart-empty">
+        <div class="cart-empty__icon">🛒</div>
+        <h1>Votre panier est vide</h1>
+        <p class="muted">Découvrez nos produits et ajoutez-les à votre panier.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn--cta">Parcourir les produits</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <style>
+    .jumia-cart { padding: 24px 0 48px; }
+    .jumia-cart__layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 22px;
+      align-items: start;
+    }
+    .cart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
+      margin-bottom: 18px;
+    }
+    .cart-panel--center { text-align: center; }
+    .cart-panel__header { margin-bottom: 14px; }
+    .cart-panel__header h1,
+    .cart-panel__header h2 {
+      font-family: var(--font-serif);
+      margin: 0;
+      font-size: 1.35rem;
+      color: var(--text);
+    }
+    .cart-panel__count {
+      color: var(--muted);
+      font-family: var(--font-sans, inherit);
+      font-weight: 500;
+    }
+
+    .cart-items {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr) 180px;
+      gap: 18px;
+      padding: 18px 0;
+      border-top: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .cart-item:first-child { border-top: none; padding-top: 6px; }
+    .cart-item__thumb {
+      display: block;
+      width: 110px;
+      height: 110px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .cart-item__thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cart-item__placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--muted);
+    }
+    .cart-item__name {
+      display: block;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1rem;
+      line-height: 1.4;
+      text-decoration: none;
+    }
+    .cart-item__name:hover { color: var(--primary); }
+    .cart-item__meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .cart-item__stock--in { color: #16a34a; font-weight: 600; }
+    .cart-item__stock--out { color: #dc2626; font-weight: 600; }
+    .cart-item__actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .cart-item__remove {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 4px 0;
+      transition: color .15s ease;
+    }
+    .cart-item__remove:hover { color: var(--primary-dark); }
+
+    .cart-item__side {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .cart-item__price {
+      font-family: var(--font-serif);
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--text);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .cart-item__currency {
+      font-family: var(--font-sans, inherit);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .cart-item__unit-price { font-size: 0.78rem; }
+
+    .qty-selector {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+    }
+    .qty-selector__btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 50%;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s ease, color .15s ease;
+    }
+    .qty-selector__btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .qty-selector__input {
+      width: 40px;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+      -moz-appearance: textfield;
+    }
+    .qty-selector__input::-webkit-outer-spin-button,
+    .qty-selector__input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .qty-selector__input:focus { outline: none; }
+
+    .cart-summary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      position: sticky;
+      top: 88px;
+    }
+    .cart-summary h3 {
+      margin: 0 0 14px;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 0.95rem;
+    }
+    .summary-row strong {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+    .summary-row--muted {
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+    }
+
+    .btn--cta {
+      background: linear-gradient(135deg, #F68B1E, #E06B0A);
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn--cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(246,139,30,0.35);
+      filter: brightness(1.05);
+      color: #fff;
+    }
+    .btn--cta:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn--block { width: 100%; }
+
+    .cart-summary__perks {
+      list-style: none;
+      padding: 14px 0 0;
+      margin: 16px 0 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .cart-back {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .cart-back:hover { color: var(--primary); }
+
+    .checkout-form .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 18px;
+    }
+    .checkout-form .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .checkout-form .form-field--full { grid-column: 1 / -1; }
+    .checkout-form label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      letter-spacing: 0.2px;
+    }
+    .checkout-form input[type="text"],
+    .checkout-form input[type="email"],
+    .checkout-form input[type="tel"],
+    .checkout-form input[type="number"],
+    .checkout-form input[type="password"],
+    .checkout-form input:not([type]),
+    .checkout-form select,
+    .checkout-form textarea {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border: 1.5px solid #d4d4d8;
+      border-radius: 10px;
+      font: inherit;
+      color: #0f172a;
+      background: #fff;
+      box-sizing: border-box;
+      transition: border-color .15s ease, box-shadow .15s ease;
+      appearance: none;
+    }
+    .checkout-form textarea {
+      min-height: 90px;
+      height: auto;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+    .checkout-form input:hover,
+    .checkout-form select:hover,
+    .checkout-form textarea:hover {
+      border-color: #a1a1aa;
+    }
+    .checkout-form input:focus,
+    .checkout-form select:focus,
+    .checkout-form textarea:focus {
+      outline: none;
+      border-color: #F68B1E;
+      box-shadow: 0 0 0 3px rgba(246,139,30,0.18);
+      background: #fff;
+    }
+    .checkout-form select {
+      background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 14px center;
+      padding-right: 40px;
+    }
+    .checkout-form button[type="submit"] {
+      margin-top: 22px;
+    }
+
+    .checkout-form ul.payment-options {
+      list-style: none;
+      margin: 4px 0 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .checkout-form ul.payment-options li { margin: 0; }
+    .checkout-form ul.payment-options label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1.5px solid #d4d4d8;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 500;
+      color: #0f172a;
+      font-size: 0.9rem;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .checkout-form ul.payment-options label:hover { border-color: #F68B1E; }
+    .checkout-form ul.payment-options input[type="radio"] {
+      accent-color: #F68B1E;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+    }
+    .checkout-form ul.payment-options input[type="radio"]:checked + span,
+    .checkout-form ul.payment-options label:has(input:checked) {
+      border-color: #F68B1E;
+      background: rgba(246,139,30,0.08);
+      color: #C2410C;
+      font-weight: 600;
+    }
+    .checkout-form ul.payment-options .payment-option--disabled {
+      opacity: 0.55;
+    }
+    .checkout-form ul.payment-options .payment-option--disabled label {
+      cursor: not-allowed;
+    }
+
+    .checkout-form .errorlist {
+      list-style: none;
+      padding: 0;
+      margin: 4px 0 0;
+      color: #dc2626;
+      font-size: 0.82rem;
+    }
+
+    .cart-suggestions {
+      margin-top: 36px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+    }
+    .cart-suggestions__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .cart-suggestions__header h2 {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: var(--text);
+    }
+    .cart-suggestions__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    .suggestion-card {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .suggestion-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+    }
+    .suggestion-card__image {
+      aspect-ratio: 1 / 1;
+      background: var(--bg-soft);
+      overflow: hidden;
+    }
+    .suggestion-card__image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .suggestion-card__placeholder {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--muted);
+    }
+    .suggestion-card__body { padding: 10px 12px 12px; }
+    .suggestion-card__body h4 {
+      margin: 0 0 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .suggestion-card__price {
+      margin: 0;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+
+    .cart-empty {
+      text-align: center;
+      padding: 72px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .cart-empty__icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .cart-empty h1 {
+      font-family: var(--font-serif);
+      margin: 0 0 10px;
+      color: var(--text);
+    }
+    .cart-empty p { margin: 0 0 20px; }
+
+    @media (max-width: 960px) {
+      .jumia-cart__layout {
+        grid-template-columns: 1fr;
+      }
+      .cart-summary { position: static; }
+    }
+    @media (max-width: 640px) {
+      .cart-item {
+        grid-template-columns: 80px minmax(0, 1fr);
+        gap: 12px;
+      }
+      .cart-item__thumb { width: 80px; height: 80px; }
+      .cart-item__side {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+      }
+      .cart-item__unit-price { display: none; }
+      .checkout-form .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <script>
+    (function () {
+      const inputs = document.querySelectorAll('.js-cart-qty');
+      if (!inputs.length) return;
+
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+      };
+
+      const formatNumber = (value) =>
+        new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+
+      const updateQuantity = async (input) => {
+        const quantity = Math.max(1, parseInt(input.value || '1', 10));
+        input.value = quantity;
+        const url = input.dataset.updateUrl;
+        const lineTarget = document.getElementById(input.dataset.lineTarget);
+        const totalTarget = document.getElementById('cart-total');
+        const totalBtn = document.getElementById('cart-total-btn');
+
+        const formData = new FormData();
+        formData.append('quantity', quantity);
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: formData,
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (lineTarget) lineTarget.textContent = formatNumber(data.line_total);
+            if (totalTarget) totalTarget.textContent = formatNumber(data.total) + ' FCFA';
+            if (totalBtn) totalBtn.textContent = formatNumber(data.total);
+          }
+        } catch (err) { /* ignore */ }
+      };
+
+      let timeoutId;
+      inputs.forEach((input) => {
+        input.addEventListener('input', () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => updateQuantity(input), 350);
+        });
+
+        const wrap = input.closest('.qty-selector');
+        if (!wrap) return;
+        const dec = wrap.querySelector('.js-qty-dec');
+        const inc = wrap.querySelector('.js-qty-inc');
+        dec && dec.addEventListener('click', () => {
+          const v = Math.max(1, parseInt(input.value || '1', 10) - 1);
+          input.value = v;
+          updateQuantity(input);
+        });
+        inc && inc.addEventListener('click', () => {
+          const v = parseInt(input.value || '1', 10) + 1;
+          input.value = v;
+          updateQuantity(input);
+        });
+      });
+    })();
+
+    (function () {
+      document
+        .querySelectorAll('input[name="payment_method"]:disabled')
+        .forEach(function (radio) {
+          const li = radio.closest('li');
+          if (li) li.classList.add('payment-option--disabled');
+        });
+    })();
+  </script>
+{% endblock %}

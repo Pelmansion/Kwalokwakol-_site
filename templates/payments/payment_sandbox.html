@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Paiement en ligne (sandbox)</h1>
+    <p>Simulez un paiement pour finaliser la commande.</p>
+  </section>
+  <section class="container cart">
+    <p><strong>Commande #{{ order.id }}</strong></p>
+    <p>Montant: {{ payment.amount }} FCFA</p>
+    <p>Méthode: {{ payment.provider }}</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn" type="submit">Confirmer le paiement</button>
+    </form>
+  </section>
+{% endblock %}

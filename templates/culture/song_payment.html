@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Paiement · {{ song.title }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <div class="sandbox-card">
+    <h1>💳 Paiement de votre achat</h1>
+    <p class="muted">Sandbox de paiement (mode démonstration)</p>
+
+    <div class="sandbox-summary">
+      <p><strong>Titre :</strong> {{ song.title }}</p>
+      <p><strong>Artiste :</strong> {{ song.artist.stage_name }}</p>
+      <p><strong>Référence :</strong> {{ purchase.reference }}</p>
+      <p class="sandbox-amount">{{ purchase.amount_fcfa|floatformat:0 }} FCFA</p>
+    </div>
+
+    <form method="post" class="sandbox-actions">
+      {% csrf_token %}
+      <button type="submit" name="action" value="pay" class="btn">✓ Valider le paiement</button>
+      <button type="submit" name="action" value="cancel" class="btn btn--ghost">Annuler</button>
+    </form>
+
+    <p class="muted" style="margin-top: 16px; font-size: 13px;">
+      Une fois le paiement validé, le téléchargement de la chanson sera disponible immédiatement.
+    </p>
+  </div>
+</section>
+{% endblock %}

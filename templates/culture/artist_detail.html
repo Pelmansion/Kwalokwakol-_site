@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ artist.stage_name }} · Artiste KwaloK{% endblock %}
+
+{% block content %}
+<section class="artist-hero" {% if artist.cover_photo %}style="background-image: linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.85)), url('{{ artist.cover_photo.url }}')"{% endif %}>
+  <div class="container artist-hero__inner">
+    <div class="artist-hero__portrait">
+      {% if artist.portrait %}
+        <img src="{{ artist.portrait.url }}" alt="{{ artist.stage_name }}">
+      {% else %}
+        <span>{{ artist.stage_name|first|upper }}</span>
+      {% endif %}
+    </div>
+    <div class="artist-hero__text">
+      <p class="artist-hero__role">
+        {% if artist.is_verified %}<span class="badge badge--verified">✓ Vérifié</span>{% endif %}
+        {% if artist.primary_genre %}{{ artist.primary_genre.icon }} {{ artist.primary_genre.name }}{% endif %}
+      </p>
+      <h1>{{ artist.stage_name }}</h1>
+      <p class="artist-hero__location">📍 {{ artist.city }}{% if artist.region %} · {{ artist.region }}{% endif %}</p>
+      {% if artist.bio %}<p class="artist-hero__bio">{{ artist.bio|linebreaksbr }}</p>{% endif %}
+
+      <div class="artist-hero__counters">
+        <div><strong>{{ artist.published_songs_count }}</strong><span>Chansons</span></div>
+        <div><strong>{{ artist.total_plays }}</strong><span>Écoutes</span></div>
+        <div><strong>{{ artist.upcoming_events_count }}</strong><span>Concerts</span></div>
+      </div>
+
+      <div class="artist-hero__socials">
+        {% if artist.whatsapp %}<a href="https://wa.me/{{ artist.whatsapp|cut:" "|cut:"+" }}" target="_blank">💬 WhatsApp</a>{% endif %}
+        {% if artist.facebook %}<a href="{{ artist.facebook }}" target="_blank">Facebook</a>{% endif %}
+        {% if artist.instagram %}<a href="{{ artist.instagram }}" target="_blank">Instagram</a>{% endif %}
+        {% if artist.youtube %}<a href="{{ artist.youtube }}" target="_blank">YouTube</a>{% endif %}
+        {% if artist.tiktok %}<a href="{{ artist.tiktok }}" target="_blank">TikTok</a>{% endif %}
+        {% if artist.spotify %}<a href="{{ artist.spotify }}" target="_blank">Spotify</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🎵 Discographie</h2>
+  </header>
+  {% if songs %}
+    <div class="song-grid">
+      {% for song in songs %}{% include "culture/_song_card.html" with song=song %}{% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">Cet artiste n'a pas encore publié de chanson.</p>
+  {% endif %}
+</section>
+
+{% if upcoming_events %}
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🎫 Prochains concerts</h2>
+  </header>
+  <div class="event-grid">
+    {% for event in upcoming_events %}{% include "culture/_event_card.html" with event=event %}{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

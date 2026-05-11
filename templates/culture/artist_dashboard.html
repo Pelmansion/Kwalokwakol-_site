@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Espace artiste · {{ artist.stage_name }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="dashboard-hero">
+    <div class="dashboard-hero__main">
+      <div class="dashboard-hero__avatar">
+        {% if artist.portrait %}<img src="{{ artist.portrait.url }}" alt="{{ artist.stage_name }}">
+        {% else %}<span>{{ artist.stage_name|first|upper }}</span>{% endif %}
+      </div>
+      <div>
+        <p class="dashboard-hero__role">🎤 Espace artiste</p>
+        <h1>{{ artist.stage_name }}</h1>
+        <p class="muted">{% if artist.primary_genre %}{{ artist.primary_genre.name }} · {% endif %}{{ artist.city }}</p>
+      </div>
+    </div>
+    <div class="dashboard-hero__actions">
+      <a class="btn" href="{% url 'culture:artist_song_add' %}">+ Nouvelle chanson</a>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_event_add' %}">+ Nouveau concert</a>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_profile_edit' %}">Modifier le profil</a>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_detail' artist.slug %}">Voir ma page publique</a>
+    </div>
+  </header>
+
+  <div class="dashboard-stats">
+    <div><strong>{{ artist.published_songs_count }}</strong><span>Chansons</span></div>
+    <div><strong>{{ artist.total_plays }}</strong><span>Écoutes totales</span></div>
+    <div><strong>{{ artist.total_downloads }}</strong><span>Téléchargements</span></div>
+    <div><strong>{{ revenue|floatformat:0 }}</strong><span>Revenu musique (FCFA)</span></div>
+    <div><strong>{{ sold_tickets_count }}</strong><span>Billets vendus</span></div>
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="dashboard-card">
+      <header><h2>🎵 Mes dernières chansons</h2><a href="{% url 'culture:artist_songs' %}">Tout gérer →</a></header>
+      {% if songs %}
+        <ul class="simple-list">
+          {% for s in songs %}
+            <li>
+              <strong>{{ s.title }}</strong>
+              <small>{% if s.is_free %}Gratuit{% else %}{{ s.price_fcfa|floatformat:0 }} FCFA{% endif %} · ▶ {{ s.play_count }} · ⬇ {{ s.download_count }}</small>
+              <a href="{% url 'culture:artist_song_edit' s.pk %}">Modifier</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Pas encore de chanson. <a href="{% url 'culture:artist_song_add' %}">Ajouter la première</a></p>
+      {% endif %}
+    </section>
+
+    <section class="dashboard-card">
+      <header><h2>🎫 Mes concerts</h2><a href="{% url 'culture:artist_events' %}">Tout gérer →</a></header>
+      {% if events %}
+        <ul class="simple-list">
+          {% for e in events %}
+            <li>
+              <strong>{{ e.title }}</strong>
+              <small>{{ e.starts_at|date:"j F Y · H\hi" }} · {{ e.city }}</small>
+              <a href="{% url 'culture:artist_event_tickets' e.pk %}">{{ e.total_sold }}/{{ e.total_capacity }} vendus</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Pas encore de concert. <a href="{% url 'culture:artist_event_add' %}">Créer un événement</a></p>
+      {% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}

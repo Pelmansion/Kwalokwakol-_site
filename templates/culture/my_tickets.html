@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Mes billets · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎫 Mes billets</h1>
+      <p>Vos billets de concert achetés sur KwaloK</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:event_list' %}">Voir les concerts →</a>
+  </header>
+
+  {% if tickets %}
+    <div class="ticket-list">
+      {% for t in tickets %}
+        <div class="ticket-row">
+          <div class="ticket-row__date">
+            <span>{{ t.event.starts_at|date:"d" }}</span>
+            <strong>{{ t.event.starts_at|date:"M"|upper }}</strong>
+          </div>
+          <div class="ticket-row__main">
+            <h3><a href="{% url 'culture:event_detail' t.event.slug %}">{{ t.event.title }}</a></h3>
+            <p>📍 {{ t.event.venue_name }}, {{ t.event.city }}</p>
+            <p>
+              <span class="badge" style="background: {{ t.category.color }}20; color: {{ t.category.color }};">{{ t.category.name }}</span>
+              {% if t.status == "valid" %}<span class="badge badge--free">Valide</span>
+              {% elif t.status == "used" %}<span class="badge badge--paid">Utilisé</span>
+              {% elif t.status == "pending" %}<span class="badge">En attente</span>
+              {% else %}<span class="badge">{{ t.get_status_display }}</span>{% endif %}
+            </p>
+          </div>
+          <div class="ticket-row__action">
+            <a class="btn" href="{% url 'culture:ticket_detail' t.reference %}">Voir le billet</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>Vous n'avez pas encore acheté de billet.</p>
+      <a class="btn" href="{% url 'culture:event_list' %}">Découvrir les concerts</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

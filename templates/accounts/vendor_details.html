@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Détails du vendeur : {{ vendor.name }}</h1>
+    <p class="muted">Vérification des informations et documents d'identité</p>
+  </section>
+
+  <section class="container">
+    <div style="margin-bottom: 2rem;">
+      <a class="link" href="{% url 'accounts:admin_dashboard' %}">← Retour au dashboard admin</a>
+    </div>
+
+    <div class="verification-card">
+      <h2>Informations générales</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Nom de la boutique :</strong>
+          <span>{{ vendor.name }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Email :</strong>
+          <span>{{ vendor.email|default:"—" }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Téléphone :</strong>
+          <span>{{ vendor.phone|default:"—" }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Localisation :</strong>
+          <span>{{ vendor.location|default:"—" }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Propriétaire :</strong>
+          <span>{{ vendor.owner.get_full_name|default:vendor.owner.username }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Email du propriétaire :</strong>
+          <span>{{ vendor.owner.email|default:"—" }}</span>
+        </div>
+        {% if vendor.description %}
+          <div class="info-item full-width">
+            <strong>Description :</strong>
+            <p>{{ vendor.description }}</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="verification-card">
+      <h2>Documents d'identité</h2>
+      <div class="info-grid">
+        <div class="info-item full-width">
+          <strong>Numéro d'identité :</strong>
+          <span style="font-size: 1.1rem; font-weight: bold; color: #333;">{{ vendor.id_number|default:"—" }}</span>
+        </div>
+        
+        <div class="document-section">
+          <h3>Pièce d'identité recto</h3>
+          {% if vendor.id_document_front %}
+            <div class="document-preview">
+              <img src="{{ vendor.id_document_front.url }}" alt="Pièce d'identité recto" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;">
+              <a href="{{ vendor.id_document_front.url }}" target="_blank" class="btn btn--small" style="margin-top: 0.5rem;">Ouvrir en grand</a>
+            </div>
+          {% else %}
+            <p class="muted">Aucun document fourni</p>
+          {% endif %}
+        </div>
+
+        <div class="document-section">
+          <h3>Pièce d'identité verso</h3>
+          {% if vendor.id_document_back %}
+            <div class="document-preview">
+              <img src="{{ vendor.id_document_back.url }}" alt="Pièce d'identité verso" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;">
+              <a href="{{ vendor.id_document_back.url }}" target="_blank" class="btn btn--small" style="margin-top: 0.5rem;">Ouvrir en grand</a>
+            </div>
+          {% else %}
+            <p class="muted">Aucun document fourni</p>
+          {% endif %}
+        </div>
+
+        {% if vendor.profile_photo %}
+          <div class="document-section">
+            <h3>Photo de profil</h3>
+            <div class="document-preview">
+              <img src="{{ vendor.profile_photo.url }}" alt="Photo de profil" style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="verification-card">
+      <h2>Statut de vérification</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Statut actuel :</strong>
+          <span class="badge {% if vendor.verification_status == 'verified' %}badge--success{% elif vendor.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">
+            {{ vendor.get_verification_status_display }}
+          </span>
+        </div>
+        {% if vendor.verified_at %}
+          <div class="info-item">
+            <strong>Date de vérification :</strong>
+            <span>{{ vendor.verified_at|date:"d/m/Y à H:i" }}</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="verification-actions">
+      <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'approve' %}" style="display: inline;">
+        {% csrf_token %}
+        <button class="btn btn--success" type="submit">✓ Valider cette inscription</button>
+      </form>
+      <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'reject' %}" style="display: inline;">
+        {% csrf_token %}
+        <button class="btn btn--danger" type="submit">✗ Refuser cette inscription</button>
+      </form>
+    </div>
+  </section>
+
+  <style>
+    .verification-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .verification-card h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #333;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 0.5rem;
+    }
+
+    .verification-card h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #555;
+      font-size: 1.1rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .info-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .info-item strong {
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .info-item span,
+    .info-item p {
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .document-section {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+    }
+
+    .document-preview {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .document-preview img {
+      max-width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+    }
+
+    .verification-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn--success {
+      background: #4caf50;
+      color: white;
+    }
+
+    .btn--success:hover {
+      background: #45a049;
+    }
+
+    .btn--danger {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn--danger:hover {
+      background: #da190b;
+    }
+
+    @media (max-width: 600px) {
+      .verification-card {
+        padding: 1rem;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .verification-actions {
+        flex-direction: column;
+      }
+
+      .verification-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Choisir une formule d'abonnement{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero subscription-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Finalisez votre inscription</span>
+        <h1>Choisissez votre formule</h1>
+        <p class="dashboard-hero__tagline">
+          Pour activer votre espace {% if target == 'vendor' %}vendeur{% else %}prestataire{% endif %} et commencer à vendre, sélectionnez une formule d'abonnement. Vous pourrez la changer à tout moment depuis votre espace.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <form method="post">
+      {% csrf_token %}
+      <div class="plans-grid">
+        {% for plan in plans %}
+          <label class="plan-card {% if plan.is_featured %}plan-card--featured{% endif %}">
+            <input type="radio" name="plan" value="{{ plan.id }}" {% if forloop.first %}checked{% endif %}>
+            <div class="plan-card__inner">
+              {% if plan.is_featured %}
+                <span class="plan-card__badge">★ Recommandé</span>
+              {% endif %}
+              <h2 class="plan-card__name">{{ plan.name }}</h2>
+              {% if plan.tagline %}<p class="plan-card__tagline">{{ plan.tagline }}</p>{% endif %}
+              <div class="plan-card__price">
+                <span class="plan-card__amount">{{ plan.monthly_amount|floatformat:0 }}</span>
+                <span class="plan-card__currency">FCFA</span>
+                <span class="plan-card__period">/ mois</span>
+              </div>
+              {% if plan.description %}<p class="plan-card__desc">{{ plan.description }}</p>{% endif %}
+              <ul class="plan-card__features">
+                {% for feat in plan.features_list %}
+                  <li>✓ {{ feat }}</li>
+                {% endfor %}
+              </ul>
+              <span class="plan-card__cta">Sélectionner cette formule</span>
+            </div>
+          </label>
+        {% empty %}
+          <div class="empty" style="padding: 30px; text-align: center; grid-column: 1/-1;">
+            <p>Aucune formule n'est encore disponible. Contactez l'administrateur.</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if plans %}
+        <div class="form-actions" style="margin-top: 30px; justify-content: center;">
+          <button type="submit" class="btn btn--primary" style="padding: 14px 32px; font-size: 1.05rem;">Continuer vers le paiement →</button>
+        </div>
+      {% endif %}
+    </form>
+
+    <div class="info-box" style="margin-top: 24px;">
+      <p><strong>💡 Besoin d'un tarif personnalisé ?</strong> L'administrateur peut vous proposer un montant mensuel sur mesure en fonction de votre profil. Contactez le support.</p>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Messagerie client</h1>
+    <p class="muted">Toutes vos conversations clients.</p>
+  </section>
+  <section class="container">
+    <div class="table-card">
+      <div class="table-row table-row--head">
+        <div>Client</div>
+        <div>Conversation</div>
+        <div></div>
+      </div>
+      {% for thread in threads %}
+        <div class="table-row">
+          <div>{{ thread.user.username }}</div>
+          <div>Discussion avec {{ vendor.name }}</div>
+          <div><a class="link" href="{% url 'messaging:vendor_thread' thread.id %}">Ouvrir</a></div>
+        </div>
+      {% empty %}
+        <p class="empty">Aucune conversation pour le moment.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

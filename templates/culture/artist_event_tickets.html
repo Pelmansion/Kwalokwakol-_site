@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Ventes · {{ event.title }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>💰 Ventes de billets</h1>
+      <p>{{ event.title }} — {{ paid_total|floatformat:0 }} FCFA encaissés</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">← Mes concerts</a>
+  </header>
+
+  <div class="dashboard-stats">
+    <div><strong>{{ event.total_sold }}</strong><span>Billets vendus</span></div>
+    <div><strong>{{ event.total_capacity }}</strong><span>Capacité totale</span></div>
+    <div><strong>{{ paid_total|floatformat:0 }}</strong><span>Encaissé (FCFA)</span></div>
+  </div>
+
+  {% if tickets %}
+    <table class="payments-table">
+      <thead>
+        <tr><th>Référence</th><th>Acheteur</th><th>Catégorie</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td><code>{{ t.reference|stringformat:"s"|slice:":8" }}</code></td>
+          <td>{{ t.buyer_name }}<br><small>{{ t.buyer_email }}</small></td>
+          <td><span style="color:{{ t.category.color }};font-weight:600;">{{ t.category.name }}</span></td>
+          <td>{{ t.amount_fcfa|floatformat:0 }} FCFA</td>
+          <td>
+            {% if t.status == "valid" %}<span class="badge badge--free">Valide</span>
+            {% elif t.status == "used" %}<span class="badge badge--paid">Utilisé</span>
+            {% elif t.status == "cancelled" %}<span class="badge">Annulé</span>
+            {% else %}<span class="badge">{{ t.get_status_display }}</span>{% endif %}
+          </td>
+          <td>{{ t.paid_at|date:"j/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state"><p>Aucun billet vendu pour cet événement.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Fixer le montant d'abonnement{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Administration</span>
+        <h1>Fixer le montant d'abonnement</h1>
+        <p class="dashboard-hero__tagline">
+          Définissez le montant mensuel payé par ce {% if kind == 'vendor' %}vendeur{% else %}prestataire{% endif %} en fonction de son profil.
+        </p>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_list' %}">← Abonnements</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="form-section">
+      <div class="form-section__header">
+        <div class="form-section__icon">{% if kind == 'vendor' %}🏪{% else %}🤝{% endif %}</div>
+        <div>
+          <h2>{{ target.name }}</h2>
+          <p class="muted" style="margin: 4px 0 0;">
+            {{ target.location|default:"Localisation non renseignée" }} ·
+            Statut KYC :
+            <span class="badge {% if target.verification_status == 'verified' %}badge--success{% elif target.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size: .7rem;">
+              {{ target.get_verification_status_display }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      {% if subscription %}
+        <div class="info-box" style="margin-bottom: 20px;">
+          <p style="margin: 0;">
+            <strong>Abonnement actuel :</strong> {{ subscription.monthly_amount|floatformat:0 }} FCFA/mois
+            · Statut : {{ subscription.get_status_display }}
+            {% if subscription.current_period_end %}· Expire le {{ subscription.current_period_end|date:"d/m/Y" }}{% endif %}
+          </p>
+        </div>
+      {% endif %}
+
+      <form method="post" class="form-section__body">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="{{ form.plan.id_for_label }}">Formule suggérée</label>
+            {{ form.plan }}
+            {% if form.plan.errors %}<div class="field-error">{{ form.plan.errors|join:', ' }}</div>{% endif %}
+            <small class="muted">Choisir une formule pré-remplit le montant, que vous pouvez ensuite ajuster.</small>
+          </div>
+          <div class="form-group">
+            <label for="{{ form.monthly_amount.id_for_label }}">Montant mensuel (FCFA) <span class="required">*</span></label>
+            {{ form.monthly_amount }}
+            {% if form.monthly_amount.errors %}<div class="field-error">{{ form.monthly_amount.errors|join:', ' }}</div>{% endif %}
+          </div>
+          <div class="form-group form-group--full">
+            <label for="{{ form.admin_note.id_for_label }}">Note admin (interne)</label>
+            {{ form.admin_note }}
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 22px;">
+          <a class="btn btn--ghost" href="{% url 'subscriptions:admin_list' %}">Annuler</a>
+          <button class="btn btn--primary" type="submit">💾 Enregistrer le montant</button>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock %}

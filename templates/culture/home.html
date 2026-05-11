@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Culture & Événements · KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+<section class="culture-hero">
+  <div class="container culture-hero__inner">
+    <div class="culture-hero__text">
+      <span class="culture-hero__badge">🎤 KwaloK Culture</span>
+      <h1>Vibrez au rythme de votre région</h1>
+      <p>Découvrez les artistes locaux, écoutez & téléchargez leur musique, et réservez vos places de concert en quelques clics.</p>
+      <div class="culture-hero__actions">
+        <a class="btn" href="{% url 'culture:song_list' %}">🎵 Explorer la musique</a>
+        <a class="btn btn--ghost" href="{% url 'culture:event_list' %}">🎫 Voir les concerts</a>
+      </div>
+      <div class="culture-hero__stats">
+        <div><strong>{{ stats.artists }}</strong><span>Artistes</span></div>
+        <div><strong>{{ stats.songs }}</strong><span>Chansons</span></div>
+        <div><strong>{{ stats.events }}</strong><span>Concerts</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if upcoming_events %}
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🎫 Prochains concerts</h2>
+    <a href="{% url 'culture:event_list' %}" class="culture-section__more">Voir tous →</a>
+  </header>
+  <div class="event-grid">
+    {% for event in upcoming_events %}
+      {% include "culture/_event_card.html" with event=event %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if featured_songs %}
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🎵 Sons en vedette</h2>
+    <a href="{% url 'culture:song_list' %}" class="culture-section__more">Tout le catalogue →</a>
+  </header>
+  <div class="song-grid">
+    {% for song in featured_songs %}
+      {% include "culture/_song_card.html" with song=song %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if featured_artists %}
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🌟 Artistes à suivre</h2>
+    <a href="{% url 'culture:artist_list' %}" class="culture-section__more">Tous les artistes →</a>
+  </header>
+  <div class="artist-grid">
+    {% for artist in featured_artists %}
+      {% include "culture/_artist_card.html" with artist=artist %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if genres %}
+<section class="container culture-section">
+  <header class="culture-section__head">
+    <h2>🎶 Par genre musical</h2>
+  </header>
+  <div class="genre-chip-row">
+    {% for g in genres %}
+      <a class="genre-chip" href="{% url 'culture:song_list' %}?genre={{ g.slug }}">
+        <span class="genre-chip__icon">{{ g.icon|default:"🎵" }}</span>
+        <span class="genre-chip__name">{{ g.name }}</span>
+        <span class="genre-chip__count">{{ g.songs_total }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="container culture-cta">
+  <div class="culture-cta__card">
+    <div class="culture-cta__text">
+      <h2>Vous êtes artiste ?</h2>
+      <p>Rejoignez KwaloK Culture, partagez votre musique avec votre région et vendez vos places de concert en ligne.</p>
+    </div>
+    <a class="btn" href="{% url 'culture:artist_activate' %}">Activer mon profil artiste →</a>
+  </div>
+</section>
+{% endblock %}

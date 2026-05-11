@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement de l'abonnement{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="sandbox-card">
+      <div class="sandbox-card__header">
+        <div class="sandbox-icon">💳</div>
+        <h1>Paiement sécurisé</h1>
+        <p style="color: var(--muted); margin: 0;">Simulation de paiement (environnement sandbox)</p>
+      </div>
+
+      <div class="sandbox-amount">{{ payment.amount|floatformat:0 }} FCFA</div>
+
+      <div class="subscription-summary">
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Abonné</span>
+          <span class="subscription-summary__value">{{ subscription.owner_name }}</span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Formule</span>
+          <span class="subscription-summary__value">{% if subscription.plan %}{{ subscription.plan.name }}{% else %}Personnalisé{% endif %}</span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Référence</span>
+          <span class="subscription-summary__value" style="font-size: 0.88rem;"><code>{{ payment.reference }}</code></span>
+        </div>
+      </div>
+
+      <form method="post" style="margin-top: 28px; display: flex; gap: 12px; flex-direction: column;">
+        {% csrf_token %}
+        <button type="submit" name="action" value="success" class="btn btn--primary" style="padding: 15px; font-size: 1.05rem;">
+          ✓ Confirmer le paiement
+        </button>
+        <button type="submit" name="action" value="fail" class="btn btn--ghost" style="padding: 12px;">
+          ✗ Simuler un échec
+        </button>
+      </form>
+
+      <p style="color: var(--muted); font-size: 0.82rem; text-align: center; margin: 20px 0 0;">
+        🔒 Aucun montant réel n'est débité. En production, ce sandbox sera remplacé par une passerelle de paiement (Mobile Money, carte).
+      </p>
+    </div>
+  </section>
+{% endblock %}

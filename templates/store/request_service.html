@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Demander {{ product.name }} — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container request-page">
+    <a href="{% url 'store:product_detail' product.slug %}" class="back-link">← Retour au service</a>
+
+    <div class="request-card">
+      <div class="request-card__header">
+        <span class="request-card__eyebrow">Formulaire de demande</span>
+        <h1>Demander ce service</h1>
+        <p class="muted">Remplissez ce formulaire pour entrer en contact avec le prestataire. Il vous répondra rapidement.</p>
+      </div>
+
+      <div class="request-card__summary">
+        <div class="request-card__service">
+          <strong>{{ product.name }}</strong>
+          {% if product.price %}<span class="price">{{ product.price|floatformat:0 }} FCFA</span>{% endif %}
+        </div>
+        {% if product.service_provider %}
+          <p class="muted">👤 Prestataire : {{ product.service_provider.name }}</p>
+        {% elif product.vendor %}
+          <p class="muted">🏪 Vendeur : {{ product.vendor.name }}</p>
+        {% endif %}
+      </div>
+
+      <form method="post" action="{% url 'store:request_service' product.id %}" class="request-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="request-form__check">
+            {{ form.is_interested }}
+            <span>{{ form.is_interested.label }}</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label for="id_comment">Décrivez votre besoin</label>
+          {{ form.comment }}
+          {% if form.comment.errors %}
+            <p class="form-error">{{ form.comment.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="request-form__actions">
+          <button class="btn btn--primary" type="submit">Envoyer ma demande</button>
+          <a class="btn btn--ghost" href="{% url 'store:product_detail' product.slug %}">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <style>
+    .request-page {
+      max-width: 640px;
+      margin: 2rem auto 4rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-decoration: none;
+      transition: color .15s ease;
+    }
+    .back-link:hover { color: var(--primary); }
+    .request-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+    .request-card__eyebrow {
+      color: var(--accent-dark);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .request-card__header h1 {
+      font-family: var(--font-serif);
+      margin: 6px 0 6px;
+      color: var(--text);
+    }
+    .request-card__summary {
+      margin: 20px 0;
+      padding: 18px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-lg);
+      border-left: 4px solid var(--accent);
+    }
+    .request-card__service {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .request-card__service strong {
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .request-card__service .price {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .request-form .form-group { margin-bottom: 18px; }
+    .request-form label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .request-form__check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      margin-bottom: 0 !important;
+      font-weight: 500 !important;
+    }
+    .request-form__check input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+    .request-form textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font: inherit;
+      min-height: 140px;
+      background: var(--bg-soft);
+      transition: border-color .15s ease, box-shadow .15s ease;
+      box-sizing: border-box;
+    }
+    .request-form textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.12);
+      background: var(--surface);
+    }
+    .request-form__actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .form-error {
+      margin: 6px 0 0;
+      color: #dc2626;
+      font-size: 0.88rem;
+    }
+    @media (max-width: 600px) {
+      .request-card { padding: 22px; }
+    }
+  </style>
+{% endblock %}

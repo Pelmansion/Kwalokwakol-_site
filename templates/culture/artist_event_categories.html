@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Catégories de billets · {{ event.title }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎫 Catégories de billets</h1>
+      <p>{{ event.title }}</p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">← Mes concerts</a>
+      <a class="btn btn--ghost" href="{% url 'culture:event_detail' event.slug %}">Voir la page publique</a>
+    </div>
+  </header>
+
+  <div class="dashboard-grid">
+    <section class="dashboard-card">
+      <header><h2>Catégories existantes</h2></header>
+      {% if categories %}
+        <table class="payments-table">
+          <thead>
+            <tr><th>Nom</th><th>Prix</th><th>Vendus / Total</th><th>Statut</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for c in categories %}
+            <tr>
+              <td>
+                <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:{{ c.color }};vertical-align:middle;margin-right:6px;"></span>
+                <strong>{{ c.name }}</strong>
+                {% if c.description %}<small>· {{ c.description }}</small>{% endif %}
+              </td>
+              <td>{{ c.price_fcfa|floatformat:0 }} FCFA</td>
+              <td>{{ c.quantity_sold }} / {{ c.quantity_total }} ({{ c.percent_sold }}%)</td>
+              <td>{% if c.is_active %}Active{% else %}Inactive{% endif %}</td>
+              <td>
+                <form method="post" onsubmit="return confirm('Supprimer cette catégorie ?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="category_id" value="{{ c.pk }}">
+                  <button class="btn btn--sm btn--ghost">Supprimer</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">Aucune catégorie pour l'instant. Créez-en une à droite.</p>
+      {% endif %}
+    </section>
+
+    <section class="dashboard-card">
+      <header><h2>+ Ajouter une catégorie</h2></header>
+      <form method="post" class="culture-form">
+        {% csrf_token %}
+        <div class="culture-form__grid">
+          <label class="culture-form__full">Nom *
+            {{ form.name }}
+            {{ form.name.errors }}
+          </label>
+          <label class="culture-form__full">Description (avantages)
+            {{ form.description }}
+          </label>
+          <label>Prix (FCFA) *
+            {{ form.price_fcfa }}
+            {{ form.price_fcfa.errors }}
+          </label>
+          <label>Quantité totale *
+            {{ form.quantity_total }}
+            {{ form.quantity_total.errors }}
+          </label>
+          <label>Couleur
+            {{ form.color }}
+          </label>
+          <label>
+            {{ form.is_active }} Activée
+          </label>
+        </div>
+        <div class="culture-form__actions">
+          <button class="btn" type="submit">Créer la catégorie</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>
+{% endblock %}

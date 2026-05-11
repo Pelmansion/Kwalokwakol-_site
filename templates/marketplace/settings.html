@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres vendeur — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Espace vendeur</span>
+        <h1>Paramètres &amp; préférences</h1>
+        <p class="dashboard-hero__tagline">
+          Gérez votre profil, vos offres, vos messages et vos revenus depuis un seul endroit.
+        </p>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'marketplace:dashboard' %}">← Retour au dashboard</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container settings-section">
+    <div class="settings-grid">
+      <a href="{% url 'marketplace:vendor_profile' %}" class="settings-card">
+        <div class="settings-card__icon">🏪</div>
+        <div class="settings-card__body">
+          <h3>Profil &amp; boutique</h3>
+          <p>Mettez à jour votre description, vos services et votre portfolio.</p>
+        </div>
+        <span class="settings-card__cta">Modifier le profil <span aria-hidden="true">→</span></span>
+      </a>
+
+      <a href="{% url 'marketplace:dashboard' %}" class="settings-card">
+        <div class="settings-card__icon">📦</div>
+        <div class="settings-card__body">
+          <h3>Produits &amp; services</h3>
+          <p>Ajoutez, modifiez ou retirez vos offres commerciales.</p>
+        </div>
+        <span class="settings-card__cta">Gérer les offres <span aria-hidden="true">→</span></span>
+      </a>
+
+      <a href="{% url 'messaging:vendor_inbox' %}" class="settings-card">
+        <div class="settings-card__icon">💬</div>
+        <div class="settings-card__body">
+          <h3>Messagerie client</h3>
+          <p>Répondez rapidement aux questions de vos clients.</p>
+        </div>
+        <span class="settings-card__cta">Accéder aux messages <span aria-hidden="true">→</span></span>
+      </a>
+
+      <a href="{% url 'marketplace:vendor_payments' %}" class="settings-card">
+        <div class="settings-card__icon">💰</div>
+        <div class="settings-card__body">
+          <h3>Paiements</h3>
+          <p>Consultez vos revenus et le statut de vos transactions.</p>
+        </div>
+        <span class="settings-card__cta">Voir les paiements <span aria-hidden="true">→</span></span>
+      </a>
+
+      <a href="{% url 'marketplace:add_product' %}" class="settings-card settings-card--accent">
+        <div class="settings-card__icon">➕</div>
+        <div class="settings-card__body">
+          <h3>Ajouter un produit</h3>
+          <p>Élargissez votre catalogue avec une nouvelle offre.</p>
+        </div>
+        <span class="settings-card__cta">Créer maintenant <span aria-hidden="true">→</span></span>
+      </a>
+
+      <a href="{% url 'store:product_list' %}" class="settings-card">
+        <div class="settings-card__icon">🌍</div>
+        <div class="settings-card__body">
+          <h3>Voir ma vitrine</h3>
+          <p>Visualisez votre boutique telle que la voient vos clients.</p>
+        </div>
+        <span class="settings-card__cta">Ouvrir la boutique <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </section>
+{% endblock %}

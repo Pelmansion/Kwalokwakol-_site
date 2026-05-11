@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ song.title }} — {{ song.artist.stage_name }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <article class="song-detail">
+    <div class="song-detail__cover">
+      {% if song.cover_image %}
+        <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+      {% else %}
+        <div class="song-detail__placeholder">🎵</div>
+      {% endif %}
+    </div>
+
+    <div class="song-detail__main">
+      <p class="song-detail__breadcrumb">
+        <a href="{% url 'culture:song_list' %}">Catalogue</a> ›
+        <a href="{% url 'culture:artist_detail' song.artist.slug %}">{{ song.artist.stage_name }}</a>
+      </p>
+      <h1>{{ song.title }}</h1>
+      <p class="song-detail__artist">par <a href="{% url 'culture:artist_detail' song.artist.slug %}">{{ song.artist.stage_name }}</a></p>
+
+      <div class="song-detail__chips">
+        {% if song.genre %}<span class="chip">{{ song.genre.icon }} {{ song.genre.name }}</span>{% endif %}
+        {% if song.duration_seconds %}<span class="chip">⏱ {{ song.duration_display }}</span>{% endif %}
+        {% if song.release_date %}<span class="chip">📅 {{ song.release_date|date:"j F Y" }}</span>{% endif %}
+        <span class="chip">▶ {{ song.play_count }} écoutes</span>
+        <span class="chip">⬇ {{ song.download_count }} téléchargements</span>
+      </div>
+
+      {% if song.allow_streaming %}
+      <div class="song-player">
+        <audio controls preload="none" src="{% url 'culture:song_play' song.slug %}"></audio>
+      </div>
+      {% endif %}
+
+      <div class="song-detail__actions">
+        {% if song.is_free %}
+          <span class="badge badge--free">GRATUIT</span>
+          <a class="btn" href="{% url 'culture:song_play' song.slug %}" download>⬇ Télécharger gratuitement</a>
+        {% else %}
+          <span class="badge badge--paid">{{ song.price_fcfa|floatformat:0 }} FCFA</span>
+          {% if user_has_access %}
+            <a class="btn" href="{% url 'culture:my_purchases' %}">⬇ Voir mes achats</a>
+          {% else %}
+            {% if user.is_authenticated %}
+              <a class="btn" href="{% url 'culture:song_buy' song.slug %}">💳 Acheter et télécharger</a>
+            {% else %}
+              <a class="btn" href="{% url 'accounts:login' %}?next={% url 'culture:song_detail' song.slug %}">Se connecter pour acheter</a>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {% if song.description %}<p class="song-detail__description">{{ song.description|linebreaksbr }}</p>{% endif %}
+
+      {% if song.lyrics %}
+        <details class="song-detail__lyrics">
+          <summary>📜 Voir les paroles</summary>
+          <pre>{{ song.lyrics }}</pre>
+        </details>
+      {% endif %}
+    </div>
+  </article>
+
+  {% if related %}
+  <section class="culture-section">
+    <header class="culture-section__head"><h2>Autres titres de {{ song.artist.stage_name }}</h2></header>
+    <div class="song-grid">
+      {% for s in related %}{% include "culture/_song_card.html" with song=s %}{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endblock %}

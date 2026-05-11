@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+  <section class="container auth-page">
+    <div class="auth-card auth-card--centered">
+      <div class="auth-icon">
+        <span>👤</span>
+      </div>
+      <h1 class="auth-title">Création de compte</h1>
+      <p class="auth-subtitle">
+        Vous vous connectez avec votre compte <strong>{{ account.get_provider.name }}</strong> sur <strong>KwaloK Wakolê Group</strong>. Complétez le formulaire ci-dessous pour finaliser votre inscription.
+      </p>
+
+      {% if form.errors %}
+        <div class="alert alert--error" role="alert">
+          <strong>Veuillez corriger les erreurs ci-dessous.</strong>
+          {{ form.errors }}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'socialaccount_signup' %}" class="auth-form">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+        {% for field in form %}
+          <div class="form-group{% if field.errors %} form-group--error{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <ul class="form-errors">
+                {% for err in field.errors %}
+                  <li>{{ err }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn--primary-wide" type="submit">Création de compte</button>
+      </form>
+
+      <p class="auth-alt">
+        <a href="{% url 'accounts:login' %}">Retour à la connexion</a>
+      </p>
+    </div>
+  </section>
+{% endblock %}

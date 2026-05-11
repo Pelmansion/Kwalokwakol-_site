@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>{% if product %}Modifier{% else %}Ajouter{% endif %} un produit/service</h1>
+    <p class="muted">Gérez vos offres et services artisanaux.</p>
+  </section>
+  <section class="container auth-card">
+    <form method="post">
+      {% csrf_token %}
+      
+      <p class="muted">Tous les champs marqués d'un astérisque (*) sont obligatoires.</p>
+      
+      <div class="form-group">
+        <label for="{{ form.category.id_for_label }}">Catégorie *</label>
+        {{ form.category }}
+        {% if form.category.help_text %}
+          <small class="help-text">{{ form.category.help_text }}</small>
+        {% endif %}
+        {% if form.category.errors %}
+          <div class="error">{{ form.category.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.name.id_for_label }}">Nom *</label>
+        {{ form.name }}
+        {% if form.name.help_text %}
+          <small class="help-text">{{ form.name.help_text }}</small>
+        {% endif %}
+        {% if form.name.errors %}
+          <div class="error">{{ form.name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        {% if form.description.help_text %}
+          <small class="help-text">{{ form.description.help_text }}</small>
+        {% endif %}
+        {% if form.description.errors %}
+          <div class="error">{{ form.description.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.price.id_for_label }}">Prix (FCFA) *</label>
+        {{ form.price }}
+        {% if form.price.help_text %}
+          <small class="help-text">{{ form.price.help_text }}</small>
+        {% endif %}
+        {% if form.price.errors %}
+          <div class="error">{{ form.price.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.stock.id_for_label }}">Stock *</label>
+        {{ form.stock }}
+        {% if form.stock.help_text %}
+          <small class="help-text">{{ form.stock.help_text }}</small>
+        {% endif %}
+        {% if form.stock.errors %}
+          <div class="error">{{ form.stock.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.kind.id_for_label }}">Type *</label>
+        {{ form.kind }}
+        {% if form.kind.help_text %}
+          <small class="help-text">{{ form.kind.help_text }}</small>
+        {% endif %}
+        {% if form.kind.errors %}
+          <div class="error">{{ form.kind.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.image_url.id_for_label }}">URL de l'image</label>
+        {{ form.image_url }}
+        {% if form.image_url.help_text %}
+          <small class="help-text">{{ form.image_url.help_text }}</small>
+        {% endif %}
+        {% if form.image_url.errors %}
+          <div class="error">{{ form.image_url.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button class="btn" type="submit">Enregistrer</button>
+    </form>
+    <div class="auth-links">
+      <a class="link" href="{% url 'marketplace:dashboard' %}">Retour au dashboard</a>
+    </div>
+  </section>
+{% endblock %}

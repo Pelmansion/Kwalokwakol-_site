@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container auth-page">
+    <div class="auth-card auth-card--centered">
+      <div class="auth-icon">
+        <span>!</span>
+      </div>
+      <h1 class="auth-title">Échec de la connexion avec Google</h1>
+      <p class="auth-subtitle">
+        Une erreur est survenue lors de la tentative de connexion avec votre compte de réseau social.
+      </p>
+
+      {% if auth_error %}
+        <div class="alert alert--error" role="alert">
+          <strong>Détail de l'erreur</strong>
+          <p class="alert__message">{{ auth_error }}</p>
+        </div>
+      {% endif %}
+
+      <p>
+        Vous pouvez :
+      </p>
+      <ul class="alert__list">
+        <li>Réessayer la connexion Google un peu plus tard.</li>
+        <li>Vérifier que vous utilisez bien une adresse autorisée dans l'application Google (utilisateurs de test).</li>
+      </ul>
+
+      <div style="margin-top: 20px;">
+        <a href="{% url 'accounts:login' %}" class="btn btn--primary-wide">Revenir à la page de connexion</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+

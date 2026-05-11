@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Mes achats musique · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎵 Mes achats musique</h1>
+      <p>Toutes les chansons que vous avez achetées</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:song_list' %}">Catalogue →</a>
+  </header>
+
+  {% if purchases %}
+    <table class="payments-table">
+      <thead>
+        <tr><th>Chanson</th><th>Artiste</th><th>Date</th><th>Montant</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in purchases %}
+        <tr>
+          <td><a href="{% url 'culture:song_detail' p.song.slug %}">{{ p.song.title }}</a></td>
+          <td>{{ p.song.artist.stage_name }}</td>
+          <td>{{ p.paid_at|date:"j F Y" }}</td>
+          <td>{{ p.amount_fcfa|floatformat:0 }} FCFA</td>
+          <td><a class="btn btn--sm" href="{% url 'culture:song_download' p.download_token %}">⬇ Télécharger</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <p>Vous n'avez pas encore acheté de chanson.</p>
+      <a class="btn" href="{% url 'culture:song_list' %}">Explorer le catalogue</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

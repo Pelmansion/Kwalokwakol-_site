@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Mes concerts · {{ artist.stage_name }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎫 Mes concerts</h1>
+      <p>Gérez vos événements et leur billetterie</p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a class="btn" href="{% url 'culture:artist_event_add' %}">+ Nouveau concert</a>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_dashboard' %}">← Tableau de bord</a>
+    </div>
+  </header>
+
+  {% if events %}
+    <table class="payments-table">
+      <thead>
+        <tr><th>Événement</th><th>Date</th><th>Lieu</th><th>Billets</th><th>Statut</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr>
+          <td><strong>{{ e.title }}</strong></td>
+          <td>{{ e.starts_at|date:"j F Y · H\hi" }}</td>
+          <td>{{ e.venue_name }}, {{ e.city }}</td>
+          <td>{{ e.total_sold }} / {{ e.total_capacity }}</td>
+          <td>
+            {% if e.is_published %}<span class="badge badge--free">Publié</span>
+            {% else %}<span class="badge">Brouillon</span>{% endif %}
+            {% if e.is_past %} <span class="badge">Passé</span>{% endif %}
+          </td>
+          <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a class="btn btn--sm" href="{% url 'culture:artist_event_edit' e.pk %}">Modifier</a>
+            <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_categories' e.pk %}">Billets</a>
+            <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_tickets' e.pk %}">Ventes</a>
+            <form method="post" action="{% url 'culture:artist_event_delete' e.pk %}" onsubmit="return confirm('Supprimer ce concert ?');">
+              {% csrf_token %}
+              <button class="btn btn--sm btn--ghost" type="submit">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <p>Vous n'avez pas encore créé de concert.</p>
+      <a class="btn" href="{% url 'culture:artist_event_add' %}">Créer mon premier concert</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Vérifiez votre boîte mail</h1>
+  </section>
+  <section class="container auth-card">
+    <p>
+      Un email de confirmation vous a été envoyé à l'adresse indiquée lors de l'inscription.
+    </p>
+    <p>
+      Cliquez sur le lien dans l'email pour activer votre compte. Le lien est valide 48 heures.
+    </p>
+    <p>
+      Si vous ne recevez pas l'email, vérifiez vos spams ou
+      <a href="{% url 'accounts:login' %}">retournez à la page de connexion</a>.
+    </p>
+  </section>
+{% endblock %}

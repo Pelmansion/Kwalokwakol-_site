@@ -1,0 +1,33 @@
+{% load static %}
+<article class="song-card">
+  <a class="song-card__cover" href="{% url 'culture:song_detail' song.slug %}">
+    {% if song.cover_image %}
+      <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+    {% else %}
+      <div class="song-card__placeholder">🎵</div>
+    {% endif %}
+    <button type="button" class="song-card__play js-play-song"
+            data-stream="{% url 'culture:song_play' song.slug %}"
+            data-title="{{ song.title }}"
+            data-artist="{{ song.artist.stage_name }}"
+            data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% endif %}"
+            aria-label="Écouter">▶</button>
+  </a>
+  <div class="song-card__body">
+    <h3 class="song-card__title">
+      <a href="{% url 'culture:song_detail' song.slug %}">{{ song.title }}</a>
+    </h3>
+    <p class="song-card__artist">
+      <a href="{% url 'culture:artist_detail' song.artist.slug %}">{{ song.artist.stage_name }}</a>
+    </p>
+    <div class="song-card__meta">
+      {% if song.is_free %}
+        <span class="badge badge--free">GRATUIT</span>
+      {% else %}
+        <span class="badge badge--paid">{{ song.price_fcfa|floatformat:0 }} FCFA</span>
+      {% endif %}
+      <span class="song-card__plays">▶ {{ song.play_count }}</span>
+      {% if song.duration_seconds %}<span class="song-card__duration">{{ song.duration_display }}</span>{% endif %}
+    </div>
+  </div>
+</article>

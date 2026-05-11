@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription vendeur — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Rejoindre la marketplace</span>
+    <h1>Inscription vendeur</h1>
+    <p>Créez votre boutique en quelques minutes et commencez à vendre à une communauté active.</p>
+  </section>
+
+  <section class="container vendor-register">
+    {% if form.errors or signup_form and signup_form.errors %}
+      <div class="alert alert--error" role="alert">
+        <strong>L'inscription n'a pas abouti.</strong>
+        {% if signup_form and signup_form.non_field_errors %}
+          <ul class="alert__list">
+            {% for err in signup_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <ul class="alert__list">
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        {% if not form.non_field_errors %}
+          {% if not signup_form or not signup_form.non_field_errors %}
+            <p>Veuillez corriger les erreurs indiquées dans le formulaire ci-dessous.</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="vendor-form">
+      {% csrf_token %}
+
+      {% if not user.is_authenticated and signup_form %}
+        <div class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon">🔐</div>
+            <div>
+              <h2>Informations de connexion</h2>
+              <p class="muted">Ces identifiants vous permettront d'accéder à votre espace vendeur.</p>
+            </div>
+          </div>
+          <div class="form-section__body form-section__body--signup">
+            {{ signup_form.as_p }}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">🏪</div>
+          <div>
+            <h2>Informations sur la boutique</h2>
+            <p class="muted">Tous les champs marqués d'un astérisque <span class="required">*</span> sont obligatoires.</p>
+          </div>
+        </div>
+        <div class="form-section__body form-grid form-grid--2">
+          <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Nom de la boutique <span class="required">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="error">{{ form.name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email de la boutique <span class="required">*</span></label>
+            {{ form.email }}
+            {% if form.email.help_text %}<small class="help-text">{{ form.email.help_text }}</small>{% endif %}
+            {% if form.email.errors %}<div class="error">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.phone.id_for_label }}">Téléphone</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="error">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.location.id_for_label }}">Localisation</label>
+            {{ form.location }}
+            {% if form.location.errors %}<div class="error">{{ form.location.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="{{ form.offer_type.id_for_label }}">Type d'offre</label>
+            {{ form.offer_type }}
+            {% if form.offer_type.errors %}<div class="error">{{ form.offer_type.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="{{ form.description.id_for_label }}">Description de la boutique</label>
+            {{ form.description }}
+            <small class="help-text">Présentez votre activité, vos produits, ce qui vous rend unique.</small>
+            {% if form.description.errors %}<div class="error">{{ form.description.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">🪪</div>
+          <div>
+            <h2>Documents d'identité</h2>
+            <p class="muted">Indispensables pour vérifier votre identité et sécuriser les transactions.</p>
+          </div>
+        </div>
+        <div class="form-section__body form-grid form-grid--2">
+          <div class="form-group form-group--full">
+            <label for="{{ form.id_number.id_for_label }}">Numéro d'identité <span class="required">*</span></label>
+            {{ form.id_number }}
+            {% if form.id_number.help_text %}<small class="help-text">{{ form.id_number.help_text }}</small>{% endif %}
+            {% if form.id_number.errors %}<div class="error">{{ form.id_number.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.id_document_front.id_for_label }}">Pièce d'identité recto <span class="required">*</span></label>
+            {{ form.id_document_front }}
+            {% if form.id_document_front.help_text %}<small class="help-text">{{ form.id_document_front.help_text }}</small>{% endif %}
+            {% if form.id_document_front.errors %}<div class="error">{{ form.id_document_front.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.id_document_back.id_for_label }}">Pièce d'identité verso <span class="required">*</span></label>
+            {{ form.id_document_back }}
+            {% if form.id_document_back.help_text %}<small class="help-text">{{ form.id_document_back.help_text }}</small>{% endif %}
+            {% if form.id_document_back.errors %}<div class="error">{{ form.id_document_back.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-group form-group--full">
+            <label for="{{ form.profile_photo.id_for_label }}">Photo de profil de la boutique</label>
+            {{ form.profile_photo }}
+            <small class="help-text">Un logo ou une photo qui représente votre boutique (recommandé).</small>
+            {% if form.profile_photo.errors %}<div class="error">{{ form.profile_photo.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section__header">
+          <div class="form-section__icon">✨</div>
+          <div>
+            <h2>Informations complémentaires</h2>
+            <p class="muted">Optionnel — mais cela aide vos futurs clients à mieux vous connaître.</p>
+          </div>
+        </div>
+        <div class="form-section__body">
+          <div class="form-group">
+            <label for="{{ form.services_overview.id_for_label }}">Aperçu des services</label>
+            {{ form.services_overview }}
+            <small class="help-text">Décrivez brièvement vos prestations ou services associés.</small>
+            {% if form.services_overview.errors %}<div class="error">{{ form.services_overview.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label for="{{ form.subscription_services.id_for_label }}">Services d'abonnement</label>
+              {{ form.subscription_services }}
+              {% if form.subscription_services.errors %}<div class="error">{{ form.subscription_services.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ form.portfolio_url.id_for_label }}">URL du portfolio</label>
+              {{ form.portfolio_url }}
+              <small class="help-text">Lien vers un site, Instagram, Behance…</small>
+              {% if form.portfolio_url.errors %}<div class="error">{{ form.portfolio_url.errors }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn--primary btn--large" type="submit">Créer ma boutique →</button>
+        <p class="muted form-actions__note">
+          En créant votre boutique, vous acceptez nos <a href="/page/conditions-generales/">conditions générales</a>.
+        </p>
+      </div>
+    </form>
+  </section>
+
+  <style>
+    .vendor-register { max-width: 960px; margin: 0 auto 48px; }
+    .vendor-form { display: flex; flex-direction: column; gap: 22px; }
+
+    .form-section {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: var(--radius-lg, 14px);
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.04));
+      overflow: hidden;
+    }
+    .form-section__header {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 22px 26px;
+      border-bottom: 1px solid var(--border, #e5e7eb);
+      background: linear-gradient(180deg, #fafaf9 0%, #fff 100%);
+    }
+    .form-section__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(194,65,12,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .form-section__header h2 {
+      margin: 0 0 2px;
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      color: #0f172a;
+    }
+    .form-section__header p { margin: 0; font-size: 0.88rem; }
+    .form-section__body { padding: 24px 26px; }
+    .form-section__body--signup p { margin: 0 0 14px; }
+
+    .form-grid {
+      display: grid;
+      gap: 16px 20px;
+    }
+    .form-grid--2 { grid-template-columns: 1fr 1fr; }
+    .form-group--full { grid-column: 1 / -1; }
+
+    .required { color: var(--primary, #c2410c); font-weight: 700; }
+
+    .form-actions {
+      text-align: center;
+      padding: 8px 0 0;
+    }
+    .btn--large {
+      padding: 14px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      min-width: 240px;
+    }
+    .form-actions__note {
+      margin: 12px 0 0;
+      font-size: 0.85rem;
+    }
+    .form-actions__note a { color: var(--primary); font-weight: 600; }
+
+    @media (max-width: 720px) {
+      .form-grid--2 { grid-template-columns: 1fr; }
+      .form-section__header { padding: 18px 20px; }
+      .form-section__body { padding: 20px; }
+    }
+  </style>
+{% endblock %}

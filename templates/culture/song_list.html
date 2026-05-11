@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Catalogue musique · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎵 Catalogue musique</h1>
+      <p>Écoutez et téléchargez les sons de vos artistes préférés</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:home' %}">← Retour</a>
+  </header>
+
+  <form class="culture-filters" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Titre, artiste...">
+    <select name="genre">
+      <option value="">Tous les genres</option>
+      {% for g in genres %}
+        <option value="{{ g.slug }}" {% if g.slug == genre_slug %}selected{% endif %}>{{ g.icon }} {{ g.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="pricing">
+      <option value="">Tous</option>
+      <option value="free" {% if pricing == "free" %}selected{% endif %}>Gratuit</option>
+      <option value="paid" {% if pricing == "paid" %}selected{% endif %}>Payant</option>
+    </select>
+    <button class="btn" type="submit">Filtrer</button>
+  </form>
+
+  {% if songs %}
+    <div class="song-grid">
+      {% for song in songs %}{% include "culture/_song_card.html" with song=song %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state"><p>Aucune chanson ne correspond à votre recherche.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

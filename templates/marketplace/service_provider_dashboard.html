@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard prestataire — {{ service_provider.name }}{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Espace prestataire</span>
+        <h1>Dashboard prestataire</h1>
+        <div class="dashboard-hero__meta">
+          <span>🤝 <strong>{{ service_provider.name }}</strong></span>
+          {% if service_provider.location %}<span>📍 {{ service_provider.location }}</span>{% endif %}
+          <span class="badge {% if service_provider.verification_status == 'verified' %}badge--success{% elif service_provider.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">
+            {% if service_provider.verification_status == 'verified' %}✓ Vérifié{% elif service_provider.verification_status == 'rejected' %}✗ Rejeté{% else %}⏳ En attente{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:my_subscription' %}">💳 Abonnement</a>
+        <a class="btn btn--ghost" href="{% url 'marketplace:service_provider_profile' %}">✏️ Profil</a>
+        <a class="btn btn--primary" href="{% url 'marketplace:add_service' %}">+ Ajouter un service</a>
+      </div>
+    </div>
+  </section>
+
+  {% if subscription %}
+    <section class="container">
+      <div class="sub-banner">
+        <div>
+          <span class="sub-banner__title" style="color: #166534;">✓ Abonnement actif</span>
+          <div class="muted" style="margin-top: 2px; font-size: 0.9rem;">
+            {% if subscription.plan %}Formule <strong>{{ subscription.plan.name }}</strong> · {% endif %}
+            {{ subscription.monthly_amount|floatformat:0 }} FCFA / mois
+            {% if subscription.current_period_end %} · Valable jusqu'au {{ subscription.current_period_end|date:"d/m/Y" }}{% endif %}
+          </div>
+        </div>
+        <a class="btn btn--small btn--ghost" href="{% url 'subscriptions:my_subscription' %}">Gérer mon abonnement →</a>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__icon">🛠️</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ services|length }}</span>
+          <span class="kpi-card__label">Services proposés</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__icon">📨</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ total_requests|default:0 }}</span>
+          <span class="kpi-card__label">Demandes totales</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--highlight">
+        <div class="kpi-card__icon">⏳</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ pending_requests|default:0 }}</span>
+          <span class="kpi-card__label">En attente</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Mes services</h2>
+      <a class="btn btn--small btn--ghost" href="{% url 'marketplace:add_service' %}">+ Nouveau service</a>
+    </div>
+    <div class="dashboard-product-grid">
+      {% for service in services %}
+        <article class="dashboard-product-card">
+          <div class="dashboard-product-card__image">
+            {% if service.media.first %}
+              <img src="{{ service.media.first.url }}" alt="{{ service.name }}" loading="lazy">
+            {% elif service.image_url %}
+              <img src="{{ service.image_url }}" alt="{{ service.name }}" loading="lazy">
+            {% else %}
+              <div class="image-placeholder">🛠️</div>
+            {% endif %}
+          </div>
+          <div class="dashboard-product-card__body">
+            <h3>{{ service.name }}</h3>
+            <p class="dashboard-product-card__price">{{ service.price|floatformat:0 }} FCFA</p>
+            <div class="dashboard-product-card__actions">
+              <a href="{% url 'store:product_detail' service.slug %}">👁️ Voir</a>
+              <a href="{% url 'marketplace:edit_product' service.id %}">✏️ Modifier</a>
+              <a class="danger" href="{% url 'marketplace:delete_product' service.id %}">🗑️ Supprimer</a>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty" style="grid-column:1/-1; padding: 40px 20px; text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 10px;">🛠️</div>
+          <h3 style="font-family: var(--font-serif); margin: 0 0 6px;">Aucun service pour le moment</h3>
+          <p style="margin: 0 0 16px; color: var(--muted);">Ajoutez votre premier service pour commencer à recevoir des demandes.</p>
+          <a class="btn btn--primary" href="{% url 'marketplace:add_service' %}">+ Ajouter un service</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Demandes de services</h2>
+      {% if total_requests > 5 %}
+        <a class="btn btn--small btn--ghost" href="{% url 'marketplace:service_requests_list' %}">Voir tout ({{ total_requests }})</a>
+      {% endif %}
+    </div>
+
+    {% if pending_requests > 0 %}
+      <div class="alert alert--info" style="margin-bottom: 18px;">
+        <strong>⏳ {{ pending_requests }}</strong> demande{{ pending_requests|pluralize }} en attente de votre réponse
+      </div>
+    {% endif %}
+
+    <div class="order-list">
+      {% for request in service_requests %}
+        <article class="order-item">
+          <div class="order-item__info">
+            <strong>{{ request.service.name }}</strong>
+            <div class="muted">👤 {{ request.customer.get_full_name|default:request.customer.username }}{% if request.customer.email %} · {{ request.customer.email }}{% endif %}</div>
+            <div class="muted">🗓️ {{ request.created_at|date:"d/m/Y à H:i" }}</div>
+            {% if request.comment %}
+              <div class="muted">💬 « {{ request.comment }} »</div>
+            {% endif %}
+            <div style="margin-top:6px;">
+              <span class="badge {% if request.status == 'approved' %}badge--success{% elif request.status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size:0.72rem;">{{ request.get_status_display }}</span>
+            </div>
+          </div>
+          <div class="order-item__actions">
+            <div class="order-item__price">{{ request.service.price|floatformat:0 }} FCFA</div>
+            {% if request.status == 'pending' %}
+              <form method="post" action="{% url 'marketplace:update_service_request' request.id 'approve' %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn btn--small btn--success" type="submit">✓ Accepter</button>
+              </form>
+              <form method="post" action="{% url 'marketplace:update_service_request' request.id 'reject' %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn btn--small btn--ghost" type="submit">✗ Refuser</button>
+              </form>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty" style="padding: 30px 20px; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
+          <h3 style="font-family: var(--font-serif); margin: 0 0 6px;">Aucune demande pour le moment</h3>
+          <p style="margin: 0; color: var(--muted);">Les demandes de vos clients apparaîtront ici.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

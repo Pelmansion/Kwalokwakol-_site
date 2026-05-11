@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement réussi{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="sandbox-card" style="text-align: center;">
+      <div style="font-size: 4.2rem; line-height: 1;">✅</div>
+      <h1 style="margin: 10px 0 6px; font-family: var(--font-serif); font-size: 1.8rem;">Paiement confirmé !</h1>
+      <p style="color: var(--muted); margin: 0 0 22px;">
+        Votre abonnement est maintenant <strong style="color: #16a34a;">actif</strong>.
+      </p>
+
+      <div class="subscription-summary">
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Montant réglé</span>
+          <span class="subscription-summary__value subscription-summary__value--accent">{{ payment.amount|floatformat:0 }} FCFA</span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Valable jusqu'au</span>
+          <span class="subscription-summary__value">{{ subscription.current_period_end|date:"d/m/Y" }}</span>
+        </div>
+        <div class="subscription-summary__item">
+          <span class="subscription-summary__label">Référence</span>
+          <span class="subscription-summary__value" style="font-size: 0.9rem;"><code>{{ payment.reference }}</code></span>
+        </div>
+      </div>
+
+      <div style="margin-top: 28px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        {% if subscription.vendor %}
+          <a class="btn btn--primary" href="{% url 'marketplace:dashboard' %}" style="padding: 14px 26px;">Accéder à mon dashboard →</a>
+        {% else %}
+          <a class="btn btn--primary" href="{% url 'marketplace:service_provider_dashboard' %}" style="padding: 14px 26px;">Accéder à mon dashboard →</a>
+        {% endif %}
+        <a class="btn btn--ghost" href="{% url 'subscriptions:my_subscription' %}">Voir mon abonnement</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

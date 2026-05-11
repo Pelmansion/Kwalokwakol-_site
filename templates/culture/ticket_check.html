@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Vérification du billet{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <div class="ticket-check-card {% if valid %}is-valid{% elif already_used %}is-used{% else %}is-invalid{% endif %}">
+    {% if valid %}
+      <div class="ticket-check-icon">✓</div>
+      <h1>Billet valide</h1>
+      <p>Le détenteur peut entrer.</p>
+    {% elif already_used %}
+      <div class="ticket-check-icon">⚠</div>
+      <h1>Billet déjà utilisé</h1>
+      <p>Ce billet a été validé le <strong>{{ ticket.used_at|date:"j F Y à H:i" }}</strong>{% if ticket.used_by %} par {{ ticket.used_by }}{% endif %}.</p>
+    {% else %}
+      <div class="ticket-check-icon">✗</div>
+      <h1>Billet invalide</h1>
+      <p>Statut : {{ ticket.get_status_display }}.</p>
+    {% endif %}
+
+    <div class="ticket-check-info">
+      <p><strong>{{ ticket.event.title }}</strong></p>
+      <p>{{ ticket.event.starts_at|date:"l j F Y · H\hi" }}</p>
+      <p>📍 {{ ticket.event.venue_name }}, {{ ticket.event.city }}</p>
+      <hr>
+      <p><strong>{{ ticket.buyer_name }}</strong></p>
+      <p>Catégorie : <span style="color: {{ ticket.category.color }}; font-weight: 600;">{{ ticket.category.name }}</span></p>
+      <p>Référence : <code>{{ ticket.reference }}</code></p>
+    </div>
+
+    {% if valid %}
+    <form method="post" class="ticket-check-form">
+      {% csrf_token %}
+      <input type="text" name="controller" placeholder="Votre nom (contrôleur, optionnel)" maxlength="120">
+      <button type="submit" class="btn btn--lg">Valider l'entrée</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

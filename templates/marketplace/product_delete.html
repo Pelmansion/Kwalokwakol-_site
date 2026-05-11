@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Supprimer un produit</h1>
+    <p class="muted">Cette action est définitive.</p>
+  </section>
+  <section class="container auth-card">
+    <p>Confirmez la suppression de <strong>{{ product.name }}</strong>.</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn" type="submit">Supprimer</button>
+      <a class="btn btn--ghost" href="{% url 'marketplace:dashboard' %}">Annuler</a>
+    </form>
+  </section>
+{% endblock %}

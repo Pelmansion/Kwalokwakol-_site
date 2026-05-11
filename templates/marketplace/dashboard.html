@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard vendeur — {{ vendor.name }}{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Espace vendeur</span>
+        <h1>Dashboard vendeur</h1>
+        <div class="dashboard-hero__meta">
+          <span>🏪 <strong>{{ vendor.name }}</strong></span>
+          {% if vendor.location %}<span>📍 {{ vendor.location }}</span>{% endif %}
+          <span class="badge {% if vendor.verification_status == 'verified' %}badge--success{% elif vendor.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">
+            {% if vendor.verification_status == 'verified' %}✓ Vérifié{% elif vendor.verification_status == 'rejected' %}✗ Rejeté{% else %}⏳ En attente{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:my_subscription' %}">💳 Abonnement</a>
+        <a class="btn btn--ghost" href="{% url 'marketplace:vendor_profile' %}">✏️ Profil</a>
+        <a class="btn btn--ghost" href="{% url 'marketplace:vendor_payments' %}">💰 Paiements</a>
+        <a class="btn btn--ghost" href="{% url 'marketplace:vendor_settings' %}">⚙️ Paramètres</a>
+        <a class="btn btn--ghost" href="{% url 'messaging:vendor_inbox' %}">💬 Messagerie</a>
+        <a class="btn btn--primary" href="{% url 'marketplace:add_product' %}">+ Ajouter un produit</a>
+      </div>
+    </div>
+  </section>
+
+  {% if subscription %}
+    <section class="container">
+      <div class="sub-banner">
+        <div>
+          <span class="sub-banner__title" style="color: #166534;">✓ Abonnement actif</span>
+          <div class="muted" style="margin-top: 2px; font-size: 0.9rem;">
+            {% if subscription.plan %}Formule <strong>{{ subscription.plan.name }}</strong> · {% endif %}
+            {{ subscription.monthly_amount|floatformat:0 }} FCFA / mois
+            {% if subscription.current_period_end %} · Valable jusqu'au {{ subscription.current_period_end|date:"d/m/Y" }}{% endif %}
+          </div>
+        </div>
+        <a class="btn btn--small btn--ghost" href="{% url 'subscriptions:my_subscription' %}">Gérer mon abonnement →</a>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__icon">📦</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ total_products }}</span>
+          <span class="kpi-card__label">Produits actifs</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__icon">🛒</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ total_orders }}</span>
+          <span class="kpi-card__label">Commandes</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--highlight">
+        <div class="kpi-card__icon">💰</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ revenue|floatformat:0 }} <small>FCFA</small></span>
+          <span class="kpi-card__label">Revenus estimés</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Clients qui commandent le plus</h2>
+      <p class="dash-section__subtitle">Classement des meilleurs acheteurs</p>
+    </div>
+    <div class="report-card">
+      {% if top_clients %}
+        <div class="report-list">
+          {% for c in top_clients %}
+            <div class="report-bar-row">
+              <span class="report-bar-row__rank">{{ forloop.counter }}</span>
+              <div class="report-bar-row__content">
+                <div class="report-bar-row__head">
+                  <strong>{% if c.user %}{{ c.user.username }}{% if c.user.email %} <span class="muted">({{ c.user.email }})</span>{% endif %}{% else %}—{% endif %}</strong>
+                  <span class="report-bar-row__value">{{ c.total|floatformat:0 }} FCFA</span>
+                </div>
+                <div class="report-bar-row__bar-wrap">
+                  <div class="report-bar-row__bar report-bar-row__bar--orange" style="width: {% widthratio c.total max_client_total 100 %}%"></div>
+                </div>
+                <span class="report-bar-row__meta">{{ c.order_count }} commande{{ c.order_count|pluralize }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="report-empty">Aucune commande client pour le moment.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Mes produits</h2>
+      <a class="btn btn--small btn--ghost" href="{% url 'marketplace:add_product' %}">+ Nouveau produit</a>
+    </div>
+    <div class="dashboard-product-grid">
+      {% for product in products %}
+        <article class="dashboard-product-card">
+          <div class="dashboard-product-card__image">
+            {% if product.media.first %}
+              <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
+            {% elif product.image_url %}
+              <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+              <div class="image-placeholder">📦</div>
+            {% endif %}
+            {% if product.stock == 0 %}
+              <span class="dashboard-product-card__stock dashboard-product-card__stock--out">Rupture</span>
+            {% elif product.stock < 5 %}
+              <span class="dashboard-product-card__stock dashboard-product-card__stock--low">Stock: {{ product.stock }}</span>
+            {% else %}
+              <span class="dashboard-product-card__stock">Stock: {{ product.stock }}</span>
+            {% endif %}
+          </div>
+          <div class="dashboard-product-card__body">
+            <h3>{{ product.name }}</h3>
+            <p class="dashboard-product-card__price">{{ product.price|floatformat:0 }} FCFA</p>
+            <div class="dashboard-product-card__actions">
+              <a href="{% url 'store:product_detail' product.slug %}">👁️ Voir</a>
+              <a href="{% url 'marketplace:edit_product' product.id %}">✏️ Modifier</a>
+              <a class="danger" href="{% url 'marketplace:delete_product' product.id %}">🗑️ Supprimer</a>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty" style="grid-column:1/-1; padding: 40px 20px; text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
+          <h3 style="font-family: var(--font-serif); margin: 0 0 6px;">Aucun produit pour le moment</h3>
+          <p style="margin: 0 0 16px; color: var(--muted);">Commencez par ajouter votre premier produit à votre boutique.</p>
+          <a class="btn btn--primary" href="{% url 'marketplace:add_product' %}">+ Ajouter un produit</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Commandes &amp; livraisons</h2>
+      <p class="dash-section__subtitle">Gérez le statut et le suivi de vos commandes</p>
+    </div>
+    <div class="order-list">
+      {% for item in order_items %}
+        <article class="order-item">
+          <div class="order-item__info">
+            <strong>{{ item.product.name }}</strong>
+            <div class="muted">🧾 Commande #{{ item.order.id }} · Quantité: {{ item.quantity }}</div>
+            <div class="muted">👤 {{ item.order.full_name }} · {{ item.order.city }}</div>
+            <div class="muted">
+              <span class="badge {% if item.order.status == 'delivered' %}badge--success{% elif item.order.status == 'cancelled' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size:0.72rem;">{{ item.order.get_status_display }}</span>
+              · Paiement : {{ item.order.get_payment_status_display }}
+            </div>
+          </div>
+          <div class="order-item__actions">
+            <div class="order-item__price">{{ item.unit_price|floatformat:0 }} FCFA</div>
+            <form class="order-item__form" method="post" action="{% url 'marketplace:update_order' item.order.id %}">
+              {% csrf_token %}
+              <select name="status">
+                {% for value,label in item.order.STATUS_CHOICES %}
+                  <option value="{{ value }}" {% if item.order.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name="tracking_code" value="{{ item.order.tracking_code }}" placeholder="Code suivi">
+              <button class="btn btn--small btn--primary" type="submit">💾 MAJ</button>
+            </form>
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty" style="padding: 30px 20px; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
+          <p style="margin: 0; color: var(--muted);">Aucune commande pour le moment.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Demandes de services</h2>
+      <p class="dash-section__subtitle">Acceptez ou refusez les demandes de vos clients</p>
+    </div>
+    <div class="order-list">
+      {% for request in service_requests %}
+        <article class="order-item">
+          <div class="order-item__info">
+            <strong>{{ request.service.name }}</strong>
+            <div class="muted">👤 Client : {{ request.customer.username }}</div>
+            {% if request.comment %}
+              <div class="muted">💬 « {{ request.comment }} »</div>
+            {% endif %}
+            <div class="muted">
+              <span class="badge {% if request.status == 'approved' %}badge--success{% elif request.status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size:0.72rem;">{{ request.get_status_display }}</span>
+            </div>
+          </div>
+          {% if request.status == 'pending' %}
+            <div class="order-item__actions">
+              <form method="post" action="{% url 'marketplace:update_service_request' request.id 'approve' %}">
+                {% csrf_token %}
+                <button class="btn btn--small btn--success" type="submit">✓ Valider</button>
+              </form>
+              <form method="post" action="{% url 'marketplace:update_service_request' request.id 'reject' %}">
+                {% csrf_token %}
+                <button class="btn btn--small btn--ghost" type="submit">✗ Refuser</button>
+              </form>
+            </div>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="empty" style="padding: 30px 20px; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 8px;">🤝</div>
+          <p style="margin: 0; color: var(--muted);">Aucune demande de service pour le moment.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Avis clients</h2>
+      <p class="dash-section__subtitle">Répondez aux retours de vos acheteurs</p>
+    </div>
+    <div class="review-list">
+      {% for review in recent_reviews %}
+        <article class="review-card">
+          <div class="review-card__head">
+            <div>
+              <strong>{{ review.user.username }}</strong>
+              <span class="review-card__product">{{ review.product.name }}</span>
+            </div>
+            <span class="review-card__stars" title="{{ review.rating }}/5">
+              {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+            </span>
+          </div>
+          <p>{{ review.comment }}</p>
+          {% if review.reply %}
+            <div class="review-reply">
+              <strong>Votre réponse</strong>
+              <p>{{ review.reply.message }}</p>
+            </div>
+          {% else %}
+            <form method="post" action="{% url 'marketplace:reply_review' review.id %}">
+              {% csrf_token %}
+              <textarea name="message" rows="2" placeholder="Répondre à cet avis..."></textarea>
+              <button class="btn btn--small btn--primary" type="submit" style="align-self: flex-start;">💬 Répondre</button>
+            </form>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="empty" style="grid-column: 1/-1; padding: 30px 20px; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 8px;">⭐</div>
+          <p style="margin: 0; color: var(--muted);">Aucun avis pour le moment.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

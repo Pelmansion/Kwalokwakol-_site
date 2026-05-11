@@ -1,0 +1,20 @@
+{% load static %}
+<a class="artist-card" href="{% url 'culture:artist_detail' artist.slug %}">
+  <div class="artist-card__cover" style="{% if artist.cover_photo %}background-image: url('{{ artist.cover_photo.url }}'){% endif %}">
+    {% if artist.is_verified %}<span class="artist-card__verified" title="Artiste vérifié">✓</span>{% endif %}
+  </div>
+  <div class="artist-card__body">
+    <div class="artist-card__portrait">
+      {% if artist.portrait %}
+        <img src="{{ artist.portrait.url }}" alt="{{ artist.stage_name }}">
+      {% else %}
+        <span>{{ artist.stage_name|first|upper }}</span>
+      {% endif %}
+    </div>
+    <h3 class="artist-card__name">{{ artist.stage_name }}</h3>
+    <p class="artist-card__meta">
+      {% if artist.primary_genre %}{{ artist.primary_genre.icon }} {{ artist.primary_genre.name }}{% endif %}
+      {% if artist.city %} · {{ artist.city }}{% endif %}
+    </p>
+  </div>
+</a>

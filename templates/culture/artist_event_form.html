@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{% if is_new %}Nouveau concert{% else %}Modifier {{ event.title }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>{% if is_new %}🎫 Nouveau concert{% else %}🎫 Modifier le concert{% endif %}</h1>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">← Mes concerts</a>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="culture-form">
+    {% csrf_token %}
+    <div class="culture-form__grid">
+      <label class="culture-form__full">Titre *
+        {{ form.title }}
+      </label>
+      <label class="culture-form__full">Description *
+        {{ form.description }}
+      </label>
+      <label>Affiche (poster)
+        {{ form.poster }}
+      </label>
+      <label>Tête d'affiche
+        {{ form.headlining_artist }}
+      </label>
+      <label class="culture-form__full">Artistes invités
+        {{ form.featured_artists }}
+        <small>Maintenez Ctrl pour sélectionner plusieurs artistes</small>
+      </label>
+      <label>Date & heure de début *
+        {{ form.starts_at }}
+      </label>
+      <label>Date & heure de fin
+        {{ form.ends_at }}
+      </label>
+      <label>Lieu / salle *
+        {{ form.venue_name }}
+      </label>
+      <label>Adresse
+        {{ form.address }}
+      </label>
+      <label>Ville *
+        {{ form.city }}
+      </label>
+      <label>Région
+        {{ form.region }}
+      </label>
+      <label class="culture-form__full">Lien Google Maps
+        {{ form.map_url }}
+      </label>
+      <label>Statut
+        {{ form.status }}
+      </label>
+      <label>
+        {{ form.is_published }} Publier (visible & billetterie ouverte)
+      </label>
+    </div>
+    <div class="culture-form__actions">
+      <button class="btn btn--lg" type="submit">{% if is_new %}Créer le concert{% else %}Enregistrer{% endif %}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

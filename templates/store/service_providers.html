@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Prestataires de services — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Experts &amp; savoir-faire</span>
+    <h1>Prestataires de services</h1>
+    <p>Découvrez nos artisans, créateurs et professionnels vérifiés, prêts à réaliser vos projets.</p>
+  </section>
+
+  <section class="container">
+    <div class="filters">
+      <form method="get" class="filters__form">
+        <input type="text" name="q" placeholder="🔍 Rechercher un prestataire, une compétence..." value="{{ query }}">
+        <input type="text" name="localisation" placeholder="📍 Localisation (ex : Abidjan)" value="{{ location }}">
+        <button class="btn btn--primary" type="submit">Rechercher</button>
+      </form>
+    </div>
+
+    {% if service_providers %}
+      <div class="results-count">
+        <strong>{{ service_providers|length }}</strong> prestataire{{ service_providers|length|pluralize }} trouvé{{ service_providers|length|pluralize }}
+      </div>
+    {% endif %}
+
+    <div class="providers-grid">
+      {% for provider in service_providers %}
+        <article class="provider-card">
+          {% if provider.verification_status == 'verified' %}
+            <span class="provider-card__ribbon">✓ Vérifié</span>
+          {% endif %}
+
+          <div class="provider-card__top">
+            {% if provider.profile_photo %}
+              <div class="provider-card__avatar">
+                <img src="{{ provider.profile_photo.url }}" alt="{{ provider.name }}" loading="lazy">
+              </div>
+            {% else %}
+              <div class="provider-card__avatar provider-card__avatar--placeholder">
+                <span>{{ provider.name|first|upper }}</span>
+              </div>
+            {% endif %}
+            <div class="provider-card__identity">
+              <h3>{{ provider.name }}</h3>
+              {% if provider.services_overview or provider.description %}
+                <span class="availability availability--on">● disponible</span>
+              {% else %}
+                <span class="availability">○ à confirmer</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="provider-card__tags">
+            <span class="chip">Freelance</span>
+            <span class="chip">Sur devis</span>
+            {% if provider.services_count %}
+              <span class="chip chip--accent">{{ provider.services_count }} service{{ provider.services_count|pluralize }}</span>
+            {% endif %}
+          </div>
+
+          <div class="provider-card__meta">
+            {% if provider.location %}
+              <span>📍 {{ provider.location }}</span>
+            {% endif %}
+            <span>🕐 Flexible</span>
+          </div>
+
+          <p class="provider-card__desc">
+            {% if provider.services_overview %}
+              {{ provider.services_overview|truncatewords:25 }}
+            {% elif provider.description %}
+              {{ provider.description|truncatewords:25 }}
+            {% else %}
+              Prestataire de services professionnel.
+            {% endif %}
+          </p>
+
+          <div class="provider-card__footer">
+            {% if provider.owner %}
+              <span class="provider-card__published">par {{ provider.owner.get_full_name|default:provider.owner.username }}</span>
+            {% endif %}
+            <a href="{% url 'store:service_provider_detail' provider.slug %}" class="btn btn--small">Voir le profil</a>
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty-state" style="grid-column:1/-1;">
+          <div class="empty-state__icon">🤝</div>
+          <h3>Aucun prestataire trouvé</h3>
+          <p>Essayez de modifier vos critères de recherche ou parcourez notre catalogue.</p>
+          <a class="btn btn--primary" href="{% url 'store:service_providers' %}">Réinitialiser</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <style>
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 22px;
+      margin-top: 18px;
+    }
+    .provider-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .provider-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+    .provider-card__ribbon {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+    }
+    .provider-card__top {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .provider-card__avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+    }
+    .provider-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .provider-card__avatar--placeholder {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .provider-card__identity h3 {
+      margin: 0 0 4px;
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .availability {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .availability--on { color: #16a34a; }
+    .provider-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      background: var(--bg-soft);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .chip--accent {
+      background: rgba(212, 165, 116, 0.12);
+      color: var(--accent-dark);
+      border-color: rgba(212, 165, 116, 0.35);
+    }
+    .provider-card__meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .provider-card__desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .provider-card__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: auto;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .provider-card__published {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+  </style>
+{% endblock %}

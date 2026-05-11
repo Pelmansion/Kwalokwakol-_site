@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Abonnements — Administration{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Administration</span>
+        <h1>Gestion des abonnements</h1>
+        <p class="dashboard-hero__tagline">
+          Fixez les montants mensuels personnalisés, validez les paiements et suivez les abonnements de vos vendeurs et prestataires.
+        </p>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'accounts:admin_dashboard' %}">← Panneau admin</a>
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_plans' %}">⚙️ Formules</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__icon">📊</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ stats.total|default:0 }}</span>
+          <span class="kpi-card__label">Abonnements au total</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__icon">✅</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ stats.active|default:0 }}</span>
+          <span class="kpi-card__label">Actifs</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__icon">⏳</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ stats.pending|default:0 }}</span>
+          <span class="kpi-card__label">En attente de paiement</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--highlight">
+        <div class="kpi-card__icon">💰</div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ stats.monthly_revenue|default:0|floatformat:0 }} <small>FCFA</small></span>
+          <span class="kpi-card__label">Revenus mensuels récurrents</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container dash-section">
+    <div class="dash-section__head">
+      <h2>Liste des abonnements</h2>
+    </div>
+
+    <form method="get" class="admin-filter-bar" style="display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;">
+      <input type="search" name="q" value="{{ q }}" placeholder="Rechercher (nom, username)..." style="flex: 1; min-width: 220px; height: 44px;">
+      <select name="status" style="height: 44px; min-width: 180px;">
+        <option value="">Tous les statuts</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn--primary" type="submit">Filtrer</button>
+      {% if q or status %}
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_list' %}">✗ Réinitialiser</a>
+      {% endif %}
+    </form>
+
+    <div style="overflow-x: auto;">
+      <table class="payments-table" style="min-width: 900px;">
+        <thead>
+          <tr>
+            <th>Titulaire</th>
+            <th>Type</th>
+            <th>Formule</th>
+            <th>Montant / mois</th>
+            <th>Statut</th>
+            <th>Prochaine échéance</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in subscriptions %}
+            <tr>
+              <td>
+                <strong>{{ sub.owner_name }}</strong>
+                <div class="muted" style="font-size: .82rem;">
+                  @{% if sub.vendor %}{{ sub.vendor.owner.username }}{% else %}{{ sub.service_provider.owner.username }}{% endif %}
+                </div>
+              </td>
+              <td>
+                {% if sub.vendor %}
+                  <span class="badge badge--warning" style="font-size: .72rem;">Vendeur</span>
+                {% else %}
+                  <span class="badge" style="background: #dbeafe; color: #1e40af; font-size: .72rem; padding: 4px 10px; border-radius: 999px;">Prestataire</span>
+                {% endif %}
+              </td>
+              <td>{% if sub.plan %}{{ sub.plan.name }}{% else %}<span class="muted">Personnalisé</span>{% endif %}</td>
+              <td><strong>{{ sub.monthly_amount|floatformat:0 }} FCFA</strong></td>
+              <td>
+                <span class="badge {% if sub.status == 'active' %}badge--success{% elif sub.status == 'past_due' or sub.status == 'cancelled' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size: .72rem;">
+                  {{ sub.get_status_display }}
+                </span>
+              </td>
+              <td>{% if sub.current_period_end %}{{ sub.current_period_end|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 6px; flex-wrap: wrap;">
+                  <a class="btn btn--small btn--ghost" href="{% url 'subscriptions:admin_set_amount' sub.owner_type sub.owner_profile.id %}">✏️ Montant</a>
+                  {% if sub.status != 'active' and sub.monthly_amount %}
+                    <form method="post" action="{% url 'subscriptions:admin_mark_paid' sub.id %}" style="display: inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn--small btn--success">✓ Activer</button>
+                    </form>
+                  {% endif %}
+                  {% if sub.status == 'active' %}
+                    <form method="post" action="{% url 'subscriptions:admin_cancel' sub.id %}" style="display: inline;" onsubmit="return confirm('Annuler cet abonnement ?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn--small btn--ghost" style="color: #dc2626;">✗ Annuler</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                Aucun abonnement trouvé.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Profil vendeur</h1>
+    <p class="muted">Mettez à jour vos informations professionnelles.</p>
+  </section>
+  <section class="container auth-card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn" type="submit">Mettre à jour</button>
+    </form>
+    <div class="auth-links">
+      <a class="link" href="{% url 'marketplace:dashboard' %}">Retour au dashboard</a>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Paiements & revenus</h1>
+    <p class="muted">Suivi des paiements liés à vos commandes.</p>
+  </section>
+  <section class="container dashboard-stats">
+    <div class="stat-card">
+      <p class="muted">Total payé</p>
+      <h3>{{ total_paid }} FCFA</h3>
+    </div>
+  </section>
+  <section class="container">
+    <div class="table-card">
+      <div class="table-row table-row--head">
+        <div>Commande</div>
+        <div>Montant</div>
+        <div>Statut</div>
+        <div>Moyen</div>
+      </div>
+      {% for payment in payments %}
+        <div class="table-row">
+          <div>#{{ payment.order.id }}</div>
+          <div>{{ payment.amount }} FCFA</div>
+          <div>{{ payment.get_status_display }}</div>
+          <div>{{ payment.get_provider_display }}</div>
+        </div>
+      {% empty %}
+        <p class="empty">Aucun paiement pour le moment.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

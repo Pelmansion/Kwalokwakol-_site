@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service_provider.name }} — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Profil prestataire</span>
+    <h1>{{ service_provider.name }}</h1>
+    <p>Découvrez le savoir-faire, les services et les réalisations de ce prestataire.</p>
+  </section>
+
+  <section class="container">
+    <div class="profile-card">
+      <div class="profile-card__header">
+        <div class="profile-card__identity">
+          {% if service_provider.profile_photo %}
+            <div class="profile-card__photo">
+              <img src="{{ service_provider.profile_photo.url }}" alt="{{ service_provider.name }}">
+            </div>
+          {% else %}
+            <div class="profile-card__photo profile-card__photo--placeholder">
+              <span>{{ service_provider.name|first|upper }}</span>
+            </div>
+          {% endif %}
+          <div>
+            <h2>{{ service_provider.name }}</h2>
+            {% if service_provider.location %}<p class="muted">📍 {{ service_provider.location }}</p>{% endif %}
+            {% if avg_rating %}
+              <div class="profile-rating">
+                <span class="stars">{% for _ in "12345"|make_list %}{% if forloop.counter <= avg_rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+                <span>{{ avg_rating|floatformat:1 }}/5</span>
+                <span class="muted">· {{ approved_requests }} mission{{ approved_requests|pluralize }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        {% if service_provider.verification_status == 'verified' %}
+          <span class="badge badge--success">✓ Vérifié</span>
+        {% elif service_provider.verification_status == 'pending' %}
+          <span class="badge badge--warning">En attente</span>
+        {% endif %}
+      </div>
+
+      <div class="profile-card__stats">
+        <div class="stat">
+          <div class="stat__value">{{ services|length }}</div>
+          <div class="stat__label">Services</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">{{ total_requests }}</div>
+          <div class="stat__label">Demandes</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">{{ approved_requests }}</div>
+          <div class="stat__label">Missions</div>
+        </div>
+        {% if avg_rating %}
+          <div class="stat">
+            <div class="stat__value">{{ avg_rating|floatformat:1 }}</div>
+            <div class="stat__label">Note</div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if service_provider.description %}
+        <div class="profile-section">
+          <h3>À propos</h3>
+          <p>{{ service_provider.description|linebreaks }}</p>
+        </div>
+      {% endif %}
+
+      {% if service_provider.services_overview %}
+        <div class="profile-section">
+          <h3>Savoir-faire</h3>
+          <p>{{ service_provider.services_overview|linebreaks }}</p>
+        </div>
+      {% endif %}
+
+      <div class="profile-section">
+        <h3>Contact</h3>
+        <div class="contact-grid">
+          {% if service_provider.email %}
+            <a href="mailto:{{ service_provider.email }}" class="contact-card">
+              <span class="contact-card__icon">✉️</span>
+              <div>
+                <strong>Email</strong>
+                <span>{{ service_provider.email }}</span>
+              </div>
+            </a>
+          {% endif %}
+          {% if service_provider.phone %}
+            <a href="tel:{{ service_provider.phone }}" class="contact-card">
+              <span class="contact-card__icon">📞</span>
+              <div>
+                <strong>Téléphone</strong>
+                <span>{{ service_provider.phone }}</span>
+              </div>
+            </a>
+          {% endif %}
+          {% if service_provider.portfolio_url %}
+            <a href="{{ service_provider.portfolio_url }}" target="_blank" rel="noopener" class="contact-card">
+              <span class="contact-card__icon">🔗</span>
+              <div>
+                <strong>Portfolio</strong>
+                <span>Voir les réalisations</span>
+              </div>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if services %}
+        <div class="profile-section">
+          <h3>Services disponibles</h3>
+          <div class="services-grid">
+            {% for service in services %}
+              <article class="service-item">
+                <h4>{{ service.name }}</h4>
+                {% if service.category %}
+                  <span class="chip">{{ service.category.name }}</span>
+                {% endif %}
+                <p class="service-item__price">{{ service.price|floatformat:0 }} FCFA</p>
+                {% if service.description %}
+                  <p class="service-item__desc">{{ service.description|truncatewords:20 }}</p>
+                {% endif %}
+                <a href="{% url 'store:product_detail' service.slug %}" class="btn btn--small">Voir le service</a>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <style>
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+    }
+    .profile-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .profile-card__identity {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .profile-card__photo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--border);
+      flex-shrink: 0;
+    }
+    .profile-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-card__photo--placeholder {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .profile-card__identity h2 {
+      margin: 0 0 6px;
+      font-family: var(--font-serif);
+      color: var(--text);
+    }
+    .profile-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 0.9rem;
+    }
+    .profile-rating .stars { color: var(--accent); letter-spacing: 2px; }
+    .profile-card__stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 14px;
+      margin: 24px 0;
+      padding: 18px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-lg);
+    }
+    .stat { text-align: center; }
+    .stat__value {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .stat__label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .profile-section { margin-top: 28px; }
+    .profile-section h3 {
+      font-family: var(--font-serif);
+      color: var(--text);
+      margin: 0 0 14px;
+      font-size: 1.25rem;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .contact-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .contact-card__icon { font-size: 1.5rem; }
+    .contact-card strong { display: block; font-size: 0.85rem; }
+    .contact-card span { font-size: 0.82rem; color: var(--muted); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .service-item {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .service-item:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    .service-item h4 {
+      margin: 0 0 8px;
+      font-family: var(--font-serif);
+      color: var(--text);
+    }
+    .service-item__price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 10px 0;
+    }
+    .service-item__desc {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 600px) {
+      .profile-card { padding: 18px; }
+      .profile-card__identity { flex-direction: column; text-align: center; }
+    }
+  </style>
+{% endblock %}

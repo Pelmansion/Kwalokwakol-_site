@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load marketplace_tags %}
+
+{% block title %}Produits et services — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Catalogue</span>
+    <h1>Produits et services</h1>
+    <p>Tout ce dont vous avez besoin pour votre maison et votre activité, proposé par des artisans et boutiques vérifiés.</p>
+  </section>
+
+  <section class="container filters">
+    <form method="get" class="filters__form">
+      <input type="text" name="q" placeholder="🔍 Recherche rapide" value="{{ request.GET.q }}">
+      <input type="number" name="min_price" placeholder="Prix min" value="{{ request.GET.min_price }}">
+      <input type="number" name="max_price" placeholder="Prix max" value="{{ request.GET.max_price }}">
+      <input type="text" name="localisation" placeholder="📍 Localisation" value="{{ request.GET.localisation }}">
+      <select name="categorie">
+        <option value="">Toutes les catégories</option>
+        {% for category in nav_categories %}
+          <option value="{{ category.slug }}" {% if request.GET.categorie == category.slug %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="sous_categorie">
+        <option value="">Sous-catégorie</option>
+        {% for sub in subcategories %}
+          <option value="{{ sub.slug }}" {% if request.GET.sous_categorie == sub.slug %}selected{% endif %}>{{ sub.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="disponible">
+        <option value="">Disponibilité</option>
+        <option value="1" {% if request.GET.disponible == '1' %}selected{% endif %}>En stock</option>
+      </select>
+      <select name="tri">
+        <option value="">Trier par</option>
+        <option value="price_asc" {% if request.GET.tri == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+        <option value="price_desc" {% if request.GET.tri == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+        <option value="rating" {% if request.GET.tri == 'rating' %}selected{% endif %}>Meilleures notes</option>
+        <option value="popular" {% if request.GET.tri == 'popular' %}selected{% endif %}>Popularité</option>
+      </select>
+      <button class="btn btn--small" type="submit">Filtrer</button>
+    </form>
+  </section>
+
+  <section class="container">
+    {% if products %}
+      <p class="muted" style="margin-bottom:16px;">{{ products|length }} résultat{{ products|length|pluralize }} trouvé{{ products|length|pluralize }}</p>
+    {% endif %}
+
+    <div class="product-grid">
+      {% for product in products %}
+        {% if product.kind == 'service' and product.service_provider and product.service_provider.display_services_as_provider %}
+        <article class="product-card product-card--service">
+          <div class="service-card__header">
+            {% if product.service_provider.profile_photo %}
+              <div class="service-card__photo">
+                <img src="{{ product.service_provider.profile_photo.url }}" alt="{{ product.service_provider.name }}">
+              </div>
+            {% else %}
+              <div class="service-card__photo service-card__photo--placeholder">
+                <span>{{ product.service_provider.name|first|upper }}</span>
+              </div>
+            {% endif %}
+            <div class="service-card__title-block">
+              <h3 class="service-card__title">{{ product.name }}<span class="service-card__available">● disponible</span></h3>
+              <div class="service-card__badges">
+                <span class="badge badge--contract">Freelance</span>
+                {% if product.category %}
+                  <span class="badge badge--category">{{ product.category.name }}</span>
+                {% endif %}
+              </div>
+              {% if product.service_provider.location %}
+                <p class="service-card__location">📍 {{ product.service_provider.location }}</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="service-card__body">
+            {% if product.description %}
+              <p class="service-card__desc">{{ product.description|truncatewords:20 }}</p>
+            {% else %}
+              <p class="service-card__desc">Service proposé par {{ product.service_provider.name }}.</p>
+            {% endif %}
+            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            <p class="service-card__published">Publié par : {{ product.service_provider.owner.get_full_name|default:product.service_provider.owner.username }}</p>
+          </div>
+          <div class="service-card__actions">
+            <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}" href="{% url 'store:toggle_favorite' product.id %}" title="Favoris">♥</a>
+            <a class="link" href="{% url 'store:product_detail' product.slug %}">Détails</a>
+            <a class="btn btn--small" style="margin-left:auto;" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+          </div>
+        </article>
+        {% else %}
+        <article class="product-card">
+          <div class="product-card__image">
+            {% if product.media.first %}
+              <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
+            {% elif product.image_url %}
+              <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+              <div class="image-placeholder"></div>
+            {% endif %}
+          </div>
+          <div class="product-card__body">
+            <h3>
+              {{ product.name }}
+              {% if product.kind == 'service' %}
+                <span class="badge badge--info" style="margin-left:4px;">Service</span>
+              {% endif %}
+            </h3>
+            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            {% if product.avg_rating %}
+              <p class="muted" style="margin:0 0 8px;">⭐ {{ product.avg_rating|floatformat:1 }}/5</p>
+            {% endif %}
+            <div class="product-card__actions">
+              <div class="product-card__actions-left">
+                <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
+                   href="{% url 'store:toggle_favorite' product.id %}" title="Ajouter aux favoris" aria-label="Favori">♥</a>
+                <a class="link" href="{% url 'store:product_detail' product.slug %}">Détails</a>
+              </div>
+              {% if product.kind == 'service' %}
+                <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
+              {% elif user|is_client or not user.is_authenticated %}
+                <a class="btn btn--small js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter</a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+        {% endif %}
+      {% empty %}
+        <div class="empty-state" style="grid-column: 1/-1;">
+          <div class="empty" style="padding:64px 24px;">
+            <div style="font-size:3rem; margin-bottom:12px;">🔍</div>
+            <h3 style="font-family: var(--font-serif); margin: 0 0 8px;">Aucun produit trouvé</h3>
+            <p style="margin: 0 0 16px; color: var(--muted);">Essayez de modifier vos filtres ou réinitialisez la recherche.</p>
+            {% if request.GET.q or request.GET.categorie or request.GET.type or request.GET.min_price or request.GET.max_price or request.GET.localisation or request.GET.disponible %}
+              <a href="{% url 'store:product_list' %}" class="btn">Voir tous les produits</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

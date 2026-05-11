@@ -1,0 +1,526 @@
+{% load static %}
+{% load marketplace_tags %}
+{% load culture_tags %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#C2410C">
+    <meta name="description" content="KwaloK Wakolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
+    <title>{% block title %}KwaloK Wakolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
+
+    {# --- Favicon & icônes classiques --- #}
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/favicon-32.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/logo-kwalokwakole.png' %}">
+
+    {# --- PWA : manifest + icônes iOS/Android/Windows --- #}
+    <link rel="manifest" href="{% url 'pwa-manifest' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/apple-touch-icon.png' %}">
+    <meta name="application-name" content="KwaloK">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KwaloK">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#C2410C">
+    <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-192.png' %}">
+    <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
+    <meta name="format-detection" content="telephone=no">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=14">
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    {% if not user.is_authenticated or user|is_client %}
+    <div class="notice">
+      <div class="container">
+        <span aria-hidden="true">✦</span>
+        <strong>Livraison gratuite</strong> dès 15 000 FCFA · Artisans vérifiés · Paiement sécurisé
+        <span aria-hidden="true">✦</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <header class="topbar">
+      <div class="container topbar__inner">
+        <a class="logo" href="{% if user.is_authenticated %}{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}{% else %}{% url 'store:home' %}{% endif %}">
+          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloK Wakolê Group">
+        </a>
+
+        <form class="search" action="{% url 'store:product_list' %}" method="get" role="search">
+          <input type="text" name="q" placeholder="Chercher un produit, une boutique, un service…" aria-label="Recherche">
+          <button type="submit">Rechercher</button>
+        </form>
+
+        <nav class="topbar__actions" aria-label="Actions compte et aide">
+          <div class="dropdown">
+            <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
+              {% if user.is_authenticated %}
+                {% if user.userprofile and user.userprofile.avatar %}
+                  <img src="{{ user.userprofile.avatar.url }}" alt="Profil" class="topbar__avatar">
+                {% else %}
+                  <span class="icon icon-user" aria-hidden="true"></span>
+                {% endif %}
+                <span>{{ user.username|truncatechars:12 }}</span>
+              {% else %}
+                <span class="icon icon-user" aria-hidden="true"></span>
+                <span>Compte</span>
+              {% endif %}
+            </button>
+            <div class="dropdown__menu" role="menu">
+              {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}">Mon profil</a>
+                {% if user|is_client %}
+                  <a href="{% url 'accounts:order_history' %}">Mes commandes</a>
+                  <a href="{% url 'store:favorites' %}">Mes favoris</a>
+                  <a href="{% url 'culture:my_tickets' %}">🎫 Mes billets</a>
+                  <a href="{% url 'culture:my_purchases' %}">🎵 Mes achats musique</a>
+                {% endif %}
+                {% if user|is_vendor %}
+                  <a href="{% url 'marketplace:dashboard' %}">Espace vendeur</a>
+                {% else %}
+                  {% if not user|is_app_admin and not user|is_service_provider %}
+                  <a href="{% url 'marketplace:vendor_register' %}">Devenir vendeur</a>
+                  {% endif %}
+                {% endif %}
+                {% if user|is_service_provider %}
+                  <a href="{% url 'marketplace:service_provider_dashboard' %}">Espace prestataire</a>
+                {% else %}
+                  {% if not user|is_app_admin and not user|is_vendor %}
+                  <a href="{% url 'marketplace:service_provider_register' %}">Devenir prestataire</a>
+                  {% endif %}
+                {% endif %}
+                {% if user|is_app_admin %}
+                  <a href="{% url 'accounts:admin_dashboard' %}">Espace administration</a>
+                {% endif %}
+                {% if user|is_artist %}
+                  <a href="{% url 'culture:artist_dashboard' %}">🎤 Espace artiste</a>
+                {% elif user|can_become_artist %}
+                  <a href="{% url 'culture:artist_activate' %}">🎤 Activer profil artiste</a>
+                {% endif %}
+                <form method="post" action="{% url 'accounts:logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" style="width:100%; text-align:left; border:0; background:transparent; font:inherit; cursor:pointer; padding:11px 14px; border-radius:10px; color:var(--danger); font-weight:600;">Se déconnecter</button>
+                </form>
+              {% else %}
+                <a href="{% url 'accounts:login' %}">Connexion</a>
+                <a href="{% url 'accounts:signup' %}">Créer un compte</a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
+              <span class="icon icon-help" aria-hidden="true"></span>
+              <span>Aide</span>
+            </button>
+            <div class="dropdown__menu" role="menu">
+              <a href="/page/faq/">FAQ</a>
+              <a href="/page/conditions-generales/">Conditions générales</a>
+              <a href="/page/confidentialite/">Confidentialité</a>
+              <a href="/page/contact/">Contact</a>
+            </div>
+          </div>
+
+          <a class="topbar__item topbar__item--culture" href="{% url 'culture:home' %}" aria-label="KwaloK Culture">
+            <span aria-hidden="true">🎤</span>
+            <span>Culture</span>
+          </a>
+
+          {% if not user.is_authenticated or user|is_client %}
+          <a class="topbar__item" href="{% url 'store:favorites' %}" aria-label="Mes favoris">
+            <span class="icon icon-heart" aria-hidden="true"></span>
+            {% if favorites_count %}
+              <span class="badge badge--danger">{{ favorites_count }}</span>
+            {% endif %}
+          </a>
+
+          <a class="topbar__item" href="{% url 'store:cart_detail' %}" aria-label="Mon panier">
+            <span class="icon icon-cart" aria-hidden="true"></span>
+            <span>Panier</span>
+            <span class="badge badge--success js-cart-count" {% if not cart_count %}hidden{% endif %}>{{ cart_count|default:0 }}</span>
+          </a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="toast toast--{{ message.tags }}" role="alert">
+            <div class="toast__content">
+              <strong class="toast__title">
+                {% if message.tags == 'error' %}Erreur
+                {% elif message.tags == 'warning' %}Attention
+                {% elif message.tags == 'success' %}Succès
+                {% else %}Information{% endif %}
+              </strong>
+              <p class="toast__message">{{ message }}</p>
+            </div>
+            <button class="toast__close" aria-label="Fermer">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigation principale mobile">
+      <a class="bottom-nav__item" data-nav="home" href="{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}">
+        <span class="bottom-nav__icon bottom-nav__icon--home"></span>
+        <span class="bottom-nav__label">Accueil</span>
+      </a>
+      <a class="bottom-nav__item" data-nav="categories" href="{% url 'store:product_list' %}">
+        <span class="bottom-nav__icon bottom-nav__icon--categories"></span>
+        <span class="bottom-nav__label">Explorer</span>
+      </a>
+      {% if not user.is_authenticated or user|is_client %}
+      <a class="bottom-nav__item" data-nav="cart" href="{% url 'store:cart_detail' %}">
+        <span class="bottom-nav__icon-wrap">
+          <span class="bottom-nav__icon bottom-nav__icon--cart"></span>
+          <span class="bottom-nav__badge js-cart-count" {% if not cart_count %}hidden{% endif %}>{{ cart_count|default:0 }}</span>
+        </span>
+        <span class="bottom-nav__label">Panier</span>
+      </a>
+      <a class="bottom-nav__item" data-nav="favoris" href="{% url 'store:favorites' %}">
+        <span class="bottom-nav__icon-wrap">
+          <span class="bottom-nav__icon bottom-nav__icon--favoris"></span>
+          {% if favorites_count %}<span class="bottom-nav__badge">{{ favorites_count }}</span>{% endif %}
+        </span>
+        <span class="bottom-nav__label">Favoris</span>
+      </a>
+      {% endif %}
+      <a class="bottom-nav__item" data-nav="account" href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}">
+        {% if user.is_authenticated and user.userprofile and user.userprofile.avatar %}
+          <img src="{{ user.userprofile.avatar.url }}" alt="Compte" class="bottom-nav__avatar">
+        {% else %}
+          <span class="bottom-nav__icon bottom-nav__icon--compte"></span>
+        {% endif %}
+        <span class="bottom-nav__label">Compte</span>
+      </a>
+    </nav>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <h3>KwaloK Wakolê Group</h3>
+            <p>La plateforme qui rassemble les artisans, boutiques, producteurs et prestataires d'Afrique. Commandez, réservez et recevez — en toute confiance.</p>
+            <form class="newsletter" onsubmit="event.preventDefault(); alert('Merci pour votre inscription !');">
+              <input type="email" placeholder="Votre email" required>
+              <button type="submit">S'inscrire</button>
+            </form>
+            <div class="footer__social" aria-label="Réseaux sociaux">
+              <a href="#" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 22V12h3l1-4h-4V5.5c0-1.1.5-2 2-2h2V0c-.3 0-1.6-.2-3-.2C10.8-.2 9 2 9 5v3H6v4h3v10h4z"/></svg></a>
+              <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+              <a href="#" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg></a>
+              <a href="#" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 5.4c-.9-.9-1.4-2.1-1.4-3.4h-3.7v14.4c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6.1.9.2v-3.8c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5V9.2c1.3.9 2.9 1.5 4.7 1.5V7c-1.2 0-2.3-.5-3.4-1.6z"/></svg></a>
+            </div>
+          </div>
+
+          <div>
+            <h4>Découvrir</h4>
+            <ul>
+              <li><a href="{% url 'store:product_list' %}">Tous les produits</a></li>
+              <li><a href="{% url 'store:service_provider_list' %}">Prestataires</a></li>
+              <li><a href="{% url 'store:product_list' %}?type=service">Services</a></li>
+              <li><a href="{% url 'store:vendor_list' %}">Boutiques</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Assistance</h4>
+            <ul>
+              <li><a href="/page/faq/">FAQ</a></li>
+              <li><a href="/page/contact/">Nous contacter</a></li>
+              <li><a href="/page/conditions-generales/">Conditions générales</a></li>
+              <li><a href="/page/confidentialite/">Confidentialité</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4>Espaces pro</h4>
+            <ul>
+              {% if not user|is_vendor %}
+              <li><a href="{% url 'accounts:login' %}?next={% url 'marketplace:dashboard' %}">Connexion vendeur</a></li>
+              {% endif %}
+              {% if not user|is_service_provider %}
+              <li><a href="{% url 'accounts:login' %}?next={% url 'marketplace:service_provider_dashboard' %}">Connexion prestataire</a></li>
+              {% endif %}
+              {% if not user|is_app_admin %}
+              <li><a href="{% url 'accounts:admin_login' %}?next={% url 'accounts:admin_dashboard' %}">Connexion admin</a></li>
+              {% endif %}
+              <li><a href="{% url 'marketplace:vendor_register' %}">Devenir vendeur</a></li>
+              <li><a href="{% url 'marketplace:service_provider_register' %}">Devenir prestataire</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer__bottom">
+          <p>© {% now "Y" %} KwaloK Wakolê Group — Tous droits réservés.</p>
+          <p>Fait avec <span style="color:var(--accent);">♥</span> en Afrique.</p>
+        </div>
+      </div>
+    </footer>
+    {% block extra_scripts %}{% endblock %}
+
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        var active = null;
+        if (path === '/' || path === '' || path.indexOf('/admin-panel') !== -1 || path.indexOf('/dashboard') !== -1 || path.indexOf('/prestataire/dashboard') !== -1) active = 'home';
+        else if (path.indexOf('/panier') !== -1) active = 'cart';
+        else if (path.indexOf('/favoris') !== -1) active = 'favoris';
+        else if (path.indexOf('/produits') !== -1 || path.indexOf('/categorie') !== -1 || path.indexOf('/vendeur') !== -1 || path.indexOf('/prestataire') !== -1 || path.indexOf('/produit/') !== -1) active = 'categories';
+        else if (path.indexOf('/profil') !== -1 || path.indexOf('/connexion') !== -1 || path.indexOf('/inscription') !== -1 || path.indexOf('/commandes') !== -1) active = 'account';
+        document.querySelectorAll('.bottom-nav__item').forEach(function(item) {
+          if (item.getAttribute('data-nav') === active) item.setAttribute('data-active', 'true');
+          else item.removeAttribute('data-active');
+        });
+      })();
+
+      var __toastStyle = document.createElement('style');
+      __toastStyle.textContent = '@keyframes toastOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }';
+      document.head.appendChild(__toastStyle);
+
+      function removeToast(toast) {
+        toast.style.animation = 'toastOut 0.3s ease-in forwards';
+        setTimeout(function() { toast.remove(); }, 300);
+      }
+
+      function showToast(message, type) {
+        type = type || 'success';
+        var container = document.getElementById('toast-container');
+        if (!container) return;
+        var toast = document.createElement('div');
+        toast.className = 'toast toast--' + type;
+        toast.setAttribute('role', 'alert');
+        var titles = { success: 'Succès', error: 'Erreur', warning: 'Attention', info: 'Information' };
+        toast.innerHTML =
+          '<div class="toast__content">' +
+            '<strong class="toast__title">' + (titles[type] || 'Information') + '</strong>' +
+            '<p class="toast__message"></p>' +
+          '</div>' +
+          '<button class="toast__close" aria-label="Fermer">&times;</button>';
+        toast.querySelector('.toast__message').textContent = message;
+        toast.querySelector('.toast__close').addEventListener('click', function() { removeToast(toast); });
+        container.appendChild(toast);
+        setTimeout(function() { removeToast(toast); }, type === 'error' ? 7000 : 4000);
+      }
+
+      (function() {
+        var container = document.getElementById('toast-container');
+        if (!container) return;
+        container.querySelectorAll('.toast').forEach(function(toast) {
+          var closeBtn = toast.querySelector('.toast__close');
+          if (closeBtn) closeBtn.addEventListener('click', function() { removeToast(toast); });
+          var isError = toast.classList.contains('toast--error');
+          var timeout = isError ? 7000 : 5000;
+          setTimeout(function() { removeToast(toast); }, timeout);
+        });
+      })();
+
+      (function() {
+        function getCookie(name) {
+          var value = '; ' + document.cookie;
+          var parts = value.split('; ' + name + '=');
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return '';
+        }
+
+        function updateCartBadges(count) {
+          document.querySelectorAll('.js-cart-count').forEach(function(el) {
+            el.textContent = count;
+            if (count > 0) el.removeAttribute('hidden');
+            else el.setAttribute('hidden', '');
+          });
+        }
+
+        document.addEventListener('click', function(e) {
+          var link = e.target.closest('.js-add-to-cart');
+          if (!link) return;
+          e.preventDefault();
+          var url = link.getAttribute('href') || link.dataset.url;
+          if (!url) return;
+
+          link.classList.add('is-loading');
+          var original = link.innerHTML;
+          link.innerHTML = '<span class="spinner"></span>';
+
+          fetch(url, {
+            method: 'GET',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin'
+          })
+            .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+            .then(function(res) {
+              if (res.ok && res.data.ok) {
+                showToast(res.data.message || 'Ajouté au panier', 'success');
+                if (typeof res.data.cart_count === 'number') updateCartBadges(res.data.cart_count);
+                link.innerHTML = '✓';
+                setTimeout(function() { link.innerHTML = original; link.classList.remove('is-loading'); }, 900);
+              } else {
+                showToast((res.data && res.data.message) || "Impossible d'ajouter au panier", 'error');
+                link.innerHTML = original;
+                link.classList.remove('is-loading');
+              }
+            })
+            .catch(function() {
+              showToast("Erreur réseau, réessayez", 'error');
+              link.innerHTML = original;
+              link.classList.remove('is-loading');
+            });
+        });
+      })();
+    </script>
+
+    {# ===================== Chatbot Kwa ===================== #}
+    <div id="kwalo-chatbot"
+         data-authenticated="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+         data-urls='{
+           "home": "{% url "store:home" %}",
+           "products": "{% url "store:product_list" %}",
+           "cart": "{% url "store:cart_detail" %}",
+           "favorites": "{% url "store:favorites" %}",
+           "culture": "{% url "culture:home" %}",
+           "songs": "{% url "culture:song_list" %}",
+           "events": "{% url "culture:event_list" %}",
+           "artists": "{% url "culture:artist_list" %}",
+           "becomeVendor": "{% url "marketplace:vendor_register" %}",
+           "becomeProvider": "{% url "marketplace:service_provider_register" %}",
+           "becomeArtist": "{% url "culture:artist_activate" %}",
+           "plans": "{% url "subscriptions:choose_plan" %}",
+           "login": "{% url "accounts:login" %}",
+           "signup": "{% url "accounts:signup" %}",
+           "contact": "/page/contact/",
+           "faq": "/page/faq/",
+           "orders": "{% url "accounts:order_history" %}",
+           "myTickets": "{% url "culture:my_tickets" %}",
+           "myPurchases": "{% url "culture:my_purchases" %}"
+         }'>
+
+      <button type="button" id="kwalo-chatbot-bubble" class="kwa-bubble" aria-label="Ouvrir l'assistant Kwa">
+        <span class="kwa-bubble__icon" aria-hidden="true">💬</span>
+        <span class="kwa-bubble__icon kwa-bubble__icon--close" aria-hidden="true">✕</span>
+        <span id="kwalo-chatbot-badge" class="kwa-bubble__badge" hidden>1</span>
+      </button>
+
+      <aside id="kwalo-chatbot-panel" class="kwa-panel" role="dialog" aria-label="Assistant Kwa">
+        <header class="kwa-panel__head">
+          <div class="kwa-panel__brand">
+            <div class="kwa-panel__avatar" aria-hidden="true">K</div>
+            <div>
+              <strong>Kwa</strong>
+              <small><span class="kwa-online-dot"></span> Assistant KwaloK</small>
+            </div>
+          </div>
+          <div class="kwa-panel__actions">
+            <button type="button" id="kwalo-chatbot-clear" class="kwa-icon-btn" title="Effacer la conversation" aria-label="Effacer la conversation">↻</button>
+            <button type="button" id="kwalo-chatbot-close" class="kwa-icon-btn" title="Fermer" aria-label="Fermer le chat">✕</button>
+          </div>
+        </header>
+
+        <div id="kwalo-chatbot-messages" class="kwa-panel__body" aria-live="polite"></div>
+
+        <form id="kwalo-chatbot-form" class="kwa-panel__form" autocomplete="off">
+          <input type="text" id="kwalo-chatbot-input" placeholder="Écris ta question..." aria-label="Message" maxlength="500">
+          <button type="submit" class="kwa-send-btn" aria-label="Envoyer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+
+        <p class="kwa-panel__footer">Assistant KwaloK · Réponses automatiques</p>
+      </aside>
+    </div>
+
+    {# ===================== PWA : installation & service worker ===================== #}
+    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l'application KwaloK">
+      <span class="pwa-install-btn__icon" aria-hidden="true">📲</span>
+      <span class="pwa-install-btn__label">Installer l'app</span>
+    </button>
+
+    <div id="pwa-update-toast" class="pwa-update-toast" hidden role="status" aria-live="polite">
+      <span>Une nouvelle version est disponible.</span>
+      <button type="button" id="pwa-update-btn" class="pwa-update-toast__btn">Actualiser</button>
+    </div>
+
+    <script>
+      (function () {
+        // --- Enregistrement du Service Worker ---
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+              .then(function (reg) {
+                reg.addEventListener('updatefound', function () {
+                  var newWorker = reg.installing;
+                  if (!newWorker) return;
+                  newWorker.addEventListener('statechange', function () {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      var toast = document.getElementById('pwa-update-toast');
+                      var btn = document.getElementById('pwa-update-btn');
+                      if (toast) toast.hidden = false;
+                      if (btn) {
+                        btn.addEventListener('click', function () {
+                          newWorker.postMessage({ type: 'SKIP_WAITING' });
+                          window.location.reload();
+                        });
+                      }
+                    }
+                  });
+                });
+              })
+              .catch(function () { /* silent */ });
+          });
+
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (window.__pwaReloaded) return;
+            window.__pwaReloaded = true;
+          });
+        }
+
+        // --- Prompt d'installation personnalisé ---
+        var deferredPrompt = null;
+        var installBtn = document.getElementById('pwa-install-btn');
+
+        function isStandalone() {
+          return window.matchMedia('(display-mode: standalone)').matches ||
+                 window.navigator.standalone === true;
+        }
+
+        if (installBtn && !isStandalone()) {
+          window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.hidden = false;
+            installBtn.classList.add('pwa-install-btn--visible');
+          });
+
+          installBtn.addEventListener('click', function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function () {
+              deferredPrompt = null;
+              installBtn.hidden = true;
+            });
+          });
+
+          window.addEventListener('appinstalled', function () {
+            installBtn.hidden = true;
+            if (typeof showToast === 'function') {
+              showToast('Application installée ! Retrouvez-la sur votre écran d\'accueil.', 'success');
+            }
+          });
+        }
+      })();
+    </script>
+
+    {# ===================== Chatbot Kwa script ===================== #}
+    <script src="{% static 'js/chatbot.js' %}?v=1" defer></script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Mes chansons · {{ artist.stage_name }}{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎵 Mes chansons</h1>
+      <p>Gérez votre catalogue musical</p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a class="btn" href="{% url 'culture:artist_song_add' %}">+ Nouvelle chanson</a>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_dashboard' %}">← Tableau de bord</a>
+    </div>
+  </header>
+
+  {% if songs %}
+    <table class="payments-table">
+      <thead>
+        <tr><th>Titre</th><th>Genre</th><th>Tarif</th><th>Écoutes</th><th>Téléch.</th><th>Statut</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in songs %}
+        <tr>
+          <td><strong>{{ s.title }}</strong></td>
+          <td>{% if s.genre %}{{ s.genre.icon }} {{ s.genre.name }}{% else %}—{% endif %}</td>
+          <td>{% if s.is_free %}<span class="badge badge--free">Gratuit</span>{% else %}{{ s.price_fcfa|floatformat:0 }} FCFA{% endif %}</td>
+          <td>▶ {{ s.play_count }}</td>
+          <td>⬇ {{ s.download_count }}</td>
+          <td>{% if s.is_published %}Publiée{% else %}Brouillon{% endif %}</td>
+          <td style="display:flex; gap:6px;">
+            <a class="btn btn--sm" href="{% url 'culture:artist_song_edit' s.pk %}">Modifier</a>
+            <form method="post" action="{% url 'culture:artist_song_delete' s.pk %}" onsubmit="return confirm('Supprimer cette chanson ?');" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn btn--sm btn--ghost" type="submit">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <p>Vous n'avez pas encore publié de chanson.</p>
+      <a class="btn" href="{% url 'culture:artist_song_add' %}">Ajouter ma première chanson</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load static %}
+{% load vite_tags %}
+{% load marketplace_tags %}
+{% block content %}
+  <section class="hero container">
+    {% if not user.is_authenticated or user|is_client %}
+    <aside class="categories">
+      <h3>Catégories</h3>
+      <ul>
+        {% if categories.0 %}
+          {% for category in categories %}
+            {% if category.slug %}
+              <li><a href="{% url 'store:category_detail' category.slug %}">{{ category.name }}</a></li>
+            {% else %}
+              <li>{{ category }}</li>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </aside>
+    {% endif %}
+    <div class="hero__banner">
+      <div class="hero-slider" id="hero-slider">
+        <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% static "images/hero-main.jpg" %}');">
+          <div class="hero__content">
+            <h1>KwaloK Wakolê Group</h1>
+            <p>Alimentation, artisans, bâtiments, production et boutiques réunis.</p>
+            <a class="btn" href="{% url 'store:product_list' %}">Découvrir les offres</a>
+            <div class="hero__stats">
+              <div>
+                <strong>+150</strong>
+                <span>Artisans</span>
+              </div>
+              <div>
+                <strong>24h</strong>
+                <span>Livraison locale</span>
+              </div>
+              <div>
+                <strong>100%</strong>
+                <span>Qualité</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-slide hero-slide--flash" style="--hero-bg: url('{% static "images/hero-flash.jpg" %}');">
+          <div class="hero__content">
+            <h1>Ventes flash du jour</h1>
+            <p>Profitez de réductions sur une sélection d’articles locaux pendant une durée limitée.</p>
+            <a class="btn" href="#flash">Voir les ventes flash</a>
+            <div class="hero__stats">
+              <div>
+                <strong>-30%</strong>
+                <span>En moyenne</span>
+              </div>
+              <div>
+                <strong>Stock</strong>
+                <span>Limité</span>
+              </div>
+              <div>
+                <strong>Local</strong>
+                <span>Artisans & boutiques</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-slide hero-slide--services" style="--hero-bg: url('{% static "images/hero-services.jpg" %}');">
+          <div class="hero__content">
+            <h1>Services artisanaux à portée de main</h1>
+            <p>Coiffure, bâtiment, couture, numérique… trouvez rapidement le bon prestataire.</p>
+            <a class="btn" href="{% url 'store:product_list' %}?type=service">Chercher un service</a>
+            <div class="hero__stats">
+              <div>
+                <strong>10+</strong>
+                <span>Catégories</span>
+              </div>
+              <div>
+                <strong>Rapide</strong>
+                <span>Demande en ligne</span>
+              </div>
+              <div>
+                <strong>Sécurisé</strong>
+                <span>Profils vérifiés</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slider__dots" id="hero-slider-dots">
+        <button type="button" data-index="0" class="is-active"></button>
+        <button type="button" data-index="1"></button>
+        <button type="button" data-index="2"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="container feature-row">
+    <div class="feature-card">
+      <h3>De vrais artisans</h3>
+      <p>Des professionnels vérifiés et des boutiques locales de confiance.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Services & produits</h3>
+      <p>Du dépannage maison aux achats vivriers, tout au même endroit.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Commande simple</h3>
+      <p>Ajoutez au panier, renseignez l'adresse, nous livrons.</p>
+    </div>
+  </section>
+
+  <section class="container culture-promo">
+    <div class="culture-promo__card">
+      <div class="culture-promo__bg" aria-hidden="true">
+        <span class="culture-promo__blob culture-promo__blob--1"></span>
+        <span class="culture-promo__blob culture-promo__blob--2"></span>
+        <span class="culture-promo__blob culture-promo__blob--3"></span>
+      </div>
+
+      <div class="culture-promo__text">
+        <span class="culture-promo__pill">
+          <span class="culture-promo__pulse"></span>
+          NOUVEAU · KwaloK Culture
+        </span>
+        <h2>Vibrez au rythme<br>de <em>votre région</em></h2>
+        <p>Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
+        <div class="culture-promo__features">
+          <span>🎵 Streaming &amp; téléchargement</span>
+          <span>🎫 Billets QR code</span>
+          <span>🎤 Artistes vérifiés</span>
+        </div>
+        <div class="culture-promo__actions">
+          <a class="btn culture-promo__cta" href="{% url 'culture:home' %}">
+            Explorer KwaloK Culture
+            <span class="culture-promo__arrow">→</span>
+          </a>
+          <a class="btn btn--ghost culture-promo__cta-ghost" href="{% url 'culture:event_list' %}">
+            🎫 Concerts à venir
+          </a>
+        </div>
+      </div>
+
+      <div class="culture-promo__visual" aria-hidden="true">
+        <div class="culture-promo__disc">
+          <div class="culture-promo__disc-inner">
+            <div class="culture-promo__disc-grooves"></div>
+            <div class="culture-promo__disc-label">🎵</div>
+          </div>
+        </div>
+        <div class="culture-promo__ticket">
+          <div class="culture-promo__ticket-stub">VIP</div>
+          <div class="culture-promo__ticket-info">
+            <small>KWALOK CULTURE</small>
+            <strong>LIVE 2026</strong>
+            <span>● ● ● ● ● ● ●</span>
+          </div>
+        </div>
+        <div class="culture-promo__mic">🎤</div>
+        <div class="culture-promo__note culture-promo__note--1">♪</div>
+        <div class="culture-promo__note culture-promo__note--2">♫</div>
+        <div class="culture-promo__note culture-promo__note--3">♪</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    {{ react_data|json_script:"react-data" }}
+    <div id="react-root"></div>
+    {% vite_asset "src/main.jsx" %}
+  </section>
+
+  <section class="flash container">
+    <div class="flash__header">
+      <h2>Ventes flash</h2>
+      <span>Chaque jour des promos locales</span>
+    </div>
+    <div class="product-grid">
+      {% for product in products %}
+        <article class="product-card">
+          <div class="product-card__image">
+            {% if product.media.first %}
+              <img src="{{ product.media.first.url }}" alt="{{ product.name }}">
+            {% elif product.image_url %}
+              <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            {% else %}
+              <div class="image-placeholder"></div>
+            {% endif %}
+          </div>
+          <div class="product-card__body">
+            <h3>{{ product.name }}</h3>
+            <p class="price">{{ product.price }} FCFA</p>
+            <div class="product-card__actions">
+              <div class="product-card__actions-left">
+                <a
+                  class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
+                  href="{% url 'store:toggle_favorite' product.id %}"
+                  title="Ajouter aux favoris"
+                >
+                  ♥
+                </a>
+                <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+                {% if product.kind == 'service' %}
+                  <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
+                {% elif user|is_client %}
+                  <a class="btn btn--small" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <p class="empty">Ajoutez des produits pour remplir cette section.</p>
+      {% endfor %}
+    </div>
+    {% if products %}
+      <div class="flash__more">
+        <a class="btn btn--ghost voir-plus" href="{% url 'store:product_list' %}">Voir plus...</a>
+      </div>
+    {% endif %}
+  </section>
+
+  {% if category_sections %}
+  <section class="container home-categories">
+    <div class="home-categories__intro">
+      <h2>Découvrez nos catégories</h2>
+      <p>Un aperçu rapide de ce que proposent les artisans et boutiques de KwaloK.</p>
+    </div>
+    {% for section in category_sections %}
+      <div class="category-strip">
+        <div class="category-strip__header">
+          <h3>{{ section.category.name }}</h3>
+          {% if section.category.slug %}
+            <a class="category-strip__link" href="{% url 'store:category_detail' section.category.slug %}">
+              Voir tout
+            </a>
+          {% endif %}
+        </div>
+        <div class="category-strip__grid">
+          {% for product in section.products %}
+            <article class="product-card product-card--compact">
+              <div class="product-card__image">
+                {% if product.media.first %}
+                  <img src="{{ product.media.first.url }}" alt="{{ product.name }}">
+                {% elif product.image_url %}
+                  <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                {% else %}
+                  <div class="image-placeholder"></div>
+                {% endif %}
+              </div>
+              <div class="product-card__body">
+                <h3>{{ product.name }}</h3>
+                <p class="price">{{ product.price }} FCFA</p>
+                <div class="product-card__actions">
+                  <div class="product-card__actions-left">
+                    <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+                    {% if product.kind == 'service' %}
+                      <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
+                    {% elif user|is_client %}
+                      <a class="btn btn--small" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section class="services container">
+    <h2>Services artisanaux populaires</h2>
+    <div class="service-grid">
+      <div class="service-card">Boulangerie & Pâtisserie</div>
+      <div class="service-card">Maçonnerie & Carrelage</div>
+      <div class="service-card">Coiffure & Beauté</div>
+      <div class="service-card">Menuiserie & Fabrication</div>
+      <div class="service-card">Teinturier & Pressing</div>
+      <div class="service-card">Électroménager</div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    var slider = document.getElementById("hero-slider");
+    var dotsContainer = document.getElementById("hero-slider-dots");
+    if (!slider || !dotsContainer) return;
+
+    var slides = slider.querySelectorAll(".hero-slide");
+    var dots = dotsContainer.querySelectorAll("button");
+    var current = 0;
+    var timer = null;
+
+    function goTo(index) {
+      slides[current].classList.remove("hero-slide--active");
+      dots[current].classList.remove("is-active");
+      current = index;
+      slides[current].classList.add("hero-slide--active");
+      dots[current].classList.add("is-active");
+    }
+
+    function next() {
+      var nextIndex = (current + 1) % slides.length;
+      goTo(nextIndex);
+    }
+
+    function startAuto() {
+      stopAuto();
+      timer = setInterval(next, 7000);
+    }
+
+    function stopAuto() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    dots.forEach(function (dot, index) {
+      dot.addEventListener("click", function () {
+        goTo(index);
+        startAuto();
+      });
+    });
+
+    slider.addEventListener("mouseenter", stopAuto);
+    slider.addEventListener("mouseleave", startAuto);
+
+    startAuto();
+  })();
+</script>
+{% endblock %}

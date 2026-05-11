@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% load marketplace_tags %}
+
+{% block title %}{{ product.name }} — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container" style="margin-bottom:12px;">
+    <p class="muted" style="font-size:0.85rem;">
+      <a href="{% url 'store:home' %}" style="color:inherit;">Accueil</a> /
+      <a href="{% url 'store:product_list' %}" style="color:inherit;">Produits</a> /
+      {% if product.category %}<a href="{% url 'store:category_detail' product.category.slug %}" style="color:inherit;">{{ product.category.name }}</a> /{% endif %}
+      <span style="color:var(--ink);">{{ product.name|truncatechars:40 }}</span>
+    </p>
+  </section>
+
+  <section class="container product-detail">
+    <div class="product-detail__image">
+      {% if product.media.all %}
+        <div class="media-grid">
+          {% for media in product.media.all %}
+            {% if media.media_type == 'video' %}
+              <video controls src="{{ media.url }}"></video>
+            {% else %}
+              <img src="{{ media.url }}" alt="{{ product.name }}" loading="lazy">
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% elif product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="image-placeholder image-placeholder--large"></div>
+      {% endif %}
+    </div>
+
+    <div class="product-detail__info">
+      {% if product.category %}
+        <span class="section-eyebrow">{{ product.category.name }}</span>
+      {% endif %}
+
+      <div class="product-detail__meta">
+        <h1 class="product-detail__title">{{ product.name }}</h1>
+        <div class="product-detail__price-row">
+          <p class="price product-detail__price">{{ product.price|floatformat:0 }} FCFA</p>
+          {% if product.old_price and product.old_price > product.price %}
+            <span class="muted" style="text-decoration:line-through; font-size:1.05rem;">{{ product.old_price|floatformat:0 }} FCFA</span>
+          {% endif %}
+          {% if product.kind == 'service' %}
+            <span class="badge badge--info">Service</span>
+          {% else %}
+            <span class="badge {% if product.stock > 0 %}badge--success{% else %}badge--danger{% endif %}">
+              {% if product.stock > 0 %}● En stock{% else %}Rupture{% endif %}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if product.description %}
+        <p class="product-detail__desc">{{ product.description|linebreaksbr }}</p>
+      {% else %}
+        <p class="product-detail__desc">Service ou produit proposé par nos artisans et boutiques partenaires vérifiés.</p>
+      {% endif %}
+
+      {% if product.variants.all %}
+        <div class="variants">
+          <h4 style="font-family: var(--font-serif); margin: 0 0 10px;">Variantes disponibles</h4>
+          <ul>
+            {% for variant in product.variants.all %}
+              <li>
+                <strong>{{ variant.name }}:</strong> {{ variant.value }}
+                {% if variant.price_delta %}<span class="muted">(+{{ variant.price_delta|floatformat:0 }} FCFA)</span>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if product.vendor %}
+        <div class="vendor-card vendor-card--inline">
+          <div>
+            <div class="muted" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Vendeur</div>
+            <strong style="font-family:var(--font-serif); font-size:1.05rem;">{{ product.vendor.name }}</strong>
+            {% if product.vendor.location %}
+              <div class="muted">📍 {{ product.vendor.location }}</div>
+            {% endif %}
+          </div>
+          <div class="vendor-card__actions">
+            <a class="btn btn--ghost btn--small" href="{% url 'store:vendor_detail' product.vendor.slug %}">Voir la boutique</a>
+            {% if user.is_authenticated %}
+              <a class="btn btn--ghost btn--small" href="{% url 'messaging:contact_vendor' product.vendor.id %}">Contacter</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if product.service_provider %}
+        {% if product.service_provider.display_services_as_provider %}
+        <div class="service-detail-prestataire">
+          <div class="service-detail-prestataire__header">
+            {% if product.service_provider.profile_photo %}
+              <div class="service-detail-prestataire__photo">
+                <img src="{{ product.service_provider.profile_photo.url }}" alt="{{ product.service_provider.name }}">
+              </div>
+            {% else %}
+              <div class="service-detail-prestataire__photo service-detail-prestataire__photo--placeholder">
+                <span>{{ product.service_provider.name|first|upper }}</span>
+              </div>
+            {% endif %}
+            <div>
+              <h3 class="service-detail-prestataire__title">
+                {{ product.service_provider.name }}
+                <span class="service-detail-prestataire__available">disponible</span>
+              </h3>
+              <div class="service-detail-prestataire__badges">
+                <span class="badge badge--contract">Freelance / Indépendant</span>
+                {% if product.category %}
+                  <span class="badge badge--category">{{ product.category.name }}</span>
+                {% endif %}
+              </div>
+              {% if product.service_provider.location %}
+                <p class="service-detail-prestataire__location">📍 {{ product.service_provider.location }}</p>
+              {% endif %}
+              <p class="service-detail-prestataire__published">Publié par : {{ product.service_provider.owner.get_full_name|default:product.service_provider.owner.username }}</p>
+              {% if service_request and service_request.status == 'approved' %}
+                <p class="muted" style="font-weight:700; color:var(--forest);">☎ Téléphone: {{ product.service_provider.phone }}</p>
+              {% else %}
+                <p class="muted">☎ Téléphone masqué — demandez le service pour y accéder</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="vendor-card vendor-card--inline">
+          <div>
+            <div class="muted" style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Prestataire</div>
+            <strong style="font-family:var(--font-serif); font-size:1.05rem;">{{ product.service_provider.name }}</strong>
+            {% if product.service_provider.location %}
+              <div class="muted">📍 {{ product.service_provider.location }}</div>
+            {% endif %}
+          </div>
+          <div class="vendor-card__actions">
+            {% if service_request and service_request.status == 'approved' %}
+              <div class="muted" style="font-weight:700; color:var(--forest);">☎ {{ product.service_provider.phone }}</div>
+            {% else %}
+              <div class="muted">☎ Téléphone masqué — demandez le service</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <div class="product-detail__actions">
+        {% if product.kind == 'service' %}
+          {% if user.is_authenticated %}
+            {% if user|is_vendor or user|is_service_provider %}
+              <span class="muted">Les profils pro ne peuvent pas demander un service.</span>
+            {% else %}
+              {% if service_request and service_request.status == 'approved' %}
+                <span class="badge badge--success">Demande approuvée</span>
+              {% elif service_request and service_request.status == 'pending' %}
+                <span class="badge badge--warning">Demande en attente</span>
+              {% else %}
+                {% if service_request and service_request.status == 'rejected' %}
+                  <p class="muted">Demande refusée. Vous pouvez renvoyer une demande.</p>
+                {% endif %}
+                <a class="btn btn--primary" href="{% url 'store:request_service' product.id %}">Demander ce service</a>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <a class="btn btn--primary" href="{% url 'accounts:login' %}?next={% url 'store:product_detail' product.slug %}">Demander ce service</a>
+          {% endif %}
+        {% elif user|is_client or not user.is_authenticated %}
+          <a class="btn btn--primary js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">🛒 Ajouter au panier</a>
+          <a class="btn btn--ghost favorite-toggle favorite-toggle--inline {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
+             href="{% url 'store:toggle_favorite' product.id %}">
+            ♥ <span>{% if favorites and product.id in favorites %}Retirer{% else %}Ajouter aux favoris{% endif %}</span>
+          </a>
+        {% endif %}
+        <a class="btn btn--ghost" href="{% url 'store:product_list' %}">← Retour</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container reviews">
+    <div class="section-head">
+      <div>
+        <span class="section-eyebrow">Témoignages</span>
+        <h3 style="font-family: var(--font-serif); font-size: 1.6rem; margin: 0;">Avis clients</h3>
+      </div>
+    </div>
+
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'reviews:add_review' product.id %}" class="auth-card review-form" style="margin-bottom:18px;">
+        {% csrf_token %}
+        <label class="review-form__label">Votre note</label>
+        <div class="star-rating" role="group" aria-label="Choisir une note de 1 à 5 étoiles">
+          <input type="hidden" name="rating" id="id_rating" value="5">
+          <button type="button" class="star-rating__star" data-value="1" aria-label="1 étoile">★</button>
+          <button type="button" class="star-rating__star" data-value="2" aria-label="2 étoiles">★</button>
+          <button type="button" class="star-rating__star" data-value="3" aria-label="3 étoiles">★</button>
+          <button type="button" class="star-rating__star" data-value="4" aria-label="4 étoiles">★</button>
+          <button type="button" class="star-rating__star" data-value="5" aria-label="5 étoiles">★</button>
+        </div>
+        <label class="review-form__label">Votre commentaire</label>
+        <textarea name="comment" rows="3" placeholder="Partagez votre expérience..."></textarea>
+        <button class="btn btn--small" type="submit" style="justify-self:start; margin-top:6px;">Publier mon avis</button>
+      </form>
+    {% else %}
+      <div class="empty" style="margin-bottom:18px;">
+        <p style="margin:0;"><a class="link" href="{% url 'accounts:login' %}">Connectez-vous</a> pour laisser un avis.</p>
+      </div>
+    {% endif %}
+
+    {% for review in reviews %}
+      <div class="review-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+          <div>
+            <strong>{{ review.user.username }}</strong>
+            <span style="color:var(--accent); margin-left:6px; letter-spacing:2px;">
+              {% for _ in "12345"|make_list %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+            </span>
+          </div>
+          <span class="muted" style="font-size:0.82rem;">{{ review.created_at|date:"d/m/Y" }}</span>
+        </div>
+        <p style="margin: 10px 0 0;">{{ review.comment }}</p>
+        {% if review.reply %}
+          <div class="review-reply">
+            <strong style="font-size:0.85rem; color:var(--accent-dark);">↳ Réponse du vendeur</strong>
+            <p style="margin: 6px 0 0; color:var(--ink-soft);">{{ review.reply.message }}</p>
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="empty">Aucun avis pour le moment. Soyez le premier à en laisser un !</p>
+    {% endfor %}
+  </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script>
+    (function() {
+      var form = document.querySelector('.review-form');
+      if (!form) return;
+      var input = form.querySelector('input[name="rating"]');
+      var stars = form.querySelectorAll('.star-rating__star');
+      function setRating(value) {
+        input.value = value;
+        stars.forEach(function(star, i) { star.classList.toggle('active', i < value); });
+      }
+      stars.forEach(function(star) {
+        star.addEventListener('click', function() { setRating(parseInt(star.getAttribute('data-value'), 10)); });
+      });
+      setRating(5);
+    })();
+  </script>
+{% endblock %}

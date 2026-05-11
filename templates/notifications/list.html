@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Notifications</h1>
+  </section>
+  <section class="container">
+    {% for notification in notifications %}
+      <div class="cart">
+        <strong>{{ notification.title }}</strong>
+        <p>{{ notification.body }}</p>
+        <span class="muted">{{ notification.created_at }}</span>
+        {% if not notification.is_read %}
+          <a class="link" href="{% url 'notifications:mark_read' notification.id %}">Marquer comme lu</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="empty">Aucune notification.</p>
+    {% endfor %}
+  </section>
+{% endblock %}

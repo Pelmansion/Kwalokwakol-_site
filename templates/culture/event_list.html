@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Concerts à venir · KwaloK Culture{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>🎫 Concerts</h1>
+      <p>Réservez vos places pour les prochains événements</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'culture:home' %}">← Retour</a>
+  </header>
+
+  <form class="culture-filters" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Concert, artiste, lieu...">
+    <input type="text" name="city" value="{{ city }}" placeholder="Ville">
+    <select name="when">
+      <option value="upcoming" {% if when == "upcoming" %}selected{% endif %}>À venir</option>
+      <option value="past" {% if when == "past" %}selected{% endif %}>Passés</option>
+    </select>
+    <button class="btn" type="submit">Filtrer</button>
+  </form>
+
+  {% if events %}
+    <div class="event-grid">
+      {% for event in events %}{% include "culture/_event_card.html" with event=event %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state"><p>Aucun concert ne correspond à votre recherche.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

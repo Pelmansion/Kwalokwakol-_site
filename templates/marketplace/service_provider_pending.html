@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Espace prestataire en attente</h1>
+    <p class="muted">
+      Merci, {{ service_provider.name }} a bien été enregistré. Votre compte prestataire est en
+      <strong>cours de validation</strong> par l'équipe d'administration.
+    </p>
+  </section>
+
+  <section class="container auth-card">
+    <p>
+      Vous recevrez une notification une fois votre profil
+      <strong>validé</strong>. À partir de ce moment, vous pourrez :
+    </p>
+    <ul>
+      <li>Accéder à votre dashboard prestataire</li>
+      <li>Publier vos services</li>
+      <li>Gérer les demandes de vos clients</li>
+    </ul>
+    <p class="muted">
+      Pour toute question, vous pouvez contacter l'administration via la page
+      Contact.
+    </p>
+  </section>
+{% endblock %}
+

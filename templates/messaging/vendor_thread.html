@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Conversation client</h1>
+    <p class="muted">Client: {{ thread.user.username }}</p>
+  </section>
+  <section class="container auth-card">
+    <div class="message-thread">
+      {% for message in messages %}
+        <div class="message-card">
+          <strong>{{ message.sender.username }}</strong>
+          <p>{{ message.content }}</p>
+        </div>
+      {% empty %}
+        <p class="empty">Aucun message pour le moment.</p>
+      {% endfor %}
+    </div>
+    <form method="post" class="message-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn--small" type="submit">Envoyer</button>
+    </form>
+  </section>
+{% endblock %}

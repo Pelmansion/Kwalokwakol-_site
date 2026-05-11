@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load marketplace_tags %}
+
+{% block title %}Mes favoris — KwaloK Wakolê Group{% endblock %}
+
+{% block content %}
+  <section class="container page-title">
+    <span class="section-eyebrow">Vos envies</span>
+    <h1>Mes favoris</h1>
+    <p>Retrouvez ici les produits que vous aimez et que vous souhaitez acheter plus tard.</p>
+  </section>
+
+  <section class="container">
+    {% if products %}
+      <div class="product-grid">
+        {% for product in products %}
+          <article class="product-card">
+            <div class="product-card__image">
+              {% if product.media.first %}
+                <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
+              {% elif product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+              {% else %}
+                <div class="image-placeholder"></div>
+              {% endif %}
+            </div>
+            <div class="product-card__body">
+              <h3>{{ product.name }}</h3>
+              <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+              <div class="product-card__actions">
+                <div class="product-card__actions-left">
+                  <a class="favorite-toggle favorite-toggle--active"
+                     href="{% url 'store:toggle_favorite' product.id %}" title="Retirer des favoris">♥</a>
+                  <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+                </div>
+                {% if product.kind == 'service' %}
+                  <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
+                {% elif user|is_client or not user.is_authenticated %}
+                  <a class="btn btn--small js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter</a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty" style="padding:72px 24px;">
+        <div style="font-size:3rem; margin-bottom:12px;">💝</div>
+        <h3 style="font-family: var(--font-serif); margin: 0 0 8px;">Aucun favori pour l'instant</h3>
+        <p style="margin: 0 0 20px;">Cliquez sur le ♥ des produits que vous aimez pour les retrouver ici.</p>
+        <a href="{% url 'store:product_list' %}" class="btn">Découvrir les produits</a>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

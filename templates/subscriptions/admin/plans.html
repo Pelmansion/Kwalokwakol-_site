@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Formules d'abonnement — Administration{% endblock %}
+
+{% block content %}
+  <section class="container">
+    <div class="dashboard-hero">
+      <div class="dashboard-hero__main">
+        <span class="section-eyebrow">Administration</span>
+        <h1>Formules d'abonnement</h1>
+        <p class="dashboard-hero__tagline">
+          Créez et gérez les formules proposées aux vendeurs et prestataires.
+        </p>
+      </div>
+      <div class="dashboard-hero__actions">
+        <a class="btn btn--ghost" href="{% url 'subscriptions:admin_list' %}">← Abonnements</a>
+        <a class="btn btn--primary" href="{% url 'subscriptions:admin_plan_create' %}">+ Nouvelle formule</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="plans-grid" style="margin-top: 0;">
+      {% for plan in plans %}
+        <div class="plan-card {% if plan.is_featured %}plan-card--featured{% endif %}" style="cursor: default;">
+          <div class="plan-card__inner">
+            {% if plan.is_featured %}<span class="plan-card__badge">★ Recommandé</span>{% endif %}
+            {% if not plan.is_active %}
+              <span class="badge badge--danger" style="position: absolute; top: 14px; right: 14px; font-size: .7rem;">Inactif</span>
+            {% endif %}
+            <h2 class="plan-card__name">{{ plan.name }}</h2>
+            <p class="plan-card__tagline">
+              {{ plan.tagline|default:"" }}
+              {% if plan.target == 'vendor' %}<span class="badge" style="background:#fff7ed; color:#c2410c; font-size:.7rem; padding:2px 8px; border-radius:999px;">Vendeurs</span>
+              {% elif plan.target == 'provider' %}<span class="badge" style="background:#dbeafe; color:#1e40af; font-size:.7rem; padding:2px 8px; border-radius:999px;">Prestataires</span>
+              {% else %}<span class="badge" style="background:#f1f5f9; color:#334155; font-size:.7rem; padding:2px 8px; border-radius:999px;">Tous</span>{% endif %}
+            </p>
+            <div class="plan-card__price">
+              <span class="plan-card__amount">{{ plan.monthly_amount|floatformat:0 }}</span>
+              <span class="plan-card__currency">FCFA</span>
+              <span class="plan-card__period">/ mois</span>
+            </div>
+            {% if plan.description %}<p class="plan-card__desc">{{ plan.description }}</p>{% endif %}
+            <ul class="plan-card__features">
+              {% for feat in plan.features_list %}<li>✓ {{ feat }}</li>{% endfor %}
+            </ul>
+            <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 14px;">
+              <a class="btn btn--small btn--ghost" href="{% url 'subscriptions:admin_plan_edit' plan.id %}" style="flex: 1;">✏️ Modifier</a>
+              <form method="post" action="{% url 'subscriptions:admin_plan_delete' plan.id %}" style="display: inline;" onsubmit="return confirm('Supprimer cette formule ?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--small btn--ghost" style="color: #dc2626;">🗑️</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty" style="padding: 40px 20px; text-align: center; grid-column: 1/-1;">
+          <div style="font-size: 2.5rem; margin-bottom: 10px;">📋</div>
+          <h3 style="font-family: var(--font-serif);">Aucune formule pour le moment</h3>
+          <p class="muted">Créez la première formule pour vos abonnés.</p>
+          <a class="btn btn--primary" href="{% url 'subscriptions:admin_plan_create' %}">+ Nouvelle formule</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

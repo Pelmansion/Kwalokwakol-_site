@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ event.title }} · Concert{% endblock %}
+
+{% block content %}
+<section class="event-hero" {% if event.poster %}style="background-image: linear-gradient(180deg, rgba(0,0,0,.3), rgba(0,0,0,.85)), url('{{ event.poster.url }}')"{% endif %}>
+  <div class="container event-hero__inner">
+    <div class="event-hero__date">
+      <span>{{ event.starts_at|date:"d" }}</span>
+      <strong>{{ event.starts_at|date:"M"|upper }}</strong>
+      <small>{{ event.starts_at|date:"Y" }}</small>
+    </div>
+    <div class="event-hero__text">
+      <h1>{{ event.title }}</h1>
+      {% if event.headlining_artist %}
+      <p class="event-hero__artist">🎤 <a href="{% url 'culture:artist_detail' event.headlining_artist.slug %}">{{ event.headlining_artist.stage_name }}</a></p>
+      {% endif %}
+      <p class="event-hero__meta">
+        🕒 {{ event.starts_at|date:"l j F Y · H\hi" }}<br>
+        📍 {{ event.venue_name }}, {{ event.city }}
+      </p>
+      {% if event.is_open_for_sale %}
+        <a class="btn btn--lg" href="{% url 'culture:ticket_purchase' event.slug %}">🎫 Acheter mes billets</a>
+      {% else %}
+        <span class="badge badge--paid">Billetterie fermée</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="container culture-page">
+  <div class="event-detail__grid">
+    <div class="event-detail__main">
+      <h2>À propos de l'événement</h2>
+      <p>{{ event.description|linebreaksbr }}</p>
+
+      {% if event.featured_artists.all %}
+      <h2>Artistes à l'affiche</h2>
+      <div class="artist-grid artist-grid--small">
+        {% for a in event.featured_artists.all %}{% include "culture/_artist_card.html" with artist=a %}{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <aside class="event-detail__side">
+      <div class="event-side-card">
+        <h3>📍 Lieu</h3>
+        <p><strong>{{ event.venue_name }}</strong></p>
+        {% if event.address %}<p>{{ event.address }}</p>{% endif %}
+        <p>{{ event.city }}{% if event.region %} · {{ event.region }}{% endif %}</p>
+        {% if event.map_url %}<a href="{{ event.map_url }}" target="_blank" class="btn btn--ghost btn--sm">🗺 Voir sur la carte</a>{% endif %}
+      </div>
+
+      <div class="event-side-card">
+        <h3>🎫 Catégories de billets</h3>
+        {% if categories %}
+          <ul class="ticket-cat-list">
+            {% for c in categories %}
+              <li>
+                <span class="ticket-cat-list__color" style="background: {{ c.color }}"></span>
+                <div class="ticket-cat-list__body">
+                  <strong>{{ c.name }}</strong>
+                  <small>{{ c.description }}</small>
+                  <span class="ticket-cat-list__remaining">
+                    {% if c.is_sold_out %}<em>Épuisé</em>{% else %}{{ c.quantity_remaining }} places restantes{% endif %}
+                  </span>
+                </div>
+                <span class="ticket-cat-list__price">{{ c.price_fcfa|floatformat:0 }} FCFA</span>
+              </li>
+            {% endfor %}
+          </ul>
+          {% if event.is_open_for_sale %}
+          <a class="btn" href="{% url 'culture:ticket_purchase' event.slug %}">Acheter →</a>
+          {% endif %}
+        {% else %}
+          <p class="muted">Aucune catégorie de billet disponible pour l'instant.</p>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

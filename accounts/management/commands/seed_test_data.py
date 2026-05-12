@@ -480,7 +480,12 @@ class Command(BaseCommand):
     # Produits
     # ------------------------------------------------------------------
     def create_products(self, vendors, providers):
-        cats = {c.name.lower(): c for c in Category.objects.all()}
+        cats = {
+            c.name.lower(): c
+            for c in Category.objects.filter(
+                vendor__isnull=True, service_provider__isnull=True
+            )
+        }
 
         def cat(*names):
             for n in names:

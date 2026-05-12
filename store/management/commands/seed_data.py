@@ -77,6 +77,8 @@ class Command(BaseCommand):
         for name, description in categories:
             category, _ = Category.objects.get_or_create(
                 name=name,
+                vendor__isnull=True,
+                service_provider__isnull=True,
                 defaults={"description": description, "is_active": True},
             )
             created_categories.append(category)

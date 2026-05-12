@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Paiement non finalisé — Abonnement{% endblock %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Paiement non finalisé</h1>
+    <p>Abonnement KwaloK</p>
+  </section>
+  <section class="container cart">
+    <p>Sur la page GeniusPay, choisissez <strong>Wave</strong>, <strong>Orange Money</strong>, <strong>MTN MoMo</strong> ou <strong>carte bancaire</strong>, puis suivez les instructions jusqu’à la confirmation.</p>
+    <p class="muted" style="font-size: 0.9rem;">Aucun débit n’est effectué tant que la transaction n’est pas confirmée sur leur interface sécurisée.</p>
+    <p><a class="btn btn--primary-wide" href="{% url 'subscriptions:my_subscription' %}">Réessayer le paiement</a></p>
+  </section>
+{% endblock %}

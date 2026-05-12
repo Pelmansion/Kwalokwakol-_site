@@ -9,6 +9,8 @@ urlpatterns = [
     path("", views.my_subscription, name="my_subscription"),
     path("formules/", views.choose_plan, name="choose_plan"),
     path("payer/", views.start_payment, name="start_payment"),
+    path("genius/retour/<int:payment_id>/", views.genius_return, name="genius_return"),
+    path("genius/echec/<int:payment_id>/", views.genius_error, name="genius_error"),
     path("sandbox/<int:payment_id>/", views.payment_sandbox, name="payment_sandbox"),
     path("succes/<int:payment_id>/", views.payment_success, name="payment_success"),
 

@@ -5,9 +5,10 @@ from .models import Category, Product, ProductMedia, ProductVariant
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "parent", "is_active")
-    search_fields = ("name",)
-    prepopulated_fields = {"slug": ("name",)}
+    list_display = ("name", "slug", "vendor", "service_provider", "parent", "is_active")
+    list_filter = ("is_active", "vendor", "service_provider")
+    search_fields = ("name", "slug")
+    raw_id_fields = ("vendor", "service_provider", "parent")
 
 
 class ProductMediaInline(admin.TabularInline):

@@ -14,6 +14,12 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from marketplace.models import ServiceProvider, Vendor
+from payments.genius import (
+    GeniusPaymentError,
+    create_checkout_payment,
+    fetch_payment,
+    is_configured as genius_is_configured,
+)
 
 from .forms import AdminSetAmountForm, ChoosePlanForm, SubscriptionPlanForm
 from .models import Subscription, SubscriptionPayment, SubscriptionPlan
@@ -143,6 +149,7 @@ def my_subscription(request):
             "payments": payments,
             "vendor": vendor,
             "provider": provider,
+            "genius_payment": genius_is_configured(),
         },
     )
 
@@ -150,7 +157,7 @@ def my_subscription(request):
 @login_required
 @require_POST
 def start_payment(request):
-    """Crée un SubscriptionPayment en attente et redirige vers le sandbox."""
+    """Crée un paiement en attente puis redirige vers GeniusPay (réel) ou le sandbox (simulation)."""
     sub = get_user_subscription(request.user)
     if not sub:
         return redirect("subscriptions:choose_plan")
@@ -166,6 +173,50 @@ def start_payment(request):
         messages.info(request, "Votre abonnement est déjà actif.")
         return redirect("subscriptions:my_subscription")
 
+    owner = sub.owner_profile
+    user = owner.owner
+    plan_label = sub.plan.name if sub.plan else "Abonnement KwaloK"
+    phone = getattr(owner, "phone", "") or ""
+
+    if genius_is_configured():
+        payment = SubscriptionPayment.objects.create(
+            subscription=sub,
+            amount=sub.monthly_amount,
+            provider=SubscriptionPayment.PROVIDER_GENIUS,
+            reference="",
+        )
+        success_url = request.build_absolute_uri(
+            reverse("subscriptions:genius_return", kwargs={"payment_id": payment.id})
+        )
+        error_url = request.build_absolute_uri(
+            reverse("subscriptions:genius_error", kwargs={"payment_id": payment.id})
+        )
+        try:
+            amt_int = int(payment.amount)
+            res = create_checkout_payment(
+                amount=payment.amount,
+                description=f"{plan_label} — {amt_int} FCFA / mois"[:500],
+                customer_name=user.get_full_name() or user.username,
+                customer_email=user.email or "",
+                customer_phone=phone,
+                metadata={
+                    "subscription_payment_id": str(payment.id),
+                    "kind": "subscription",
+                },
+                success_url=success_url,
+                error_url=error_url,
+            )
+        except GeniusPaymentError as exc:
+            payment.delete()
+            messages.error(request, str(exc))
+            return redirect("subscriptions:my_subscription")
+
+        ref = (res.get("reference") or "")[:80]
+        if ref:
+            payment.reference = ref
+            payment.save(update_fields=["reference"])
+        return redirect(res["checkout_url"])
+
     payment = SubscriptionPayment.objects.create(
         subscription=sub,
         amount=sub.monthly_amount,
@@ -177,7 +228,7 @@ def start_payment(request):
 
 @login_required
 def payment_sandbox(request, payment_id: int):
-    """Sandbox simulée pour régler un abonnement."""
+    """Sandbox simulée pour régler un abonnement (si GeniusPay non configuré)."""
     payment = get_object_or_404(SubscriptionPayment, id=payment_id)
     sub = payment.subscription
 
@@ -185,6 +236,9 @@ def payment_sandbox(request, payment_id: int):
     owner = sub.owner_profile
     if not owner or owner.owner_id != request.user.id:
         raise Http404
+
+    if payment.provider == SubscriptionPayment.PROVIDER_GENIUS:
+        return redirect("subscriptions:genius_return", payment_id=payment.id)
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -200,6 +254,98 @@ def payment_sandbox(request, payment_id: int):
     return render(
         request,
         "subscriptions/payment_sandbox.html",
+        {"payment": payment, "subscription": sub},
+    )
+
+
+@login_required
+def genius_return(request, payment_id: int):
+    """Retour après checkout Genius — vérifie le paiement puis active l'abonnement."""
+    payment = get_object_or_404(
+        SubscriptionPayment,
+        id=payment_id,
+        provider=SubscriptionPayment.PROVIDER_GENIUS,
+    )
+    sub = payment.subscription
+    owner = sub.owner_profile
+    if not owner or owner.owner_id != request.user.id:
+        raise Http404
+
+    if payment.status == SubscriptionPayment.STATUS_SUCCESS:
+        messages.success(request, "Paiement déjà enregistré.")
+        return redirect("subscriptions:payment_success", payment_id=payment.id)
+
+    if not payment.reference:
+        return render(
+            request,
+            "subscriptions/genius_pending.html",
+            {
+                "payment": payment,
+                "subscription": sub,
+                "message": "Référence de transaction manquante. Contactez le support.",
+            },
+        )
+
+    try:
+        data = fetch_payment(payment.reference)
+    except GeniusPaymentError as exc:
+        return render(
+            request,
+            "subscriptions/genius_pending.html",
+            {"payment": payment, "subscription": sub, "message": str(exc)},
+        )
+
+    status = (data.get("status") or "").lower()
+    if status == "completed":
+        payment.mark_success()
+        messages.success(request, "Paiement validé ! Votre abonnement est actif.")
+        return redirect("subscriptions:payment_success", payment_id=payment.id)
+
+    if status == "failed":
+        payment.mark_failed("Paiement refusé ou annulé")
+        messages.error(request, "Le paiement a échoué.")
+        return redirect("subscriptions:my_subscription")
+
+    return render(
+        request,
+        "subscriptions/genius_pending.html",
+        {
+            "payment": payment,
+            "subscription": sub,
+            "message": "Paiement en cours de validation. Rechargez la page dans un instant.",
+        },
+    )
+
+
+@login_required
+def genius_error(request, payment_id: int):
+    """Retour Genius en cas d'erreur ou d'abandon (le paiement peut quand même être validé côté Genius)."""
+    payment = get_object_or_404(
+        SubscriptionPayment,
+        id=payment_id,
+        provider=SubscriptionPayment.PROVIDER_GENIUS,
+    )
+    sub = payment.subscription
+    owner = sub.owner_profile
+    if not owner or owner.owner_id != request.user.id:
+        raise Http404
+
+    if payment.status == SubscriptionPayment.STATUS_PENDING and payment.reference:
+        try:
+            data = fetch_payment(payment.reference)
+            if (data.get("status") or "").lower() == "completed":
+                return redirect("subscriptions:genius_return", payment_id=payment.id)
+        except GeniusPaymentError:
+            pass
+
+    messages.warning(
+        request,
+        "Le paiement n'a pas été finalisé, ou vous avez quitté la page avant la confirmation. "
+        "Réessayez : sur GeniusPay vous pouvez payer par Wave, Orange Money, MTN MoMo ou carte bancaire.",
+    )
+    return render(
+        request,
+        "subscriptions/genius_error.html",
         {"payment": payment, "subscription": sub},
     )
 

@@ -8,16 +8,31 @@
     <form method="post">
       {% csrf_token %}
       
-      <p class="muted">Tous les champs marqués d'un astérisque (*) sont obligatoires.</p>
-      
+      <p class="muted">Tous les champs marqués d'un astérisque (*) sont obligatoires, sauf indication contraire.</p>
+
+      {% if form.non_field_errors %}
+        <div class="error" style="margin-bottom: 16px;">{{ form.non_field_errors }}</div>
+      {% endif %}
+
       <div class="form-group">
-        <label for="{{ form.category.id_for_label }}">Catégorie *</label>
+        <label for="{{ form.category.id_for_label }}">Catégorie existante</label>
         {{ form.category }}
         {% if form.category.help_text %}
           <small class="help-text">{{ form.category.help_text }}</small>
         {% endif %}
         {% if form.category.errors %}
           <div class="error">{{ form.category.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.new_category.id_for_label }}">{{ form.new_category.label }}</label>
+        {{ form.new_category }}
+        {% if form.new_category.help_text %}
+          <small class="help-text">{{ form.new_category.help_text }}</small>
+        {% endif %}
+        {% if form.new_category.errors %}
+          <div class="error">{{ form.new_category.errors }}</div>
         {% endif %}
       </div>
 

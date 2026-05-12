@@ -204,10 +204,12 @@ class SubscriptionPayment(models.Model):
     PROVIDER_CARD = "card"
     PROVIDER_MOBILE = "mobile_money"
     PROVIDER_MANUAL = "manual"
+    PROVIDER_GENIUS = "genius"
     PROVIDER_CHOICES = [
         (PROVIDER_CARD, "Carte bancaire"),
         (PROVIDER_MOBILE, "Mobile Money"),
         (PROVIDER_MANUAL, "Paiement manuel"),
+        (PROVIDER_GENIUS, "GeniusPay (Wave, Orange, MTN, carte…)"),
     ]
 
     subscription = models.ForeignKey(
@@ -235,6 +237,8 @@ class SubscriptionPayment(models.Model):
 
     def mark_success(self) -> None:
         """Marque un paiement comme réussi et active l'abonnement."""
+        if self.status == self.STATUS_SUCCESS:
+            return
         now = timezone.now()
         self.status = self.STATUS_SUCCESS
         self.paid_at = now

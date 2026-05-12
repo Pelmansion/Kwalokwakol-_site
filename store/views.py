@@ -92,7 +92,12 @@ def home(request):
         if _is_app_admin(request.user):
             return redirect("accounts:admin_dashboard")
 
-    categories = Category.objects.filter(is_active=True, parent__isnull=True)
+    categories = Category.objects.filter(
+        is_active=True,
+        parent__isnull=True,
+        vendor__isnull=True,
+        service_provider__isnull=True,
+    )
     vendor = _get_vendor(request.user)
     service_provider = _get_service_provider(request.user)
     favorites = _get_favorites(request.session)
@@ -217,7 +222,12 @@ def product_list(request):
         products = products.order_by("-avg_rating")
     elif sort == "popular":
         products = products.order_by("-sales_count")
-    subcategories = Category.objects.filter(parent__isnull=False, is_active=True)
+    subcategories = Category.objects.filter(
+        parent__isnull=False,
+        is_active=True,
+        vendor__isnull=True,
+        service_provider__isnull=True,
+    )
     return render(
         request,
         "store/products.html",
@@ -554,7 +564,11 @@ def service_provider_list(request):
         )
     ).order_by("-approved_requests_count", "-services_count", "-verified_at")
     
-    categories = Category.objects.filter(is_active=True)
+    categories = Category.objects.filter(
+        is_active=True,
+        vendor__isnull=True,
+        service_provider__isnull=True,
+    )
     
     return render(
         request,

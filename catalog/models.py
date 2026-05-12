@@ -1,25 +1,87 @@
 from django.db import models
+from django.db.models import Q
 from django.utils.text import slugify
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=120, unique=True)
+    """Catégorie globale (plateforme) ou personnalisée (une boutique / un prestataire)."""
+
+    name = models.CharField(max_length=120)
     slug = models.SlugField(max_length=140, unique=True, blank=True)
     description = models.TextField(blank=True)
     parent = models.ForeignKey(
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children"
     )
     is_active = models.BooleanField(default=True)
+    vendor = models.ForeignKey(
+        "marketplace.Vendor",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="custom_categories",
+        help_text="Si renseigné : catégorie propre à cette boutique.",
+    )
+    service_provider = models.ForeignKey(
+        "marketplace.ServiceProvider",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="custom_categories",
+        help_text="Si renseigné : catégorie propre à ce prestataire.",
+    )
 
     class Meta:
         verbose_name_plural = "categories"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    Q(vendor__isnull=False, service_provider__isnull=True)
+                    | Q(vendor__isnull=True, service_provider__isnull=False)
+                    | Q(vendor__isnull=True, service_provider__isnull=True)
+                ),
+                name="category_at_most_one_owner",
+            ),
+            models.UniqueConstraint(
+                fields=["vendor", "name"],
+                condition=Q(vendor__isnull=False),
+                name="category_unique_vendor_name",
+            ),
+            models.UniqueConstraint(
+                fields=["service_provider", "name"],
+                condition=Q(service_provider__isnull=False),
+                name="category_unique_provider_name",
+            ),
+        ]
+
+    def _ensure_unique_slug(self) -> None:
+        prefix = ""
+        if self.vendor_id:
+            prefix = f"v{self.vendor_id}-"
+        elif self.service_provider_id:
+            prefix = f"p{self.service_provider_id}-"
+        base = slugify(self.name) or "categorie"
+        if len(base) > 90:
+            base = base[:90].rstrip("-")
+        original = f"{prefix}{base}"[:140].rstrip("-")
+        slug = original
+        counter = 0
+        qs = Category.objects.exclude(pk=self.pk) if self.pk else Category.objects.all()
+        while qs.filter(slug=slug).exists():
+            counter += 1
+            suffix = f"-{counter}"
+            slug = (original[: 140 - len(suffix)] + suffix).rstrip("-")
+        self.slug = slug
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self._ensure_unique_slug()
         super().save(*args, **kwargs)
 
     def __str__(self):
+        if self.vendor_id:
+            return f"{self.name} (boutique)"
+        if self.service_provider_id:
+            return f"{self.name} (prestataire)"
         return self.name
 
 

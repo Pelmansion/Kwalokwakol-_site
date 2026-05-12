@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from catalog.models import Category, Product
 from orders.models import Order
@@ -72,12 +73,33 @@ class VendorForm(forms.ModelForm):
         return id_number
 
 
+def marketplace_category_queryset(*, vendor=None, service_provider=None):
+    """Catégories plateforme + celles créées par ce vendeur / ce prestataire."""
+    q = Q(vendor__isnull=True, service_provider__isnull=True)
+    if vendor is not None:
+        q |= Q(vendor=vendor)
+    if service_provider is not None:
+        q |= Q(service_provider=service_provider)
+    return Category.objects.filter(is_active=True).filter(q).distinct().order_by("name")
+
+
 class ProductForm(forms.ModelForm):
+    new_category = forms.CharField(
+        required=False,
+        max_length=120,
+        label="Ou créer une catégorie",
+        widget=forms.TextInput(
+            attrs={"placeholder": "Ex. : Épices artisanales, Accessoires…"}
+        ),
+        help_text="Optionnel : laissez vide si vous choisissez une catégorie ci-dessus. "
+        "Sinon ce nom crée une catégorie réservée à votre boutique.",
+    )
     category = forms.ModelChoiceField(
-        queryset=Category.objects.filter(is_active=True),
-        required=True,
+        queryset=Category.objects.none(),
+        required=False,
+        empty_label="— Choisir une catégorie existante —",
         label="Catégorie",
-        help_text="Sélectionnez la catégorie à laquelle appartient votre produit ou service"
+        help_text="Catégories générales du site ou celles que vous avez déjà créées.",
     )
     name = forms.CharField(
         required=True,
@@ -119,6 +141,26 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ["category", "name", "description", "price", "stock", "kind", "image_url"]
+
+    def __init__(self, *args, vendor=None, **kwargs):
+        self._vendor = vendor
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = marketplace_category_queryset(vendor=vendor)
+
+    def clean(self):
+        cleaned = super().clean()
+        new = (cleaned.get("new_category") or "").strip()
+        cat = cleaned.get("category")
+        if new and cat:
+            raise forms.ValidationError(
+                "Choisissez une catégorie dans la liste ou indiquez un nouveau nom, pas les deux."
+            )
+        if not new and not cat:
+            self.add_error(
+                "category",
+                "Sélectionnez une catégorie existante ou créez-en une nouvelle (champ ci-dessous).",
+            )
+        return cleaned
 
 
 class VendorProfileForm(forms.ModelForm):
@@ -328,11 +370,19 @@ class ServiceProviderProfileForm(forms.ModelForm):
 
 
 class ServiceProductForm(forms.ModelForm):
+    new_category = forms.CharField(
+        required=False,
+        max_length=120,
+        label="Ou créer une catégorie",
+        widget=forms.TextInput(attrs={"placeholder": "Ex. : Réparation, Coiffure à domicile…"}),
+        help_text="Optionnel : créez une rubrique réservée à vos services. Sinon choisissez une catégorie ci-dessus.",
+    )
     category = forms.ModelChoiceField(
-        queryset=Category.objects.filter(is_active=True),
-        required=True,
+        queryset=Category.objects.none(),
+        required=False,
+        empty_label="— Choisir une catégorie existante —",
         label="Catégorie",
-        help_text="Sélectionnez la catégorie à laquelle appartient votre service"
+        help_text="Catégories générales du site ou celles que vous avez déjà créées.",
     )
     name = forms.CharField(
         required=True,
@@ -362,6 +412,28 @@ class ServiceProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ["category", "name", "description", "price", "image_url"]
+
+    def __init__(self, *args, service_provider=None, **kwargs):
+        self._service_provider = service_provider
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = marketplace_category_queryset(
+            service_provider=service_provider
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        new = (cleaned.get("new_category") or "").strip()
+        cat = cleaned.get("category")
+        if new and cat:
+            raise forms.ValidationError(
+                "Choisissez une catégorie dans la liste ou indiquez un nouveau nom, pas les deux."
+            )
+        if not new and not cat:
+            self.add_error(
+                "category",
+                "Sélectionnez une catégorie existante ou créez-en une nouvelle (champ ci-dessous).",
+            )
+        return cleaned
 
 
 class OrderStatusForm(forms.ModelForm):

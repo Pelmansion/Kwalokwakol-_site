@@ -169,6 +169,44 @@ def genius_webhook(request):
     if event == "payment.success":
         data = payload.get("data") or {}
         meta = data.get("metadata") or {}
+
+        if meta.get("kind") == "subscription" and meta.get("subscription_payment_id"):
+            from subscriptions.models import SubscriptionPayment
+
+            try:
+                sp = SubscriptionPayment.objects.select_related("subscription").get(
+                    id=int(meta["subscription_payment_id"]),
+                    provider=SubscriptionPayment.PROVIDER_GENIUS,
+                )
+            except (SubscriptionPayment.DoesNotExist, ValueError):
+                logger.warning("Genius webhook subscription payment introuvable: %s", meta.get("subscription_payment_id"))
+                return JsonResponse({"received": True}, status=200)
+
+            if sp.status == SubscriptionPayment.STATUS_SUCCESS:
+                return JsonResponse({"received": True}, status=200)
+
+            ref = data.get("reference") or ""
+            if ref and not sp.reference:
+                sp.reference = ref[:80]
+                sp.save(update_fields=["reference"])
+
+            amt = data.get("amount")
+            if amt is not None:
+                try:
+                    if abs(float(amt) - float(sp.amount)) > 1:
+                        logger.error(
+                            "Genius webhook subscription montant discordant sp=%s attendu=%s reçu=%s",
+                            sp.id,
+                            sp.amount,
+                            amt,
+                        )
+                        return JsonResponse({"detail": "Amount mismatch"}, status=400)
+                except (TypeError, ValueError):
+                    pass
+
+            sp.mark_success()
+            return JsonResponse({"received": True}, status=200)
+
         pid = meta.get("payment_id")
         if not pid:
             logger.warning("Genius webhook payment.success sans payment_id: %s", payload)
@@ -211,6 +249,21 @@ def genius_webhook(request):
     if event == "payment.failed":
         data = payload.get("data") or {}
         meta = data.get("metadata") or {}
+
+        if meta.get("kind") == "subscription" and meta.get("subscription_payment_id"):
+            from subscriptions.models import SubscriptionPayment
+
+            try:
+                sp = SubscriptionPayment.objects.get(
+                    id=int(meta["subscription_payment_id"]),
+                    provider=SubscriptionPayment.PROVIDER_GENIUS,
+                )
+                if sp.status == SubscriptionPayment.STATUS_PENDING:
+                    sp.mark_failed("Paiement refusé (GeniusPay)")
+            except (SubscriptionPayment.DoesNotExist, ValueError):
+                pass
+            return JsonResponse({"received": True}, status=200)
+
         pid = meta.get("payment_id")
         if pid:
             try:

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Paiement en cours — Abonnement{% endblock %}
+{% block content %}
+  <section class="container page-title">
+    <h1>Validation du paiement</h1>
+    <p>Abonnement — {{ subscription.monthly_amount|floatformat:0 }} FCFA</p>
+  </section>
+  <section class="container cart">
+    {% if message %}
+      <p class="alert alert--info">{{ message }}</p>
+    {% endif %}
+    <p>Si vous avez bien payé sur GeniusPay (Wave, carte…), la confirmation peut prendre quelques secondes.</p>
+    <p><a class="btn btn--primary-wide" href="{% url 'subscriptions:genius_return' payment_id=payment.id %}">Vérifier à nouveau</a></p>
+    <p><a href="{% url 'subscriptions:my_subscription' %}">Retour à mon abonnement</a></p>
+  </section>
+{% endblock %}

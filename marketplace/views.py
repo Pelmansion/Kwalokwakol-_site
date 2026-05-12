@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db.models import Count, DecimalField, F, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
-from catalog.models import Product
+from catalog.models import Category, Product
 from orders.models import OrderItem
 from payments.models import Payment
 from reviews.models import Review, ReviewReply
@@ -22,6 +22,32 @@ from .forms import (
 )
 from .models import ServiceProvider, ServiceRequest, Vendor
 from accounts.forms import SignupForm
+
+
+def _assign_vendor_product_category(product, form, vendor):
+    new_name = (form.cleaned_data.get("new_category") or "").strip()
+    if new_name:
+        cat, _ = Category.objects.get_or_create(
+            vendor=vendor,
+            name=new_name[:120],
+            defaults={"is_active": True},
+        )
+        product.category = cat
+    else:
+        product.category = form.cleaned_data["category"]
+
+
+def _assign_provider_product_category(product, form, service_provider):
+    new_name = (form.cleaned_data.get("new_category") or "").strip()
+    if new_name:
+        cat, _ = Category.objects.get_or_create(
+            service_provider=service_provider,
+            name=new_name[:120],
+            defaults={"is_active": True},
+        )
+        product.category = cat
+    else:
+        product.category = form.cleaned_data["category"]
 
 
 # ---------------------------------------------------------------------------
@@ -180,14 +206,15 @@ def add_product(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, vendor=vendor)
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = vendor
+            _assign_vendor_product_category(product, form, vendor)
             product.save()
             return redirect("marketplace:dashboard")
     else:
-        form = ProductForm()
+        form = ProductForm(vendor=vendor)
     return render(request, "marketplace/product_form.html", {"form": form})
 
 
@@ -201,12 +228,14 @@ def edit_product(request, product_id):
         return gate
     product = get_object_or_404(Product, id=product_id, vendor=vendor)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, instance=product, vendor=vendor)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            _assign_vendor_product_category(product, form, vendor)
+            product.save()
             return redirect("marketplace:dashboard")
     else:
-        form = ProductForm(instance=product)
+        form = ProductForm(instance=product, vendor=vendor)
     return render(
         request, "marketplace/product_form.html", {"form": form, "product": product}
     )
@@ -443,16 +472,17 @@ def add_service(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = ServiceProductForm(request.POST)
+        form = ServiceProductForm(request.POST, service_provider=service_provider)
         if form.is_valid():
             product = form.save(commit=False)
             product.service_provider = service_provider
             product.kind = Product.SERVICE
             product.stock = 0
+            _assign_provider_product_category(product, form, service_provider)
             product.save()
             return redirect("marketplace:service_provider_dashboard")
     else:
-        form = ServiceProductForm()
+        form = ServiceProductForm(service_provider=service_provider)
     return render(
         request, "marketplace/service_product_form.html", {"form": form}
     )

@@ -2,7 +2,12 @@ from catalog.models import Category
 
 
 def category_nav(request):
-    categories = Category.objects.filter(is_active=True, parent__isnull=True)
+    categories = Category.objects.filter(
+        is_active=True,
+        parent__isnull=True,
+        vendor__isnull=True,
+        service_provider__isnull=True,
+    )
     cart = request.session.get("cart", {})
     cart_count = 0
     if isinstance(cart, dict):

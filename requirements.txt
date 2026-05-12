@@ -18,7 +18,7 @@ tzdata==2025.3
 urllib3==2.6.3
 psycopg2-binary==2.9.10
 sqlparse==0.5.5
-tzdata==2025.2
+tzdata==2025.3
 openpyxl
 gunicorn
 reportlab

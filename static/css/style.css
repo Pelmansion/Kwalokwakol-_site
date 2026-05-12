@@ -2960,6 +2960,57 @@ textarea::placeholder { color: #94a3b8; }
   }
   .bottom-nav__label { line-height: 1.1; }
 
+  /* Hero accueil : overlay lisible, image visible, titre non coupé sur mobile */
+  .hero__banner {
+    min-height: min(78vh, 580px);
+  }
+  .hero-slide::after {
+    background: linear-gradient(
+      180deg,
+      rgba(27, 20, 16, 0.45) 0%,
+      rgba(27, 20, 16, 0.78) 55%,
+      rgba(27, 20, 16, 0.92) 100%
+    );
+  }
+  .hero-slide::before {
+    background-position: center 28%;
+  }
+  .hero-slide .hero__content {
+    justify-content: flex-start;
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+    padding-bottom: 76px;
+    box-sizing: border-box;
+    max-width: none;
+    height: auto;
+    min-height: 100%;
+  }
+  .hero__content h1 {
+    font-size: clamp(1.32rem, 5.4vw, 1.9rem);
+    line-height: 1.2;
+  }
+  .hero__content p {
+    font-size: 0.98rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+  .hero__stats {
+    margin-top: auto;
+    padding-top: 18px;
+    gap: 14px;
+    border-top-color: rgba(255, 255, 255, 0.28);
+  }
+  .hero__stats strong {
+    color: #fde68a;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+  .hero__stats span {
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .hero-slider__dots {
+    bottom: 16px;
+    left: 18px;
+  }
+
   /* Bulle Kwa au-dessus de la bottom-nav (sinon elle masque « Compte ») */
   .kwa-bubble {
     bottom: calc(78px + env(safe-area-inset-bottom));
@@ -2972,7 +3023,12 @@ textarea::placeholder { color: #94a3b8; }
 }
 
 @media (max-width: 640px) {
-  .hero__content { padding: 28px 22px !important; }
+  .hero-slide .hero__content {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-bottom: 72px !important;
+    padding-top: max(18px, env(safe-area-inset-top, 0px)) !important;
+  }
   .hero__stats { gap: 22px; }
   .flash { padding: 22px 18px; }
   .footer__grid { grid-template-columns: 1fr; gap: 28px; }

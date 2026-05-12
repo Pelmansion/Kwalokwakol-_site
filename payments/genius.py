@@ -30,6 +30,24 @@ def is_configured() -> bool:
     return bool(key and secret)
 
 
+def genius_credential_mode() -> str:
+    """
+    GeniusPay utilise la même URL d'API ; l'environnement est déterminé par les clés :
+    pk_sandbox_ / sk_sandbox_ → tests (aucun encaissement réel) ;
+    pk_live_ / sk_live_ → production.
+    """
+    key = (getattr(settings, "GENIUS_API_KEY", None) or "").strip().lower()
+    if key.startswith("pk_live_"):
+        return "live"
+    if key.startswith("pk_sandbox_"):
+        return "sandbox"
+    return "unknown"
+
+
+def is_sandbox_credentials() -> bool:
+    return genius_credential_mode() == "sandbox"
+
+
 def _headers() -> dict[str, str]:
     return {
         "X-API-Key": settings.GENIUS_API_KEY.strip(),

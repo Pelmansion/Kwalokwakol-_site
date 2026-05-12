@@ -177,6 +177,8 @@ EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
 # Ne jamais committer les clés. Le fichier .env est gitignoré : en production (Render, etc.),
 # définir GENIUS_API_KEY et GENIUS_API_SECRET dans l’onglet Environment du service.
 # decouple lit d’abord les variables d’environnement du processus, puis .env si présent.
+# Environnement : pk_sandbox_ / sk_sandbox_ = tests (aucun débit réel) ;
+# pk_live_ / sk_live_ = encaissements réels (compte marchand validé côté GeniusPay).
 GENIUS_API_KEY = config("GENIUS_API_KEY", default="").strip()
 GENIUS_API_SECRET = config("GENIUS_API_SECRET", default="").strip()
 GENIUS_WEBHOOK_SECRET = config("GENIUS_WEBHOOK_SECRET", default="").strip()

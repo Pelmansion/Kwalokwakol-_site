@@ -154,7 +154,7 @@ ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 # --- EMAILS CONFIGURATION (SMTP / PRODUCTION) ---
 EMAIL_HOST_USER = "kadersoro18@gmail.com"
-EMAIL_HOST_PASSWORD = "Coulibaly18-01"
+EMAIL_HOST_PASSWORD = "zkdj hevm nwke mqed"
 
 if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     # Configuration pour la production (Render)

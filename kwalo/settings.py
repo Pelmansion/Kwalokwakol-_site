@@ -34,6 +34,15 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# Requis derrière HTTPS (connexion / formulaires) — évite les refus CSRF en production
+_local_csrf_hosts = frozenset({"localhost", "127.0.0.1", "[::1]"})
+CSRF_TRUSTED_ORIGINS = []
+for _h in ALLOWED_HOSTS:
+    if _h in _local_csrf_hosts:
+        CSRF_TRUSTED_ORIGINS.extend((f"http://{_h}:8000", f"http://{_h}"))
+    else:
+        CSRF_TRUSTED_ORIGINS.append(f"https://{_h}")
+
 # --- APPLICATIONS ---
 INSTALLED_APPS = [
     'django.contrib.admin',

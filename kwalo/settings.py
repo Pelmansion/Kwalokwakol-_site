@@ -29,11 +29,13 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = [
     'kolêgroup.com',
     'www.kolêgroup.com',
-    'xn--kolgroup-y1a.com',          # Punycode indispensable
-    'www.xn--kolgroup-y1a.com',      # Punycode www
-    'kwalokwakol-site.onrender.com', # URL par défaut de Render
+    'xn--kolgroup-y1a.com',          # Version avec 'y'
+    'www.xn--kolgroup-y1a.com',      # Version www avec 'y'
+    'xn--kolgroup-m1a.com',          # Version avec 'm' (vu sur ta première capture)
+    'www.xn--kolgroup-m1a.com',      # Version www avec 'm'
+    'kwalokwakol-site.onrender.com', # L'adresse Render
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
 ]
 
 # Application definition

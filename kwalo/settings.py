@@ -143,29 +143,23 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-# Paramètres Allauth corrigés pour forcer l'inscription avec mail d'activation
+# Paramètres Allauth pour forcer l'activation
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Changé de 'none' à 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"  # Force le lien en HTTPS
 
-# --- EMAILS CONFIGURATION (SMTP / PRODUCTION) ---
+# --- EMAILS CONFIGURATION (GMAIL SMTP) ---
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "kadersoro18@gmail.com"
 EMAIL_HOST_PASSWORD = "zkdjhevmnwkemqed"
-
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
-    # Configuration pour la production (Render)
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-    EMAIL_USE_TLS = True
-    DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"Kwalo <{EMAIL_HOST_USER}>")
-else:
-    # Configuration pour le développement local (Console)
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    DEFAULT_FROM_EMAIL = "kadersoro18@gmail.com"
+DEFAULT_FROM_EMAIL = f"Kwalo <{EMAIL_HOST_USER}>"
 
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600

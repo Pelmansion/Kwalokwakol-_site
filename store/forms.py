@@ -75,3 +75,18 @@ class OrderForm(forms.ModelForm):
         if value == Order.METHOD_LOCAL:
             return value
         raise forms.ValidationError("Ce moyen de paiement n'est pas encore activé.")
+
+
+class ServiceRequestForm(forms.ModelForm):
+    is_interested = forms.BooleanField(
+        required=True, initial=True, label="Je suis intéressé par ce service"
+    )
+
+    class Meta:
+        model = ServiceRequest
+        fields = ["is_interested", "comment"]
+        widgets = {
+            "comment": forms.Textarea(
+                attrs={"rows": 3, "placeholder": "Expliquez votre besoin..."}
+            )
+        }

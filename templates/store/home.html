@@ -5,15 +5,15 @@
 {% block content %}
   <section class="hero container">
     {% if not user.is_authenticated or user|is_client %}
-    <aside class="categories">
+    <aside class="categories" aria-label="Navigation par catégories">
       <h3>Catégories</h3>
-      <ul>
+      <ul class="categories__list">
         {% if categories.0 %}
           {% for category in categories %}
             {% if category.slug %}
               <li><a href="{% url 'store:category_detail' category.slug %}">{{ category.name }}</a></li>
             {% else %}
-              <li>{{ category }}</li>
+              <li><span class="categories__muted">{{ category }}</span></li>
             {% endif %}
           {% endfor %}
         {% endif %}

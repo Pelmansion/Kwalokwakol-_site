@@ -346,22 +346,26 @@ p { margin: 0 0 1em; }
   grid-template-columns: 280px 1fr;
   gap: 24px;
   margin-bottom: 48px;
-  align-items: stretch;
+  /* start : la carte catégories garde la hauteur de son contenu (pas de vide sous la liste) */
+  align-items: start;
 }
 
 .categories {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  padding: 22px;
-  box-shadow: var(--shadow-xs);
+  padding: 16px 14px 12px;
+  box-shadow: var(--shadow-sm);
+  align-self: start;
 }
 
 .categories h3 {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0 0 14px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 12px;
   color: var(--ink);
   display: flex;
   align-items: center;
@@ -370,32 +374,73 @@ p { margin: 0 0 1em; }
 .categories h3::before {
   content: "";
   width: 4px;
-  height: 22px;
+  height: 18px;
   background: linear-gradient(180deg, var(--primary), var(--accent));
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.categories ul { list-style: none; padding: 0; margin: 0; }
-.categories li { border-bottom: 1px dashed var(--line); }
-.categories li:last-child { border-bottom: none; }
-.categories a {
+.categories ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.categories li {
+  border-bottom: 1px solid var(--cream-2);
+}
+.categories li:last-child {
+  border-bottom: none;
+}
+.categories__muted {
   display: block;
-  padding: 11px 4px;
-  color: var(--ink-soft);
+  padding: 10px 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
   font-weight: 500;
-  font-size: 0.93rem;
-  transition: color var(--transition), padding var(--transition);
+}
+.categories a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  margin: 0 -4px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  transition:
+    color var(--transition),
+    background var(--transition),
+    transform var(--transition);
   position: relative;
+  text-decoration: none;
 }
 .categories a::before {
-  content: "→";
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
   opacity: 0;
-  margin-right: 6px;
-  color: var(--primary);
-  transition: opacity var(--transition);
+  transform: scale(0.6);
+  transition: opacity var(--transition), transform var(--transition);
+  flex-shrink: 0;
 }
-.categories a:hover { color: var(--primary); padding-left: 8px; }
-.categories a:hover::before { opacity: 1; }
+.categories a:hover,
+.categories a:focus-visible {
+  color: var(--primary-dark);
+  background: var(--primary-50);
+  outline: none;
+}
+.categories a:hover::before,
+.categories a:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+.categories a:active {
+  transform: translateX(2px);
+}
 
 .hero__banner {
   position: relative;

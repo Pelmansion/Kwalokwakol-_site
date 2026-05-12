@@ -134,8 +134,8 @@
                     </p>
                   </div>
                 </div>
-                <button class="btn btn--cta btn--block" type="submit">
-                  Valider la commande — <span>{{ total|floatformat:0 }} FCFA</span>
+                <button class="btn btn--cta btn--block" type="submit" id="checkout-submit-btn">
+                  Valider la commande — <span id="checkout-grand-total">{{ grand_total_standard|floatformat:0 }}</span> FCFA
                 </button>
               </form>
             </div>
@@ -155,19 +155,33 @@
         </div>
 
         <aside class="jumia-cart__aside">
+          <div
+            id="cart-pricing-data"
+            hidden
+            data-subtotal="{{ total }}"
+            data-fee-standard="{{ delivery_fee_standard }}"
+            data-fee-express="{{ delivery_fee_express }}"
+          ></div>
           <div class="cart-summary">
             <h3>RÉSUMÉ DU PANIER</h3>
             <div class="summary-row">
-              <span>Sous-total</span>
-              <strong id="cart-total">{{ total|floatformat:0 }} FCFA</strong>
+              <span>Sous-total articles</span>
+              <strong id="cart-subtotal-display">{{ total|floatformat:0 }} FCFA</strong>
             </div>
-            <div class="summary-row summary-row--muted">
-              <span>Livraison</span>
-              <span>Calculée à l'étape suivante</span>
+            <div class="summary-row summary-row--muted" id="cart-delivery-row">
+              <span>Frais de livraison</span>
+              <span id="cart-delivery-fee-display">{{ delivery_fee_standard|floatformat:0 }} FCFA (standard)</span>
+            </div>
+            <p class="summary-row summary-row--hint muted" style="font-size:0.8rem; margin:0; padding:0 0 10px; line-height:1.35;">
+              Les frais sont définis par chaque vendeur (ou prestataire) dans son profil. S’il y a plusieurs boutiques dans le panier, les frais s’additionnent. Les articles sans vendeur utilisent le tarif plateforme. Le total du bouton inclut l’option <strong>Livraison</strong> choisie ci-dessous.
+            </p>
+            <div class="summary-row summary-row--total">
+              <span>Total à payer</span>
+              <strong id="cart-grand-total">{{ grand_total_standard|floatformat:0 }} FCFA</strong>
             </div>
             {% if user|is_client %}
               <a href="#checkout-form" class="btn btn--cta btn--block">
-                Commander (<span id="cart-total-btn">{{ total|floatformat:0 }}</span> FCFA)
+                Commander (<span id="cart-total-btn">{{ grand_total_standard|floatformat:0 }}</span> FCFA)
               </a>
             {% elif user.is_authenticated %}
               <button class="btn btn--cta btn--block" disabled>Commande indisponible</button>
@@ -434,12 +448,11 @@
       font-size: 1.25rem;
       color: var(--text);
     }
-    .summary-row--muted {
-      color: var(--muted);
-      font-size: 0.85rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 14px;
-      padding-bottom: 14px;
+    .summary-row--total {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 12px;
+      font-size: 1.02rem;
     }
 
     .btn--cta {
@@ -760,9 +773,6 @@
 
   <script>
     (function () {
-      const inputs = document.querySelectorAll('.js-cart-qty');
-      if (!inputs.length) return;
-
       const getCookie = (name) => {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -773,13 +783,45 @@
       const formatNumber = (value) =>
         new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
 
+      const pricingRoot = document.getElementById('cart-pricing-data');
+      const totalBtn = document.getElementById('cart-total-btn');
+
+      const refreshCheckoutTotals = () => {
+        if (!pricingRoot) return;
+        const sub = parseFloat(pricingRoot.dataset.subtotal || '0', 10) || 0;
+        const feeStd = parseFloat(pricingRoot.dataset.feeStandard || '0', 10) || 0;
+        const feeExp = parseFloat(pricingRoot.dataset.feeExpress || '0', 10) || 0;
+        const delSel = document.querySelector('[name="delivery_option"]');
+        const express = delSel && delSel.value === 'express';
+        const fee = express ? feeExp : feeStd;
+        const grand = sub + fee;
+
+        const subEl = document.getElementById('cart-subtotal-display');
+        if (subEl) subEl.textContent = formatNumber(sub) + ' FCFA';
+        const feeLbl = document.getElementById('cart-delivery-fee-display');
+        if (feeLbl) {
+          feeLbl.textContent =
+            formatNumber(fee) + ' FCFA (' + (express ? 'express' : 'standard') + ')';
+        }
+        const gEl = document.getElementById('cart-grand-total');
+        if (gEl) gEl.textContent = formatNumber(grand) + ' FCFA';
+        const chk = document.getElementById('checkout-grand-total');
+        if (chk) chk.textContent = formatNumber(grand);
+        if (totalBtn) totalBtn.textContent = formatNumber(grand);
+      };
+
+      const delSel = document.querySelector('[name="delivery_option"]');
+      if (delSel) delSel.addEventListener('change', refreshCheckoutTotals);
+      refreshCheckoutTotals();
+
+      const inputs = document.querySelectorAll('.js-cart-qty');
+      if (!inputs.length) return;
+
       const updateQuantity = async (input) => {
         const quantity = Math.max(1, parseInt(input.value || '1', 10));
         input.value = quantity;
         const url = input.dataset.updateUrl;
         const lineTarget = document.getElementById(input.dataset.lineTarget);
-        const totalTarget = document.getElementById('cart-total');
-        const totalBtn = document.getElementById('cart-total-btn');
 
         const formData = new FormData();
         formData.append('quantity', quantity);
@@ -796,8 +838,8 @@
           if (response.ok) {
             const data = await response.json();
             if (lineTarget) lineTarget.textContent = formatNumber(data.line_total);
-            if (totalTarget) totalTarget.textContent = formatNumber(data.total) + ' FCFA';
-            if (totalBtn) totalBtn.textContent = formatNumber(data.total);
+            if (pricingRoot) pricingRoot.dataset.subtotal = String(data.total);
+            refreshCheckoutTotals();
           }
         } catch (err) { /* ignore */ }
       };

@@ -192,6 +192,8 @@ class VendorProfileForm(forms.ModelForm):
             "id_document_front",
             "id_document_back",
             "profile_photo",
+            "delivery_fee_standard",
+            "delivery_fee_express",
         ]
     
     def clean_email(self):
@@ -330,6 +332,8 @@ class ServiceProviderProfileForm(forms.ModelForm):
             "id_document_back",
             "profile_photo",
             "display_services_as_provider",
+            "delivery_fee_standard",
+            "delivery_fee_express",
         ]
 
     def clean_email(self):

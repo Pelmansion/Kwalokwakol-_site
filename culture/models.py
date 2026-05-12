@@ -205,6 +205,12 @@ class SongPurchase(models.Model):
     payment_method = models.CharField(max_length=40, blank=True)
     download_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    genius_reference = models.CharField(
+        max_length=80,
+        blank=True,
+        default="",
+        help_text="Référence GeniusPay (checkout) pour valider l'achat.",
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -217,6 +223,8 @@ class SongPurchase(models.Model):
         super().save(*args, **kwargs)
 
     def mark_paid(self, method: str = "sandbox") -> None:
+        if self.is_paid:
+            return
         self.is_paid = True
         self.paid_at = timezone.now()
         self.payment_method = method
@@ -416,6 +424,13 @@ class Ticket(models.Model):
     used_at = models.DateTimeField(null=True, blank=True)
     used_by = models.CharField(max_length=120, blank=True, help_text="Nom du contrôleur qui a validé")
 
+    genius_reference = models.CharField(
+        max_length=80,
+        blank=True,
+        default="",
+        help_text="Référence GeniusPay commune à un lot de billets payés ensemble.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -428,6 +443,8 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def mark_paid(self, method: str = "sandbox") -> None:
+        if self.status != self.STATUS_PENDING:
+            return
         self.status = self.STATUS_VALID
         self.payment_method = method
         self.paid_at = timezone.now()

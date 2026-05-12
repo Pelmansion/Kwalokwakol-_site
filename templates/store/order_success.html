@@ -14,7 +14,7 @@
       </p>
 
       <div class="success-card__status">
-        <span class="badge badge--success">Paiement : {{ order.payment_status }}</span>
+        <span class="badge badge--success">Paiement : {{ order.get_payment_status_display }}</span>
       </div>
 
       <div class="success-card__summary">
@@ -26,6 +26,18 @@
               <span class="muted">× {{ item.quantity }}</span>
             </li>
           {% endfor %}
+          <li class="success-items__totals">
+            <span>Sous-total articles</span>
+            <span>{{ order.subtotal_items|floatformat:0 }} FCFA</span>
+          </li>
+          <li class="success-items__totals">
+            <span>Frais de livraison ({{ order.get_delivery_option_display|lower }})</span>
+            <span>{{ order.delivery_fee|floatformat:0 }} FCFA</span>
+          </li>
+          <li class="success-items__totals success-items__totals--grand">
+            <span><strong>Total TTC</strong></span>
+            <span><strong>{{ order.total_amount|floatformat:0 }} FCFA</strong></span>
+          </li>
         </ul>
       </div>
 
@@ -82,7 +94,20 @@
       padding: 8px 0;
       border-bottom: 1px dashed var(--border);
     }
-    .success-items li:last-child { border-bottom: none; }
+    .success-items li.success-items__totals {
+      border-bottom: none;
+      padding-top: 10px;
+      margin-top: 4px;
+      font-size: 0.95rem;
+      color: var(--muted, #64748b);
+    }
+    .success-items li.success-items__totals--grand {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 14px;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
     .success-card__actions {
       display: flex;
       gap: 12px;

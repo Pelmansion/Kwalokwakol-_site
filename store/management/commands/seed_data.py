@@ -317,7 +317,7 @@ class Command(BaseCommand):
                 payment_method=Order.METHOD_MOBILE,
                 defaults={
                     "user": client_user,
-                    "delivery_fee": 2500,
+                    "delivery_fee": 200,
                     "status": Order.STATUS_PAID,
                     "payment_status": Order.PAYMENT_SUCCESS,
                 },
@@ -355,7 +355,7 @@ class Command(BaseCommand):
                 payment_method=Order.METHOD_CARD,
                 defaults={
                     "user": client_user,
-                    "delivery_fee": 5000,
+                    "delivery_fee": 500,
                     "status": Order.STATUS_PENDING,
                     "payment_status": Order.PAYMENT_PENDING,
                 },

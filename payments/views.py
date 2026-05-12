@@ -41,15 +41,18 @@ def payment_sandbox(request, payment_id):
     if payment.provider == Payment.PROVIDER_GENIUS:
         return redirect("payments:genius_return", payment_id=payment.id)
     order = payment.order
-    if request.method == "POST":
-        payment.status = Payment.STATUS_SUCCESS
-        payment.reference = f"PAY-{payment.id}"
-        payment.save()
-        order.payment_status = Order.PAYMENT_SUCCESS
-        order.status = Order.STATUS_PAID
-        order.save()
+    if payment.provider == Payment.PROVIDER_LOCAL:
+        messages.info(
+            request,
+            "Commande enregistrée. Paiement en espèces à la livraison.",
+        )
         return redirect("store:order_success", order_id=order.id)
-    return render(request, "payments/payment_sandbox.html", {"payment": payment, "order": order})
+
+    messages.warning(
+        request,
+        "Ce lien de simulation n'est plus utilisé. Le paiement en ligne se fait via GeniusPay.",
+    )
+    return redirect("store:home")
 
 
 @login_required
@@ -205,6 +208,90 @@ def genius_webhook(request):
                     pass
 
             sp.mark_success()
+            return JsonResponse({"received": True}, status=200)
+
+        if meta.get("kind") == "song_purchase" and meta.get("song_purchase_ref"):
+            from culture.models import SongPurchase
+
+            p_ref = str(meta["song_purchase_ref"]).strip()
+            try:
+                pr = SongPurchase.objects.select_related("song").get(reference=p_ref)
+            except SongPurchase.DoesNotExist:
+                logger.warning("Genius webhook achat chanson introuvable: %s", p_ref)
+                return JsonResponse({"received": True}, status=200)
+
+            if pr.is_paid:
+                return JsonResponse({"received": True}, status=200)
+
+            gref_wh = (data.get("reference") or "").strip()
+            if gref_wh:
+                SongPurchase.objects.filter(pk=pr.pk).update(genius_reference=gref_wh[:80])
+
+            amt = data.get("amount")
+            if amt is not None:
+                try:
+                    if abs(float(amt) - float(pr.amount_fcfa)) > 1:
+                        logger.error(
+                            "Genius webhook achat chanson montant discordant ref=%s attendu=%s reçu=%s",
+                            p_ref,
+                            pr.amount_fcfa,
+                            amt,
+                        )
+                        return JsonResponse({"detail": "Amount mismatch"}, status=400)
+                except (TypeError, ValueError):
+                    pass
+
+            pr.mark_paid("genius")
+            return JsonResponse({"received": True}, status=200)
+
+        if meta.get("kind") == "ticket_batch" and meta.get("ticket_refs"):
+            from culture.models import Ticket
+
+            raw = str(meta["ticket_refs"]).strip()
+            ref_list = [x.strip() for x in raw.split(",") if x.strip()]
+            if not ref_list:
+                return JsonResponse({"received": True}, status=200)
+
+            tickets = list(
+                Ticket.objects.filter(reference__in=ref_list).select_related("category", "event")
+            )
+            if len(tickets) != len(ref_list):
+                logger.warning(
+                    "Genius webhook billets incomplets: attendu=%s obtenu=%s",
+                    len(ref_list),
+                    len(tickets),
+                )
+                return JsonResponse({"detail": "Tickets not found"}, status=400)
+
+            event_ids = {t.event_id for t in tickets}
+            if len(event_ids) != 1:
+                return JsonResponse({"detail": "Invalid ticket batch"}, status=400)
+
+            if all(t.status == Ticket.STATUS_VALID for t in tickets):
+                return JsonResponse({"received": True}, status=200)
+
+            expected_total = sum(float(t.amount_fcfa) for t in tickets)
+            amt = data.get("amount")
+            if amt is not None:
+                try:
+                    if abs(float(amt) - expected_total) > 1:
+                        logger.error(
+                            "Genius webhook billets montant discordant attendu=%s reçu=%s",
+                            expected_total,
+                            amt,
+                        )
+                        return JsonResponse({"detail": "Amount mismatch"}, status=400)
+                except (TypeError, ValueError):
+                    pass
+
+            gref_wh = (data.get("reference") or "").strip()
+            if gref_wh:
+                Ticket.objects.filter(pk__in=[t.pk for t in tickets]).update(
+                    genius_reference=gref_wh[:80]
+                )
+
+            for t in tickets:
+                t.mark_paid("genius")
             return JsonResponse({"received": True}, status=200)
 
         pid = meta.get("payment_id")

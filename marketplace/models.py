@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
@@ -53,10 +55,32 @@ class Vendor(models.Model):
     )
     verified_at = models.DateTimeField(null=True, blank=True)
 
+    delivery_fee_standard = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("200"),
+        verbose_name="Frais livraison standard (FCFA)",
+        help_text="Montant facturé pour l’option « Standard » lorsqu’un client commande vos produits (par commande regroupant votre boutique).",
+    )
+    delivery_fee_express = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("500"),
+        verbose_name="Frais livraison express (FCFA)",
+        help_text="Montant facturé pour l’option « Express » lorsqu’un client commande vos produits.",
+    )
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def delivery_fee_for(self, delivery_option: str) -> Decimal:
+        from orders.models import Order
+
+        if delivery_option == Order.DELIVERY_EXPRESS:
+            return self.delivery_fee_express
+        return self.delivery_fee_standard
 
     def __str__(self):
         return self.name
@@ -109,10 +133,32 @@ class ServiceProvider(models.Model):
     )
     verified_at = models.DateTimeField(null=True, blank=True)
 
+    delivery_fee_standard = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("200"),
+        verbose_name="Frais livraison standard (FCFA)",
+        help_text="Pour vos produits vendus sans boutique (profil prestataire uniquement), option livraison standard.",
+    )
+    delivery_fee_express = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("500"),
+        verbose_name="Frais livraison express (FCFA)",
+        help_text="Pour vos produits vendus sans boutique, option livraison express.",
+    )
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def delivery_fee_for(self, delivery_option: str) -> Decimal:
+        from orders.models import Order
+
+        if delivery_option == Order.DELIVERY_EXPRESS:
+            return self.delivery_fee_express
+        return self.delivery_fee_standard
 
     def __str__(self):
         return self.name

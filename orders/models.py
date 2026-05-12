@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 
 
@@ -48,6 +50,10 @@ class Order(models.Model):
         (DELIVERY_EXPRESS, "Express"),
     ]
 
+    # Tarifs plateforme : produits sans vendeur ni prestataire (voir store.delivery)
+    DELIVERY_FEE_STANDARD = Decimal("200")
+    DELIVERY_FEE_EXPRESS = Decimal("500")
+
     user = models.ForeignKey(
         "auth.User", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -73,6 +79,26 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Commande {self.pk} - {self.full_name}"
+
+    @classmethod
+    def delivery_fee_amount(cls, delivery_option: str) -> Decimal:
+        if delivery_option == cls.DELIVERY_EXPRESS:
+            return cls.DELIVERY_FEE_EXPRESS
+        return cls.DELIVERY_FEE_STANDARD
+
+    def subtotal_items(self) -> Decimal:
+        """Somme des lignes (hors frais de livraison)."""
+        from django.db.models import DecimalField, ExpressionWrapper, F, Sum
+
+        result = self.items.aggregate(
+            s=Sum(
+                ExpressionWrapper(
+                    F("quantity") * F("unit_price"),
+                    output_field=DecimalField(max_digits=14, decimal_places=2),
+                )
+            )
+        )["s"]
+        return result if result is not None else Decimal("0")
 
 
 class OrderItem(models.Model):

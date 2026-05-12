@@ -19,6 +19,16 @@ urlpatterns = [
         name="song_payment",
     ),
     path(
+        "musique/<slug:slug>/genius-retour/<uuid:reference>/",
+        views.song_genius_return,
+        name="song_genius_return",
+    ),
+    path(
+        "musique/<slug:slug>/genius-erreur/<uuid:reference>/",
+        views.song_genius_error,
+        name="song_genius_error",
+    ),
+    path(
         "musique/telecharger/<str:token>/",
         views.song_download,
         name="song_download",
@@ -26,6 +36,16 @@ urlpatterns = [
     path("concerts/", views.event_list, name="event_list"),
     path("concerts/<slug:slug>/", views.event_detail, name="event_detail"),
     path("concerts/<slug:slug>/billetterie/", views.ticket_purchase, name="ticket_purchase"),
+    path(
+        "concerts/<slug:slug>/genius-retour/<uuid:reference>/",
+        views.ticket_genius_return,
+        name="ticket_genius_return",
+    ),
+    path(
+        "concerts/<slug:slug>/genius-erreur/<uuid:reference>/",
+        views.ticket_genius_error,
+        name="ticket_genius_error",
+    ),
     path(
         "concerts/<slug:slug>/paiement/<uuid:reference>/",
         views.ticket_payment_sandbox,

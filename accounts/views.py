@@ -107,7 +107,15 @@ def _is_client(user):
 def order_history(request):
     if not _is_client(request.user):
         return redirect("accounts:profile")
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
+    orders = (
+        Order.objects.filter(user=request.user)
+        .filter(
+            Q(payment_status=Order.PAYMENT_SUCCESS)
+            | Q(payment_method=Order.METHOD_LOCAL)
+        )
+        .exclude(payment_status=Order.PAYMENT_FAILED)
+        .order_by("-created_at")
+    )
     return render(request, "accounts/orders.html", {"orders": orders})
 
 

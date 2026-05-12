@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db.models import Avg, Count, Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,6 +14,7 @@ from content.models import HomepageBackground
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
 from orders.models import Order, OrderItem
+from store.delivery import cart_delivery_fee
 from payments.genius import (
     GeniusPaymentError,
     create_checkout_payment,
@@ -32,6 +35,18 @@ DEFAULT_CATEGORIES = [
     "Produits vivriers",
     "Outils numériques",
 ]
+
+
+def _cart_pricing_context(products_for_fees, subtotal_dec: Decimal) -> dict:
+    """Frais et totaux TTC (livraison = somme des tarifs des vendeurs / prestataires concernés)."""
+    fee_std = cart_delivery_fee(products_for_fees, delivery_option=Order.DELIVERY_STANDARD)
+    fee_exp = cart_delivery_fee(products_for_fees, delivery_option=Order.DELIVERY_EXPRESS)
+    return {
+        "delivery_fee_standard": fee_std,
+        "delivery_fee_express": fee_exp,
+        "grand_total_standard": subtotal_dec + fee_std,
+        "grand_total_express": subtotal_dec + fee_exp,
+    }
 
 
 def _get_favorites(session):
@@ -372,7 +387,7 @@ def cart_detail(request):
 
     cart = _get_cart(request.session)
     product_ids = list(cart.keys())
-    products = Product.objects.filter(id__in=product_ids)
+    products = Product.objects.filter(id__in=product_ids).select_related("vendor", "service_provider")
     service_ids = list(products.filter(kind=Product.SERVICE).values_list("id", flat=True))
     if service_ids:
         for service_id in service_ids:
@@ -380,10 +395,11 @@ def cart_detail(request):
         request.session.modified = True
         messages.warning(request, "Les services ne peuvent pas être dans le panier. Utilisez 'Demander un service' pour réserver.")
         product_ids = list(cart.keys())
-        products = Product.objects.filter(id__in=product_ids)
+        products = Product.objects.filter(id__in=product_ids).select_related("vendor", "service_provider")
+    product_list = list(products)
     items = []
     total = 0
-    for product in products:
+    for product in product_list:
         quantity = cart.get(str(product.id), 0)
         line_total = quantity * float(product.price)
         total += line_total
@@ -401,6 +417,8 @@ def cart_detail(request):
         .exclude(id__in=product_ids)
         .order_by("-created_at")[:6]
     )
+    subtotal_dec = Decimal(str(total))
+    pricing_ctx = _cart_pricing_context(product_list, subtotal_dec)
     return render(
         request,
         "store/cart.html",
@@ -410,6 +428,7 @@ def cart_detail(request):
             "form": form,
             "suggestions": suggestions,
             "genius_payment": genius_is_configured(),
+            **pricing_ctx,
         },
     )
 
@@ -723,7 +742,7 @@ def checkout(request):
         messages.error(request, "Les comptes administration ne peuvent pas passer de commande.")
         return redirect("store:cart_detail")
     product_ids = list(cart.keys())
-    products = Product.objects.filter(id__in=product_ids)
+    products = Product.objects.filter(id__in=product_ids).select_related("vendor", "service_provider")
     if products.filter(kind=Product.SERVICE).exists():
         messages.error(request, "Les services ne peuvent pas être commandés. Utilisez 'Demander un service' pour réserver.")
         return redirect("store:cart_detail")
@@ -732,9 +751,10 @@ def checkout(request):
 
     form = OrderForm(request.POST)
     if not form.is_valid():
+        product_list = list(products)
         items = []
         total = 0
-        for product in products:
+        for product in product_list:
             quantity = cart.get(str(product.id), 0)
             line_total = quantity * float(product.price)
             total += line_total
@@ -745,8 +765,25 @@ def checkout(request):
                     "line_total": line_total,
                 }
             )
+        subtotal_dec = Decimal(str(total))
+        pricing_ctx = _cart_pricing_context(product_list, subtotal_dec)
+        suggestions = (
+            Product.objects.filter(is_active=True, kind=Product.PRODUCT)
+            .filter(active_product_filter())
+            .exclude(id__in=product_ids)
+            .order_by("-created_at")[:6]
+        )
         return render(
-            request, "store/cart.html", {"items": items, "total": total, "form": form}
+            request,
+            "store/cart.html",
+            {
+                "items": items,
+                "total": total,
+                "form": form,
+                "genius_payment": genius_is_configured(),
+                "suggestions": suggestions,
+                **pricing_ctx,
+            },
         )
 
     if not products.exists():
@@ -756,20 +793,17 @@ def checkout(request):
     if request.user.is_authenticated:
         order.user = request.user
 
+    product_list = list(products)
     items = []
     subtotal = 0
-    for product in products:
+    for product in product_list:
         quantity = cart.get(str(product.id), 0)
         line_total = quantity * float(product.price)
         subtotal += line_total
         items.append((product, quantity))
 
-    if order.delivery_option == Order.DELIVERY_EXPRESS:
-        order.delivery_fee = 5000
-    else:
-        order.delivery_fee = 2500
-
-    order.total_amount = subtotal + float(order.delivery_fee)
+    order.delivery_fee = cart_delivery_fee(product_list, delivery_option=order.delivery_option)
+    order.total_amount = Decimal(str(subtotal)) + order.delivery_fee
     order.save()
     for product, quantity in items:
         if quantity:
@@ -827,10 +861,22 @@ def checkout(request):
         _notify_order_created()
         return redirect(res["checkout_url"])
 
-    request.session["cart"] = {}
-    request.session.modified = True
-    _notify_order_created()
-    return redirect("payments:payment_sandbox", payment_id=payment.id)
+    if order.payment_method == Order.METHOD_LOCAL:
+        request.session["cart"] = {}
+        request.session.modified = True
+        _notify_order_created()
+        messages.success(
+            request,
+            "Commande enregistrée. Vous paierez en espèces à la livraison.",
+        )
+        return redirect("store:order_success", order_id=order.id)
+
+    messages.error(
+        request,
+        "Le paiement en ligne n'est pas disponible. Choisissez GeniusPay ou le paiement à la livraison.",
+    )
+    order.delete()
+    return redirect("store:cart_detail")
 
 
 def order_success(request, order_id):

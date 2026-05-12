@@ -5,7 +5,16 @@ from .models import ServiceProvider, ServiceRequest, Vendor
 
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
-    list_display = ("name", "phone", "email", "location", "verification_status", "is_active")
+    list_display = (
+        "name",
+        "phone",
+        "email",
+        "location",
+        "delivery_fee_standard",
+        "delivery_fee_express",
+        "verification_status",
+        "is_active",
+    )
     list_filter = ("verification_status", "is_active")
     search_fields = ("name", "phone", "email")
     prepopulated_fields = {"slug": ("name",)}
@@ -13,7 +22,16 @@ class VendorAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceProvider)
 class ServiceProviderAdmin(admin.ModelAdmin):
-    list_display = ("name", "phone", "email", "location", "verification_status", "is_active")
+    list_display = (
+        "name",
+        "phone",
+        "email",
+        "location",
+        "delivery_fee_standard",
+        "delivery_fee_express",
+        "verification_status",
+        "is_active",
+    )
     list_filter = ("verification_status", "is_active")
     search_fields = ("name", "phone", "email")
     prepopulated_fields = {"slug": ("name",)}

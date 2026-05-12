@@ -63,6 +63,14 @@
         <footer class="order-card__foot">
           <dl class="order-summary">
             <div class="order-summary__row">
+              <dt>Sous-total articles</dt>
+              <dd>{{ order.subtotal_items|floatformat:0 }} FCFA</dd>
+            </div>
+            <div class="order-summary__row">
+              <dt>Frais de livraison</dt>
+              <dd>{{ order.delivery_fee|floatformat:0 }} FCFA</dd>
+            </div>
+            <div class="order-summary__row">
               <dt>Livraison</dt>
               <dd>{{ order.get_delivery_option_display }}</dd>
             </div>

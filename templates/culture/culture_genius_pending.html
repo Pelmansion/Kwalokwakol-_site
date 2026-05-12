@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Paiement en cours — Culture{% endblock %}
+{% block content %}
+  <section class="container page-title">
+    <h1>{{ headline }}</h1>
+    <p class="muted">{{ subtitle }}</p>
+  </section>
+  <section class="container cart">
+    {% if message %}
+      <p class="alert alert--info">{{ message }}</p>
+    {% endif %}
+    <p>Si le débit est bien passé, la confirmation arrive sous peu. Vous pouvez rafraîchir cette page.</p>
+    <p><a class="btn btn--primary-wide" href="{{ verify_url }}">Vérifier à nouveau</a></p>
+    <p><a href="{{ back_url }}">{{ back_label }}</a></p>
+  </section>
+{% endblock %}

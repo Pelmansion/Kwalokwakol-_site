@@ -81,7 +81,7 @@
     {
       id: "payment",
       patterns: ["paiement", "payer", "wave", "orange money", "moov", "mtn", "carte bancaire", "espece", "comment payer", "moyens"],
-      response: "💳 **Moyens de paiement acceptés** :\n• Wave\n• Orange Money\n• MTN Mobile Money\n• Moov Money\n• Paiement à la livraison (selon vendeur)\n\nLes paiements sont sécurisés et tu reçois un reçu par email.",
+      response: "💳 **Moyens de paiement** :\n• **GeniusPay** (Wave, Orange Money, MTN MoMo, carte bancaire…) pour le paiement en ligne sur la boutique et les services payants\n• **Espèces à la livraison** quand c’est proposé sur la commande\n\nLes encaissements en ligne passent par GeniusPay ; tu reçois une confirmation par email.",
       quickReplies: ["cart", "contact"],
     },
     {

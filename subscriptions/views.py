@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import secrets
 from decimal import Decimal
 
 from django.contrib import messages
@@ -157,7 +156,7 @@ def my_subscription(request):
 @login_required
 @require_POST
 def start_payment(request):
-    """Crée un paiement en attente puis redirige vers GeniusPay (réel) ou le sandbox (simulation)."""
+    """Crée un paiement en attente puis redirige vers GeniusPay (obligatoire si configuré)."""
     sub = get_user_subscription(request.user)
     if not sub:
         return redirect("subscriptions:choose_plan")
@@ -217,13 +216,12 @@ def start_payment(request):
             payment.save(update_fields=["reference"])
         return redirect(res["checkout_url"])
 
-    payment = SubscriptionPayment.objects.create(
-        subscription=sub,
-        amount=sub.monthly_amount,
-        provider=SubscriptionPayment.PROVIDER_CARD,
-        reference=f"SUB-{secrets.token_hex(4).upper()}",
+    messages.error(
+        request,
+        "Le paiement en ligne (GeniusPay) n'est pas configuré sur le serveur. "
+        "Contactez l'administrateur ou réessayez plus tard.",
     )
-    return redirect("subscriptions:payment_sandbox", payment_id=payment.id)
+    return redirect("subscriptions:my_subscription")
 
 
 @login_required

@@ -12,6 +12,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from payments.genius import (
+    GeniusPaymentError,
+    create_checkout_payment,
+    fetch_payment,
+    is_configured as genius_is_configured,
+)
+
 from .forms import (
     ArtistProfileForm,
     EventForm,
@@ -198,7 +205,7 @@ def song_play(request, slug):
 
 @login_required
 def song_buy(request, slug):
-    """Crée un achat en attente puis redirige vers le sandbox de paiement."""
+    """Crée un achat en attente puis redirige vers GeniusPay ou la page de test (sandbox)."""
     song = get_object_or_404(_published_songs(), slug=slug)
     if song.is_free:
         messages.info(request, "Cette chanson est gratuite, téléchargement immédiat.")
@@ -209,6 +216,43 @@ def song_buy(request, slug):
         user=request.user,
         amount_fcfa=song.price_fcfa,
     )
+    if genius_is_configured():
+        success_url = request.build_absolute_uri(
+            reverse(
+                "culture:song_genius_return",
+                kwargs={"slug": song.slug, "reference": purchase.reference},
+            )
+        )
+        error_url = request.build_absolute_uri(
+            reverse(
+                "culture:song_genius_error",
+                kwargs={"slug": song.slug, "reference": purchase.reference},
+            )
+        )
+        try:
+            res = create_checkout_payment(
+                amount=purchase.amount_fcfa,
+                description=f"Achat musique — {song.title}"[:500],
+                customer_name=request.user.get_full_name() or request.user.username,
+                customer_email=request.user.email or "",
+                customer_phone="",
+                metadata={
+                    "kind": "song_purchase",
+                    "song_purchase_ref": str(purchase.reference),
+                },
+                success_url=success_url,
+                error_url=error_url,
+            )
+        except GeniusPaymentError as exc:
+            purchase.delete()
+            messages.error(request, str(exc))
+            return redirect("culture:song_detail", slug=song.slug)
+        gref = (res.get("reference") or "")[:80]
+        if gref:
+            purchase.genius_reference = gref
+            purchase.save(update_fields=["genius_reference"])
+        return redirect(res["checkout_url"])
+
     return redirect("culture:song_payment", slug=song.slug, reference=purchase.reference)
 
 
@@ -234,6 +278,82 @@ def song_payment_sandbox(request, slug, reference):
         "culture/song_payment.html",
         {"song": song, "purchase": purchase},
     )
+
+
+@login_required
+def song_genius_return(request, slug, reference):
+    song = get_object_or_404(_published_songs(), slug=slug)
+    purchase = get_object_or_404(
+        SongPurchase, reference=reference, song=song, user=request.user
+    )
+    if not purchase.genius_reference:
+        raise Http404
+    if purchase.is_paid:
+        messages.success(request, "Achat déjà confirmé.")
+        return redirect("culture:song_download", token=purchase.download_token)
+
+    try:
+        data = fetch_payment(purchase.genius_reference)
+    except GeniusPaymentError as exc:
+        return render(
+            request,
+            "culture/culture_genius_pending.html",
+            {
+                "headline": "Paiement en cours",
+                "subtitle": f"« {song.title} » — {purchase.amount_fcfa} FCFA",
+                "message": str(exc),
+                "verify_url": request.build_absolute_uri(
+                    reverse(
+                        "culture:song_genius_return",
+                        kwargs={"slug": slug, "reference": reference},
+                    )
+                ),
+                "back_url": reverse("culture:song_detail", kwargs={"slug": slug}),
+                "back_label": "Retour à la chanson",
+            },
+        )
+
+    status = (data.get("status") or "").lower()
+    if status == "completed":
+        purchase.mark_paid("genius")
+        messages.success(request, "Paiement confirmé. Téléchargement disponible !")
+        return redirect("culture:song_download", token=purchase.download_token)
+
+    if status == "failed":
+        SongPurchase.objects.filter(pk=purchase.pk, is_paid=False).delete()
+        messages.error(request, "Le paiement a échoué ou a été annulé.")
+        return redirect("culture:song_detail", slug=song.slug)
+
+    return render(
+        request,
+        "culture/culture_genius_pending.html",
+        {
+            "headline": "Paiement en cours",
+            "subtitle": f"« {song.title} » — {purchase.amount_fcfa} FCFA",
+            "message": "Validation en cours chez GeniusPay.",
+            "verify_url": request.build_absolute_uri(
+                reverse(
+                    "culture:song_genius_return",
+                    kwargs={"slug": slug, "reference": reference},
+                )
+            ),
+            "back_url": reverse("culture:song_detail", kwargs={"slug": slug}),
+            "back_label": "Retour à la chanson",
+        },
+    )
+
+
+@login_required
+def song_genius_error(request, slug, reference):
+    song = get_object_or_404(_published_songs(), slug=slug)
+    purchase = get_object_or_404(SongPurchase, reference=reference, song=song, user=request.user)
+    if not purchase.is_paid:
+        purchase.delete()
+    messages.warning(
+        request,
+        "Le paiement n'a pas abouti. Vous pouvez réessayer l'achat depuis la fiche de la chanson.",
+    )
+    return redirect("culture:song_detail", slug=song.slug)
 
 
 def song_download(request, token):
@@ -327,6 +447,56 @@ def ticket_purchase(request, slug):
                     tickets.append(t)
                 request.session["pending_tickets"] = [str(t.reference) for t in tickets]
                 first_ref = tickets[0].reference
+                total = sum(t.amount_fcfa for t in tickets)
+
+                if genius_is_configured():
+                    success_url = request.build_absolute_uri(
+                        reverse(
+                            "culture:ticket_genius_return",
+                            kwargs={"slug": event.slug, "reference": first_ref},
+                        )
+                    )
+                    error_url = request.build_absolute_uri(
+                        reverse(
+                            "culture:ticket_genius_error",
+                            kwargs={"slug": event.slug, "reference": first_ref},
+                        )
+                    )
+                    try:
+                        res = create_checkout_payment(
+                            amount=total,
+                            description=f"Billets — {event.title}"[:500],
+                            customer_name=form.cleaned_data["buyer_name"],
+                            customer_email=form.cleaned_data["buyer_email"],
+                            customer_phone=(form.cleaned_data["buyer_phone"] or "")[:30],
+                            metadata={
+                                "kind": "ticket_batch",
+                                "ticket_refs": ",".join(str(t.reference) for t in tickets),
+                            },
+                            success_url=success_url,
+                            error_url=error_url,
+                        )
+                    except GeniusPaymentError as exc:
+                        for t in tickets:
+                            t.delete()
+                        request.session.pop("pending_tickets", None)
+                        messages.error(request, str(exc))
+                        return redirect("culture:event_detail", slug=event.slug)
+                    gref = (res.get("reference") or "")[:80]
+                    if gref:
+                        Ticket.objects.filter(pk__in=[t.pk for t in tickets]).update(
+                            genius_reference=gref
+                        )
+                    else:
+                        for t in tickets:
+                            t.delete()
+                        request.session.pop("pending_tickets", None)
+                        messages.error(
+                            request,
+                            "Référence de paiement GeniusPay manquante. Réessayez la billetterie.",
+                        )
+                        return redirect("culture:event_detail", slug=event.slug)
+
                 return redirect(
                     "culture:ticket_payment", slug=event.slug, reference=first_ref
                 )
@@ -378,6 +548,106 @@ def ticket_payment_sandbox(request, slug, reference):
         "culture/ticket_payment.html",
         {"event": event, "tickets": tickets, "total": total},
     )
+
+
+def ticket_genius_return(request, slug, reference):
+    event = get_object_or_404(_published_events(), slug=slug)
+    first = get_object_or_404(Ticket, reference=reference, event=event)
+    if not first.genius_reference:
+        raise Http404
+    tickets = list(
+        Ticket.objects.filter(event=event, genius_reference=first.genius_reference).select_related(
+            "category"
+        )
+    )
+    if not tickets:
+        raise Http404
+    if all(t.status == Ticket.STATUS_VALID for t in tickets):
+        request.session.pop("pending_tickets", None)
+        messages.success(request, "Paiement déjà confirmé.")
+        return redirect("culture:ticket_detail", reference=tickets[0].reference)
+
+    try:
+        data = fetch_payment(first.genius_reference)
+    except GeniusPaymentError as exc:
+        return render(
+            request,
+            "culture/culture_genius_pending.html",
+            {
+                "headline": "Paiement en cours",
+                "subtitle": f"{event.title} — {len(tickets)} billet(s)",
+                "message": str(exc),
+                "verify_url": request.build_absolute_uri(
+                    reverse(
+                        "culture:ticket_genius_return",
+                        kwargs={"slug": slug, "reference": reference},
+                    )
+                ),
+                "back_url": reverse("culture:event_detail", kwargs={"slug": slug}),
+                "back_label": "Retour à l'événement",
+            },
+        )
+
+    status = (data.get("status") or "").lower()
+    if status == "completed":
+        for t in tickets:
+            t.mark_paid("genius")
+        request.session.pop("pending_tickets", None)
+        messages.success(
+            request,
+            f"Paiement confirmé ! Vos {len(tickets)} billet(s) sont disponibles.",
+        )
+        return redirect("culture:ticket_detail", reference=tickets[0].reference)
+
+    if status == "failed":
+        Ticket.objects.filter(
+            event=event,
+            genius_reference=first.genius_reference,
+            status=Ticket.STATUS_PENDING,
+        ).delete()
+        request.session.pop("pending_tickets", None)
+        messages.error(request, "Le paiement a échoué ou a été annulé.")
+        return redirect("culture:event_detail", slug=event.slug)
+
+    return render(
+        request,
+        "culture/culture_genius_pending.html",
+        {
+            "headline": "Paiement en cours",
+            "subtitle": f"{event.title} — {len(tickets)} billet(s)",
+            "message": "Validation en cours chez GeniusPay.",
+            "verify_url": request.build_absolute_uri(
+                reverse(
+                    "culture:ticket_genius_return",
+                    kwargs={"slug": slug, "reference": reference},
+                )
+            ),
+            "back_url": reverse("culture:event_detail", kwargs={"slug": slug}),
+            "back_label": "Retour à l'événement",
+        },
+    )
+
+
+def ticket_genius_error(request, slug, reference):
+    event = get_object_or_404(_published_events(), slug=slug)
+    first = get_object_or_404(Ticket, reference=reference, event=event)
+    pending_refs = request.session.get("pending_tickets") or []
+    if pending_refs:
+        Ticket.objects.filter(
+            event=event,
+            reference__in=pending_refs,
+            status=Ticket.STATUS_PENDING,
+        ).delete()
+    elif first.genius_reference:
+        Ticket.objects.filter(event=event, genius_reference=first.genius_reference).delete()
+    elif first.status == Ticket.STATUS_PENDING:
+        first.delete()
+    request.session.pop("pending_tickets", None)
+    messages.warning(
+        request,
+        "Le paiement n'a pas abouti. Vous pouvez créer une nouvelle commande de billets.",
+    )
+    return redirect("culture:event_detail", slug=event.slug)
 
 
 def ticket_detail(request, reference):

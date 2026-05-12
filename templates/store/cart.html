@@ -118,6 +118,11 @@
                   </div>
                   <div class="form-field form-field--full">
                     <label>Moyen de paiement</label>
+                    {% if user.is_superuser and not genius_payment %}
+                      <p class="muted" style="font-size:0.85rem; margin:0 0 8px; padding:10px 12px; border:1px dashed var(--accent, #e85d04); border-radius:8px; background:rgba(232,93,4,0.06);">
+                        <strong>Admin :</strong> GeniusPay n’est pas actif sur ce serveur (clés <code>GENIUS_API_KEY</code> / <code>GENIUS_API_SECRET</code> manquantes). Le fichier <code>.env</code> n’est pas déployé : ajoutez ces variables dans <strong>Render → Environment</strong>, puis redeploy.
+                      </p>
+                    {% endif %}
                     {{ form.payment_method }}
                     {{ form.payment_method.errors }}
                     <p class="muted" style="font-size:0.85rem; margin-top:8px;">

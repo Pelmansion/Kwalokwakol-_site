@@ -174,9 +174,10 @@ DEFAULT_FROM_EMAIL = f"Kwalo <{EMAIL_HOST_USER}>"
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
 
 # --- GENIUSPAY (https://pay.genius.ci/docs/api) ---
-# Ne jamais committer les clés : uniquement variables d'environnement (Render, .env local).
-GENIUS_API_KEY = os.environ.get("GENIUS_API_KEY", "").strip()
-GENIUS_API_SECRET = os.environ.get("GENIUS_API_SECRET", "").strip()
-# Secret du webhook (whsec_...) — créé dans le dashboard Genius lors de la création du webhook.
-GENIUS_WEBHOOK_SECRET = os.environ.get("GENIUS_WEBHOOK_SECRET", "").strip()
-GENIUS_DEFAULT_COUNTRY = os.environ.get("GENIUS_DEFAULT_COUNTRY", "CI").strip() or "CI"
+# Ne jamais committer les clés. Le fichier .env est gitignoré : en production (Render, etc.),
+# définir GENIUS_API_KEY et GENIUS_API_SECRET dans l’onglet Environment du service.
+# decouple lit d’abord les variables d’environnement du processus, puis .env si présent.
+GENIUS_API_KEY = config("GENIUS_API_KEY", default="").strip()
+GENIUS_API_SECRET = config("GENIUS_API_SECRET", default="").strip()
+GENIUS_WEBHOOK_SECRET = config("GENIUS_WEBHOOK_SECRET", default="").strip()
+GENIUS_DEFAULT_COUNTRY = config("GENIUS_DEFAULT_COUNTRY", default="CI").strip() or "CI"

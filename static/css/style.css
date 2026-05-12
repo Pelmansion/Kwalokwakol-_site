@@ -1756,21 +1756,57 @@ p { margin: 0 0 1em; }
   box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.12);
 }
 
-/* Payment radio list */
+/* Payment radio list (ex. panier — styles détaillés aussi dans cart.html) */
 .payment-options {
-  list-style: none; padding: 0; margin: 4px 0 0;
-  display: flex; flex-wrap: wrap; gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.payment-options > li {
+  margin: 0;
+  width: 100%;
 }
 .payment-options label {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #fff;
-  font-size: 0.9rem; font-weight: 600;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  column-gap: 14px;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 16px 18px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(165deg, #fff 0%, var(--surface-alt) 100%);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.payment-options label:hover {
+  border-color: #fdba74;
+  box-shadow: 0 4px 18px rgba(194, 65, 12, 0.08);
+}
+.payment-options label:has(input:checked) {
+  border-color: #ea580c;
+  background: linear-gradient(145deg, rgba(255, 247, 237, 0.95) 0%, #fff 55%);
+  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.18);
+  color: #9a3412;
+}
+.payment-options input[type="radio"] {
+  accent-color: var(--primary);
+  width: 20px;
+  height: 20px;
+  margin: 3px 0 0;
+  grid-column: 1;
+  grid-row: 1;
   cursor: pointer;
 }
-.payment-options input[type="radio"] { accent-color: var(--primary); }
 .payment-option--disabled label {
   opacity: 0.5; cursor: not-allowed; background: var(--surface-alt);
   border-style: dashed; color: var(--muted);

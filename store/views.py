@@ -12,6 +12,7 @@ from content.models import HomepageBackground
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
 from orders.models import Order, OrderItem
+from payments.genius import GeniusPaymentError, create_checkout_payment
 from payments.models import Payment
 from reviews.models import Review
 from subscriptions.utils import active_product_filter, active_subscription_q
@@ -760,23 +761,57 @@ def checkout(request):
                 quantity=quantity,
                 unit_price=product.price,
             )
-    request.session["cart"] = {}
-    request.session.modified = True
 
     payment = Payment.objects.create(
         order=order,
-        provider=order.payment_method or Payment.PROVIDER_CARD,
+        provider=order.payment_method,
         amount=order.total_amount,
     )
 
-    if request.user.is_authenticated:
-        Notification.objects.create(
-            user=request.user,
-            title="Commande enregistrée",
-            body=f"Votre commande {order.id} est en attente de paiement.",
-            kind=Notification.ORDER,
-        )
+    def _notify_order_created():
+        if request.user.is_authenticated:
+            Notification.objects.create(
+                user=request.user,
+                title="Commande enregistrée",
+                body=f"Votre commande {order.id} est en attente de paiement.",
+                kind=Notification.ORDER,
+            )
 
+    if order.payment_method == Order.METHOD_GENIUS:
+        success_url = request.build_absolute_uri(
+            reverse("payments:genius_return", kwargs={"payment_id": payment.id})
+        )
+        error_url = request.build_absolute_uri(
+            reverse("payments:genius_error", kwargs={"payment_id": payment.id})
+        )
+        try:
+            res = create_checkout_payment(
+                amount=order.total_amount,
+                description=f"Commande #{order.id} — KwaloK",
+                customer_name=order.full_name,
+                customer_email=order.email,
+                customer_phone=order.phone,
+                metadata={"payment_id": str(payment.id), "order_id": str(order.id)},
+                success_url=success_url,
+                error_url=error_url,
+            )
+        except GeniusPaymentError as exc:
+            order.delete()
+            messages.error(request, str(exc))
+            return redirect("store:cart_detail")
+
+        ref = (res.get("reference") or "")[:80]
+        if ref:
+            payment.reference = ref
+            payment.save(update_fields=["reference"])
+        request.session["cart"] = {}
+        request.session.modified = True
+        _notify_order_created()
+        return redirect(res["checkout_url"])
+
+    request.session["cart"] = {}
+    request.session.modified = True
+    _notify_order_created()
     return redirect("payments:payment_sandbox", payment_id=payment.id)
 
 

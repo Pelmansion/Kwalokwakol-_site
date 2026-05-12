@@ -30,12 +30,14 @@ class Order(models.Model):
     METHOD_MOBILE = "mobile_money"
     METHOD_PAYPAL = "paypal"
     METHOD_LOCAL = "local"
+    METHOD_GENIUS = "genius"
 
     METHOD_CHOICES = [
         (METHOD_CARD, "Carte bancaire"),
         (METHOD_MOBILE, "Mobile Money"),
         (METHOD_PAYPAL, "PayPal"),
         (METHOD_LOCAL, "Autre"),
+        (METHOD_GENIUS, "Paiement en ligne (GeniusPay)"),
     ]
 
     DELIVERY_STANDARD = "standard"

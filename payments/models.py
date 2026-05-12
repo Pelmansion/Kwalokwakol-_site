@@ -16,12 +16,14 @@ class Payment(models.Model):
     PROVIDER_MOBILE = "mobile_money"
     PROVIDER_PAYPAL = "paypal"
     PROVIDER_LOCAL = "local"
+    PROVIDER_GENIUS = "genius"
 
     PROVIDER_CHOICES = [
         (PROVIDER_CARD, "Carte bancaire"),
         (PROVIDER_MOBILE, "Mobile Money"),
         (PROVIDER_PAYPAL, "PayPal"),
         (PROVIDER_LOCAL, "Autre"),
+        (PROVIDER_GENIUS, "GeniusPay (Wave, Orange, MTN, carte…)"),
     ]
 
     order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="payments")

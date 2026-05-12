@@ -172,3 +172,11 @@ EMAIL_HOST_PASSWORD = "zkdjhevmnwkemqed"
 DEFAULT_FROM_EMAIL = f"Kwalo <{EMAIL_HOST_USER}>"
 
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
+
+# --- GENIUSPAY (https://pay.genius.ci/docs/api) ---
+# Ne jamais committer les clés : uniquement variables d'environnement (Render, .env local).
+GENIUS_API_KEY = os.environ.get("GENIUS_API_KEY", "").strip()
+GENIUS_API_SECRET = os.environ.get("GENIUS_API_SECRET", "").strip()
+# Secret du webhook (whsec_...) — créé dans le dashboard Genius lors de la création du webhook.
+GENIUS_WEBHOOK_SECRET = os.environ.get("GENIUS_WEBHOOK_SECRET", "").strip()
+GENIUS_DEFAULT_COUNTRY = os.environ.get("GENIUS_DEFAULT_COUNTRY", "CI").strip() or "CI"

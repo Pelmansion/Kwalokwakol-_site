@@ -4,14 +4,24 @@ from marketplace.models import ServiceRequest
 from orders.models import Order
 
 
+def _genius_available() -> bool:
+    from payments.genius import is_configured
+
+    return is_configured()
+
+
 class PaymentRadioSelect(forms.RadioSelect):
-    """RadioSelect qui désactive tous les moyens de paiement sauf les espèces."""
+    """Désactive les moyens non disponibles ; GeniusPay si les clés API sont présentes."""
+
+    DISABLED_METHODS = frozenset(
+        {Order.METHOD_CARD, Order.METHOD_MOBILE, Order.METHOD_PAYPAL}
+    )
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=subindex, attrs=attrs
         )
-        if str(value) != Order.METHOD_LOCAL:
+        if str(value) in self.DISABLED_METHODS:
             option["attrs"]["disabled"] = True
         return option
 
@@ -33,33 +43,35 @@ class OrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         payment_field = self.fields["payment_method"]
         payment_field.widget = PaymentRadioSelect(attrs={"class": "payment-options"})
-        payment_field.choices = [
-            (Order.METHOD_CARD, "Carte bancaire"),
-            (Order.METHOD_MOBILE, "Mobile Money"),
-            (Order.METHOD_PAYPAL, "PayPal"),
-            (Order.METHOD_LOCAL, "Espèces"),
+        choices = [
+            (Order.METHOD_LOCAL, "Espèces à la livraison"),
         ]
-        payment_field.initial = Order.METHOD_LOCAL
+        if _genius_available():
+            choices.insert(
+                0,
+                (
+                    Order.METHOD_GENIUS,
+                    "Paiement en ligne (Wave, Orange Money, MTN MoMo, carte… via GeniusPay)",
+                ),
+            )
+        choices.extend(
+            [
+                (Order.METHOD_CARD, "Carte bancaire (bientôt)"),
+                (Order.METHOD_MOBILE, "Mobile Money (bientôt)"),
+                (Order.METHOD_PAYPAL, "PayPal (bientôt)"),
+            ]
+        )
+        payment_field.choices = choices
+        payment_field.initial = (
+            Order.METHOD_GENIUS if _genius_available() else Order.METHOD_LOCAL
+        )
 
     def clean_payment_method(self):
         value = self.cleaned_data.get("payment_method")
-        if value != Order.METHOD_LOCAL:
-            raise forms.ValidationError(
-                "Pour le moment, seul le paiement en espèces est disponible."
-            )
-        return value
-
-
-class ServiceRequestForm(forms.ModelForm):
-    is_interested = forms.BooleanField(
-        required=True, initial=True, label="Je suis intéressé par ce service"
-    )
-
-    class Meta:
-        model = ServiceRequest
-        fields = ["is_interested", "comment"]
-        widgets = {
-            "comment": forms.Textarea(
-                attrs={"rows": 3, "placeholder": "Expliquez votre besoin..."}
-            )
-        }
+        if value == Order.METHOD_GENIUS:
+            if not _genius_available():
+                raise forms.ValidationError("Le paiement en ligne n'est pas disponible pour le moment.")
+            return value
+        if value == Order.METHOD_LOCAL:
+            return value
+        raise forms.ValidationError("Ce moyen de paiement n'est pas encore activé.")

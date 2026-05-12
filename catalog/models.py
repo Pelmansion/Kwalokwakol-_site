@@ -34,7 +34,7 @@ class Category(models.Model):
         verbose_name_plural = "categories"
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     Q(vendor__isnull=False, service_provider__isnull=True)
                     | Q(vendor__isnull=True, service_provider__isnull=False)
                     | Q(vendor__isnull=True, service_provider__isnull=True)

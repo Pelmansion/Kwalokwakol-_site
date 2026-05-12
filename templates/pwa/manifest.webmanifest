@@ -1,6 +1,6 @@
 {% load static %}{
-  "name": "KwaloK Wakolê Group",
-  "short_name": "KwaloK",
+  "name": "KwaloKWakolê Group",
+  "short_name": "Kolê",
   "description": "Marketplace Afro-moderne : alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.",
   "start_url": "/?source=pwa",
   "scope": "/",
@@ -68,7 +68,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Accueil KwaloK"
+      "label": "Accueil Kolê"
     }
   ]
 }

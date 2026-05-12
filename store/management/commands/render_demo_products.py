@@ -88,7 +88,7 @@ class Command(BaseCommand):
         )
         if not cat:
             cat = Category.objects.create(
-                name="Démo catalogue KwaloK",
+                name="Démo catalogue Kolê",
                 description="Catégorie auto pour produits de démonstration.",
                 is_active=True,
             )

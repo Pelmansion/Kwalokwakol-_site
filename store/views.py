@@ -805,7 +805,7 @@ def checkout(request):
         try:
             res = create_checkout_payment(
                 amount=order.total_amount,
-                description=f"Commande #{order.id} — KwaloK",
+                description=f"Commande #{order.id} — Kolê",
                 customer_name=order.full_name,
                 customer_email=order.email,
                 customer_phone=order.phone,

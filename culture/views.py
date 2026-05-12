@@ -436,7 +436,7 @@ def artist_activate(request):
     if not user_can_become_artist(request.user):
         messages.error(
             request,
-            "Le profil artiste est réservé aux vendeurs et prestataires inscrits sur KwaloK.",
+            "Le profil artiste est réservé aux vendeurs et prestataires inscrits sur Kolê.",
         )
         return redirect("culture:home")
 

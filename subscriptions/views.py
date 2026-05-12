@@ -175,7 +175,7 @@ def start_payment(request):
 
     owner = sub.owner_profile
     user = owner.owner
-    plan_label = sub.plan.name if sub.plan else "Abonnement KwaloK"
+    plan_label = sub.plan.name if sub.plan else "Abonnement Kolê"
     phone = getattr(owner, "phone", "") or ""
 
     if genius_is_configured():

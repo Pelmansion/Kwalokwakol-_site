@@ -1,6 +1,6 @@
-# 📱 KwaloK — PWA & Application mobile
+# 📱 Kolê — PWA & Application mobile
 
-Ce document explique comment le site Django **KwaloK Wakolê Group** est transformé
+Ce document explique comment le site Django **KwaloKWakolê Group** est transformé
 en application installable (PWA), puis comment le publier sur **Google Play Store**
 et **Apple App Store**.
 
@@ -81,10 +81,10 @@ python scripts/generate_pwa_icons.py
 
 4. Remplir les informations :
    - **Package ID** : `ci.kwalok.app` (ou similaire, inverse-domaine)
-   - **App name** : `KwaloK Wakolê Group`
-   - **Short name** : `KwaloK`
+   - **App name** : `KwaloKWakolê Group`
+   - **Short name** : `Kolê`
    - **Version** : `1.0.0`
-   - **Launcher name** : `KwaloK`
+   - **Launcher name** : `Kolê`
    - **Theme color** : `#C2410C`
    - **Background color** : `#FFF8F1`
    - **Signing key** : laisser **"Generate new"** la première fois
@@ -155,7 +155,7 @@ Et créer `templates/pwa/assetlinks.json` avec le contenu fourni par PWABuilder.
 
 2. Remplir :
    - **Bundle ID** : `ci.kwalok.app`
-   - **App name** : `KwaloK`
+   - **App name** : `Kolê`
    - **Image URL** : URL de l'icône 512x512 hébergée en HTTPS
 
 3. Télécharger le zip → contient un **projet Xcode complet**

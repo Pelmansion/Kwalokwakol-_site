@@ -1,5 +1,5 @@
 /* ============================================================
- * KwaloK Chatbot "Kwa"
+ * Kolê Chatbot "Kwa"
  * FAQ intelligent par mots-clés, navigation guidée.
  * Aucune dépendance externe, fonctionne hors ligne.
  * ============================================================ */
@@ -31,7 +31,7 @@
     products: { label: "🛍 Catalogue produits", url: urls.products },
     cart: { label: "🛒 Mon panier", url: urls.cart },
     favorites: { label: "❤️ Mes favoris", url: urls.favorites },
-    cultureHome: { label: "🎤 KwaloK Culture", url: urls.culture },
+    cultureHome: { label: "🎤 Kolê Culture", url: urls.culture },
     songList: { label: "🎵 Catalogue musique", url: urls.songs },
     eventList: { label: "🎫 Concerts", url: urls.events },
     artistList: { label: "🌟 Artistes", url: urls.artists },
@@ -61,7 +61,7 @@
         "bonjour", "salut", "bonsoir", "hello", "hi", "coucou", "yo", "hey",
         "comment ca va", "ca va", "wesh"
       ],
-      response: "Bonjour ! 👋 Je suis **Kwa**, l'assistant de KwaloK Wakolê Group. Je peux t'aider à acheter, vendre, écouter de la musique ou réserver tes places de concert. Que cherches-tu ?",
+      response: "Bonjour ! 👋 Je suis **Kwa**, l'assistant de KwaloKWakolê Group. Je peux t'aider à acheter, vendre, écouter de la musique ou réserver tes places de concert. Que cherches-tu ?",
       quickReplies: WELCOME_QR,
     },
 
@@ -87,7 +87,7 @@
     {
       id: "return_refund",
       patterns: ["retour", "rembours", "annul", "echange", "produit defectueux", "casse", "abime"],
-      response: "↩️ **Retours & remboursements** :\n• Tu disposes de **7 jours** après réception pour signaler un problème\n• Contacte le vendeur via la messagerie de la commande\n• En cas de litige, l'équipe KwaloK arbitre\n• Remboursement sur le moyen de paiement initial",
+      response: "↩️ **Retours & remboursements** :\n• Tu disposes de **7 jours** après réception pour signaler un problème\n• Contacte le vendeur via la messagerie de la commande\n• En cas de litige, l'équipe Kolê arbitre\n• Remboursement sur le moyen de paiement initial",
       quickReplies: ["myOrders", "contact"],
     },
     {
@@ -107,13 +107,13 @@
     {
       id: "become_vendor",
       patterns: ["devenir vendeur", "vendre mes produits", "ouvrir une boutique", "vendre sur kwalok", "creer une boutique", "boutique en ligne"],
-      response: "🏪 **Devenir vendeur** sur KwaloK :\n1. Crée ton compte\n2. Remplis ton profil boutique (nom, KYC, photos)\n3. Souscris à une formule mensuelle (Starter / Pro / Premium)\n4. Publie tes produits → c'est en ligne !\n\nLes vendeurs vérifiés bénéficient d'un badge de confiance.",
+      response: "🏪 **Devenir vendeur** sur Kolê :\n1. Crée ton compte\n2. Remplis ton profil boutique (nom, KYC, photos)\n3. Souscris à une formule mensuelle (Starter / Pro / Premium)\n4. Publie tes produits → c'est en ligne !\n\nLes vendeurs vérifiés bénéficient d'un badge de confiance.",
       quickReplies: ["becomeVendor", "plans"],
     },
     {
       id: "become_provider",
       patterns: ["devenir prestataire", "vendre mes services", "proposer mes services", "freelance", "service", "prestation"],
-      response: "🛠 **Devenir prestataire de services** :\nCoiffure, plomberie, bâtiment, couture, numérique... Tu peux proposer tes services sur KwaloK.\n1. Inscription + KYC\n2. Choix d'une formule mensuelle\n3. Publication de tes services → réception de demandes",
+      response: "🛠 **Devenir prestataire de services** :\nCoiffure, plomberie, bâtiment, couture, numérique... Tu peux proposer tes services sur Kolê.\n1. Inscription + KYC\n2. Choix d'une formule mensuelle\n3. Publication de tes services → réception de demandes",
       quickReplies: ["becomeProvider", "plans"],
     },
     {
@@ -139,7 +139,7 @@
     {
       id: "culture_overview",
       patterns: ["kwalok culture", "culture", "musique concert", "espace culturel"],
-      response: "🎤 **KwaloK Culture** réunit les artistes locaux, leur musique et leurs concerts. Écoute & télécharge des sons, achète des billets avec QR code, soutiens les talents de ta région !",
+      response: "🎤 **Kolê Culture** réunit les artistes locaux, leur musique et leurs concerts. Écoute & télécharge des sons, achète des billets avec QR code, soutiens les talents de ta région !",
       quickReplies: ["cultureHome", "songList", "eventList", "artistList"],
     },
     {
@@ -157,7 +157,7 @@
     {
       id: "become_artist",
       patterns: ["devenir artiste", "publier ma musique", "mettre ma musique", "uploader chanson", "etre artiste"],
-      response: "🎤 **Devenir artiste sur KwaloK Culture** : il faut être déjà vendeur ou prestataire inscrit. Active ensuite ton profil artiste pour publier tes sons (gratuits ou payants), créer tes concerts et vendre tes billets.",
+      response: "🎤 **Devenir artiste sur Kolê Culture** : il faut être déjà vendeur ou prestataire inscrit. Active ensuite ton profil artiste pour publier tes sons (gratuits ou payants), créer tes concerts et vendre tes billets.",
       quickReplies: ["becomeArtist", "becomeVendor", "becomeProvider"],
     },
     {
@@ -209,7 +209,7 @@
     {
       id: "pwa_install",
       patterns: ["installer", "application", "app", "telephone", "android", "iphone", "play store", "app store", "telecharger app"],
-      response: "📱 **Installer KwaloK comme une app** :\n• Sur Android : un bouton \"Installer l'app\" apparaît automatiquement\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
+      response: "📱 **Installer Kolê comme une app** :\n• Sur Android : un bouton \"Installer l'app\" apparaît automatiquement\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
       quickReplies: ["faq"],
     },
 
@@ -223,7 +223,7 @@
     {
       id: "human",
       patterns: ["humain", "vrai personne", "agent", "operateur", "parler a quelqu un", "support humain", "appeler"],
-      response: "👤 Tu peux **contacter l'équipe KwaloK** via la page Contact, par email ou WhatsApp. Pour une commande spécifique, utilise la messagerie de la commande pour parler directement au vendeur.",
+      response: "👤 Tu peux **contacter l'équipe Kolê** via la page Contact, par email ou WhatsApp. Pour une commande spécifique, utilise la messagerie de la commande pour parler directement au vendeur.",
       quickReplies: ["contact"],
     },
     {
@@ -241,13 +241,13 @@
     {
       id: "bye",
       patterns: ["au revoir", "bye", "ciao", "a plus", "salut bye", "tchao", "bonne journee", "bonne soiree"],
-      response: "À bientôt sur KwaloK ! 👋 Bonne navigation.",
+      response: "À bientôt sur Kolê ! 👋 Bonne navigation.",
       quickReplies: [],
     },
     {
       id: "who",
       patterns: ["qui es tu", "qui es-tu", "tu es qui", "ton nom", "kwa qui", "comment tu t appelles"],
-      response: "Je suis **Kwa**, l'assistant virtuel de KwaloK Wakolê Group 🦊. Je connais bien le site et je peux t'orienter. Mais je ne suis pas un humain — pour des questions complexes, contacte l'équipe support.",
+      response: "Je suis **Kwa**, l'assistant virtuel de KwaloKWakolê Group 🦊. Je connais bien le site et je peux t'orienter. Mais je ne suis pas un humain — pour des questions complexes, contacte l'équipe support.",
       quickReplies: ["help", "contact"],
     },
     {
@@ -256,7 +256,7 @@
         "kwalok c est quoi", "que fait kwalok", "presentation",
         "marketplace ivoirien", "qu est ce que kwalok", "wakole"
       ],
-      response: "🌍 **KwaloK Wakolê Group** est une marketplace afro-moderne qui réunit en un seul endroit : alimentation locale, artisans, bâtiment, services, boutiques, et la culture (musique + concerts) de Côte d'Ivoire.",
+      response: "🌍 **KwaloKWakolê Group** est une marketplace afro-moderne qui réunit en un seul endroit : alimentation locale, artisans, bâtiment, services, boutiques, et la culture (musique + concerts) de Côte d'Ivoire.",
       quickReplies: ["products", "cultureHome", "becomeVendor"],
     },
   ];

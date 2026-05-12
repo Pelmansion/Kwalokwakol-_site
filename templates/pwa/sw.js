@@ -1,5 +1,5 @@
 {% load static %}/*
- * KwaloK Service Worker
+ * Kolê Service Worker
  * Stratégies :
  *   - Pages HTML : network-first avec fallback offline
  *   - Ressources statiques (CSS/JS/images/polices) : stale-while-revalidate

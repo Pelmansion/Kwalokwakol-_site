@@ -1,5 +1,5 @@
 /* =============================================================
-   KwaloK Wakolê Group — Design System
+   KwaloKWakolê Group — Design System
    Thème : Marketplace Afro-moderne (artisanat, commerce, services)
    ============================================================= */
 .js-add-to-cart { position: relative; }
@@ -2959,6 +2959,16 @@ textarea::placeholder { color: #94a3b8; }
     display: inline-flex; align-items: center; justify-content: center;
   }
   .bottom-nav__label { line-height: 1.1; }
+
+  /* Bulle Kwa au-dessus de la bottom-nav (sinon elle masque « Compte ») */
+  .kwa-bubble {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    right: max(12px, env(safe-area-inset-right));
+  }
+  .kwa-panel {
+    bottom: calc(152px + env(safe-area-inset-bottom));
+    max-height: calc(100vh - 172px - env(safe-area-inset-bottom));
+  }
 }
 
 @media (max-width: 640px) {
@@ -4892,15 +4902,15 @@ textarea::placeholder { color: #94a3b8; }
   .kwa-panel {
     right: 10px;
     left: 10px;
-    bottom: 85px;
+    bottom: calc(150px + env(safe-area-inset-bottom));
     width: auto;
     max-width: none;
-    height: calc(100vh - 110px);
+    height: calc(100vh - 178px - env(safe-area-inset-bottom));
     border-radius: 18px;
   }
   .kwa-bubble {
-    right: 16px;
-    bottom: 16px;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(78px + env(safe-area-inset-bottom));
     width: 56px;
     height: 56px;
   }
@@ -4913,10 +4923,16 @@ textarea::placeholder { color: #94a3b8; }
   left: 20px !important;
   bottom: 20px !important;
 }
+@media (max-width: 768px) {
+  .pwa-install-btn {
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+  }
+}
 @media (max-width: 480px) {
   .pwa-install-btn {
-    left: 12px !important;
-    bottom: 12px !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
   }
 }
 

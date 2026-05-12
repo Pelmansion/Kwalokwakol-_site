@@ -230,7 +230,7 @@ class Command(BaseCommand):
     def create_admins(self):
         admin, c1 = self._make_user(
             "admin",
-            first="Admin", last="KwaloK",
+            first="Admin", last="Kolê",
             role=UserProfile.ROLE_ADMIN,
             phone="+225 07 00 00 00 01",
         )
@@ -623,7 +623,7 @@ class Command(BaseCommand):
                 (4, "[DEMO] Très bon rapport qualité-prix, à recommander."),
                 (4, "[DEMO] Bon produit, l'emballage pourrait être amélioré."),
                 (3, "[DEMO] Correct, sans plus."),
-                (5, "[DEMO] Parfait, je recommande KwaloK !"),
+                (5, "[DEMO] Parfait, je recommande Kolê !"),
             ]
             for product, (rating, comment) in zip(product_only[:6], sample_reviews):
                 Review.objects.create(
@@ -778,8 +778,8 @@ class Command(BaseCommand):
             },
             {
                 "headliner": artists[0],
-                "title": "[DEMO] KwaloK Culture Festival - Édition Pilote",
-                "description": "Festival inaugural de KwaloK Culture : 6h de musique avec tous les artistes de la plateforme. Buvette, food trucks, ambiance familiale.",
+                "title": "[DEMO] Kolê Culture Festival - Édition Pilote",
+                "description": "Festival inaugural de Kolê Culture : 6h de musique avec tous les artistes de la plateforme. Buvette, food trucks, ambiance familiale.",
                 "starts_at": now - timedelta(days=20),  # Événement passé pour démo
                 "venue_name": "Place Ficgayo",
                 "city": "Abidjan",
@@ -891,7 +891,7 @@ class Command(BaseCommand):
         self.stdout.write("")
         artist_users = list(User.objects.filter(artist_profile__isnull=False))
         if artist_users:
-            self.stdout.write("  ARTISTES (espace KwaloK Culture activé)")
+            self.stdout.write("  ARTISTES (espace Kolê Culture activé)")
             for u in artist_users:
                 self.stdout.write(f"    🎤 {u.username:<17} / {self.password}    ({u.artist_profile.stage_name})")
 

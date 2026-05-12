@@ -7,8 +7,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#C2410C">
-    <meta name="description" content="KwaloK Wakolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
-    <title>{% block title %}KwaloK Wakolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
+    <meta name="description" content="KwaloKWakolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
+    <title>{% block title %}KwaloKWakolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
 
     {# --- Favicon & icônes classiques --- #}
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/favicon-32.png' %}">
@@ -17,17 +17,17 @@
     {# --- PWA : manifest + icônes iOS/Android/Windows --- #}
     <link rel="manifest" href="{% url 'pwa-manifest' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/apple-touch-icon.png' %}">
-    <meta name="application-name" content="KwaloK">
+    <meta name="application-name" content="Kolê">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="KwaloK">
+    <meta name="apple-mobile-web-app-title" content="Kolê">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#C2410C">
     <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-192.png' %}">
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=15">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=16">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -44,7 +44,7 @@
     <header class="topbar">
       <div class="container topbar__inner">
         <a class="logo" href="{% if user.is_authenticated %}{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}{% else %}{% url 'store:home' %}{% endif %}">
-          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloK Wakolê Group">
+          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloKWakolê Group">
         </a>
 
         <form class="search" action="{% url 'store:product_list' %}" method="get" role="search">
@@ -122,7 +122,7 @@
             </div>
           </div>
 
-          <a class="topbar__item topbar__item--culture" href="{% url 'culture:home' %}" aria-label="KwaloK Culture">
+          <a class="topbar__item topbar__item--culture" href="{% url 'culture:home' %}" aria-label="Kolê Culture">
             <span aria-hidden="true">🎤</span>
             <span>Culture</span>
           </a>
@@ -207,7 +207,7 @@
       <div class="container">
         <div class="footer__grid">
           <div class="footer__brand">
-            <h3>KwaloK Wakolê Group</h3>
+            <h3>KwaloKWakolê Group</h3>
             <p>La plateforme qui rassemble les artisans, boutiques, producteurs et prestataires d'Afrique. Commandez, réservez et recevez — en toute confiance.</p>
             <form class="newsletter" onsubmit="event.preventDefault(); alert('Merci pour votre inscription !');">
               <input type="email" placeholder="Votre email" required>
@@ -260,7 +260,7 @@
         </div>
 
         <div class="footer__bottom">
-          <p>© {% now "Y" %} KwaloK Wakolê Group — Tous droits réservés.</p>
+          <p>© {% now "Y" %} KwaloKWakolê Group — Tous droits réservés.</p>
           <p>Fait avec <span style="color:var(--accent);">♥</span> en Afrique.</p>
         </div>
       </div>
@@ -417,7 +417,7 @@
             <div class="kwa-panel__avatar" aria-hidden="true">K</div>
             <div>
               <strong>Kwa</strong>
-              <small><span class="kwa-online-dot"></span> Assistant KwaloK</small>
+              <small><span class="kwa-online-dot"></span> Assistant Kolê</small>
             </div>
           </div>
           <div class="kwa-panel__actions">
@@ -435,12 +435,12 @@
           </button>
         </form>
 
-        <p class="kwa-panel__footer">Assistant KwaloK · Réponses automatiques</p>
+        <p class="kwa-panel__footer">Assistant Kolê · Réponses automatiques</p>
       </aside>
     </div>
 
     {# ===================== PWA : installation & service worker ===================== #}
-    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l'application KwaloK">
+    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l'application Kolê">
       <span class="pwa-install-btn__icon" aria-hidden="true">📲</span>
       <span class="pwa-install-btn__label">Installer l'app</span>
     </button>

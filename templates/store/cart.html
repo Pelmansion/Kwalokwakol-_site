@@ -121,7 +121,11 @@
                     {{ form.payment_method }}
                     {{ form.payment_method.errors }}
                     <p class="muted" style="font-size:0.85rem; margin-top:8px;">
-                      💡 Pour le moment, seul le paiement en espèces à la livraison est disponible.
+                      {% if genius_payment %}
+                        💡 Vous pouvez payer en ligne (GeniusPay : Wave, Orange Money, MTN, carte…) ou en espèces à la livraison.
+                      {% else %}
+                        💡 Pour le moment, seul le paiement en espèces à la livraison est proposé. Le paiement en ligne (GeniusPay) apparaîtra ici une fois activé sur le serveur.
+                      {% endif %}
                     </p>
                   </div>
                 </div>
@@ -170,7 +174,11 @@
 
             <ul class="cart-summary__perks">
               <li>🚚 Livraison sécurisée</li>
-              <li>💳 Paiement à la livraison disponible</li>
+              {% if genius_payment %}
+                <li>💳 Paiement en ligne (GeniusPay) ou à la livraison</li>
+              {% else %}
+                <li>💳 Paiement à la livraison disponible</li>
+              {% endif %}
               <li>↩️ Retour possible sous 7 jours</li>
             </ul>
           </div>

@@ -12,11 +12,14 @@ from content.models import HomepageBackground
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
 from orders.models import Order, OrderItem
-from payments.genius import GeniusPaymentError, create_checkout_payment
+from payments.genius import (
+    GeniusPaymentError,
+    create_checkout_payment,
+    is_configured as genius_is_configured,
+)
 from payments.models import Payment
 from reviews.models import Review
 from subscriptions.utils import active_product_filter, active_subscription_q
-from django.db.models import Count, Avg
 
 
 DEFAULT_CATEGORIES = [
@@ -406,6 +409,7 @@ def cart_detail(request):
             "total": total,
             "form": form,
             "suggestions": suggestions,
+            "genius_payment": genius_is_configured(),
         },
     )
 

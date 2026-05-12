@@ -1,7 +1,3 @@
-"""
-Django settings for kwalo project.
-"""
-
 import os
 from pathlib import Path
 import dj_database_url
@@ -10,7 +6,7 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Charger les variables d'environnement depuis .env (pour le dev local)
+# --- CHARGEMENT DES VARIABLES D'ENVIRONNEMENT ---
 _env_file = BASE_DIR / ".env"
 if _env_file.exists():
     with open(_env_file, encoding="utf-8") as f:
@@ -29,16 +25,16 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = [
     'kolêgroup.com',
     'www.kolêgroup.com',
-    'xn--kolgroup-y1a.com',          # Version avec 'y'
-    'www.xn--kolgroup-y1a.com',      # Version www avec 'y'
-    'xn--kolgroup-m1a.com',          # Version avec 'm' (vu sur ta première capture)
-    'www.xn--kolgroup-m1a.com',      # Version www avec 'm'
-    'kwalokwakol-site.onrender.com', # L'adresse Render
+    'xn--kolgroup-y1a.com',
+    'www.xn--kolgroup-y1a.com',
+    'xn--kolgroup-m1a.com',
+    'www.xn--kolgroup-m1a.com',
+    'kwalokwakol-site.onrender.com',
     'localhost',
     '127.0.0.1',
 ]
 
-# Application definition
+# --- APPLICATIONS ---
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    # Allauth
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    # Vos Apps
     'accounts',
     'catalog',
     'marketplace',
@@ -70,7 +68,7 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Indispensable pour Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -112,9 +110,8 @@ DATABASES = {
 # --- STATICS & MEDIA ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles' # Requis pour collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Optimisation WhiteNoise pour la production
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -136,7 +133,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- AUTHENTICATION ---
+# --- AUTHENTICATION CONFIGURATION (ALLAUTH) ---
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/compte/connexion/"
@@ -146,20 +143,29 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_LOGIN_METHODS = {"username", "email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+# Paramètres Allauth corrigés pour forcer l'inscription avec mail d'activation
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Changé de 'none' à 'mandatory'
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
-# --- EMAILS ---
-if os.environ.get("EMAIL_HOST_USER") and os.environ.get("EMAIL_HOST_PASSWORD"):
+# --- EMAILS CONFIGURATION (SMTP / PRODUCTION) ---
+EMAIL_HOST_USER = "kadersoro18@gmail.com"
+EMAIL_HOST_PASSWORD = "Coulibaly18-01"
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    # Configuration pour la production (Render)
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+    DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"Kwalo <{EMAIL_HOST_USER}>")
 else:
+    # Configuration pour le développement local (Console)
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "kadersoro18@gmail.com"
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Kwalo <noreply@kwalo.local>")
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600

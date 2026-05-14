@@ -3,7 +3,7 @@
 Usage :
     python scripts/generate_pwa_icons.py
 
-Le script lit `static/images/logo-kwalokwakole.png` et produit :
+Le script lit une image source PNG (ex. `static/images/logo-kwalokwakole.png` exportée depuis le wordmark SVG) et produit :
   - static/images/icons/icon-192.png
   - static/images/icons/icon-512.png
   - static/images/icons/icon-maskable-512.png (zone de sécurité 20 %)

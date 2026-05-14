@@ -106,7 +106,7 @@
         "fermer session",
       ],
       response:
-        "📲 Sur **téléphone**, en haut : **« Retour »**, le **logo** (raccourci vers l’accueil ou ton espace pro), et **« Quitter »** à droite si tu es connecté·e. L’entrée **Accueil** à privilégier, c’est l’**icône maison en bas**. **Compte** ouvre ton profil…",
+        "📲 Sur **téléphone**, en haut : **« Retour »** (page précédente, ou accueil si tu n’as pas d’historique) et **« Quitter »** à droite si tu es connecté·e. Pour l’**accueil** ou le **tableau de bord**, utilise l’**icône maison en bas**. **Compte** ouvre ton profil…",
       quickReplies: ["faq", "home"],
     },
     {

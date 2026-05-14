@@ -2948,6 +2948,7 @@ textarea::placeholder { color: #94a3b8; }
   .mobile-app-bar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 4px;
     position: fixed;
     top: 0;
@@ -2997,33 +2998,10 @@ textarea::placeholder { color: #94a3b8; }
     color: var(--primary-dark);
   }
 
-  .mobile-app-bar__home {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    padding: 4px 10px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: var(--primary-dark);
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.15s ease;
-  }
-  .mobile-app-bar__home:active {
-    background: var(--primary-50);
-  }
-
-  .mobile-app-bar__logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-
   .mobile-app-bar__spacer {
     flex: 1;
-    min-width: 4px;
+    min-width: 8px;
+    min-height: 1px;
   }
 
   .mobile-app-bar__logout-form {

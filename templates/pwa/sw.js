@@ -6,7 +6,7 @@
  *   - API/POST : toujours online (bypass)
  */
 
-const VERSION = 'kwalok-v6';
+const VERSION = 'kwalok-v7';
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;

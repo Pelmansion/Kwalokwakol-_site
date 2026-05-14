@@ -94,20 +94,31 @@ html.show-first-intro .first-visit-splash {
 html.show-first-intro {
   overflow: hidden;
 }
+.first-visit-splash__logo-wrap {
+  padding: 0.65rem 1rem 0.75rem;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255, 252, 248, 0.98) 0%, rgba(255, 245, 235, 0.94) 100%);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  max-width: min(360px, 92vw);
+}
 .first-visit-splash__logo {
-  width: min(168px, 44vw);
+  display: block;
+  width: min(300px, 88vw);
   height: auto;
+  max-height: 72px;
   object-fit: contain;
-  border-radius: 16px;
-  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
+  object-position: center;
+  margin: 0 auto;
 }
 .first-visit-splash__eyebrow {
-  margin: 0.25rem 0 0;
+  margin: 0.35rem 0 0;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 248, 241, 0.72);
+  color: rgba(255, 248, 241, 0.88);
 }
 .first-visit-splash__brand {
   margin: 0;
@@ -130,11 +141,47 @@ html.show-first-intro {
   margin-top: 0.5rem;
   min-width: 200px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.first-visit-splash__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes splashRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.first-visit-splash__anim {
+  opacity: 0;
+  animation: splashRiseIn 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.first-visit-splash__anim--1 { animation-delay: 0.08s; }
+.first-visit-splash__anim--2 { animation-delay: 0.22s; }
+.first-visit-splash__anim--3 { animation-delay: 0.36s; }
+.first-visit-splash__anim--4 { animation-delay: 0.5s; }
+.first-visit-splash__anim--5 { animation-delay: 0.64s; }
 
 @media (prefers-reduced-motion: reduce) {
   .first-visit-splash {
     animation: none;
+  }
+  .first-visit-splash__anim {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .first-visit-splash__btn {
+    transition: none;
+  }
+  .first-visit-splash__btn:hover {
+    transform: none;
   }
 }
 

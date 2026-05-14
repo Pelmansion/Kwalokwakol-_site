@@ -3,18 +3,21 @@
 Usage :
     python scripts/generate_pwa_icons.py
 
-Source **icônes launcher** (prioritaire) :
+Les icônes sont **100 % opaques** (fond crème #FFFCF8) : iOS affiche souvent le PNG
+transparent comme carré noir sur l’écran d’accueil.
+
+Source prioritaire :
     `static/images/icons/LOGO KWALOKWAKOLÈ GROUP.png`
-    (fond noir retiré → transparence, puis redimensionnement sur carré transparent).
+Le noir **connecté aux bords** de l’image est remplacé par le fond crème (le texte
+noir enfermé dans les glyphes reste intact si le fichier l’utilise).
 
-Si ce fichier est absent, repli : composition générée (K + Kolêgroup + GROUP).
+Repli si fichier absent : composition générée sur fond crème.
 
-Le **favicon** utilise toujours `static/images/logo-kwalokwakole.png` (logo site header).
-
-**APK** : régénérez le paquet PWABuilder/Bubblewrap après déploiement pour embarquer les nouveaux PNG.
+Le favicon utilise `static/images/logo-kwalokwakole.png` (logo header).
 """
 from __future__ import annotations
 
+from collections import deque
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -24,44 +27,87 @@ OUT_DIR = ROOT / "static" / "images" / "icons"
 LAUNCHER_SRC = OUT_DIR / "LOGO KWALOKWAKOLÈ GROUP.png"
 SRC_LOGO_SITE = ROOT / "static" / "images" / "logo-kwalokwakole.png"
 
+# Aligné sur manifest.webmanifest background_color
+ICON_BG = (255, 252, 248)
+
 PRIMARY = (194, 65, 12, 255)
 INK = (27, 20, 16, 255)
 MUTED = (107, 95, 84, 255)
 
 
-def _black_background_to_transparent(img: Image.Image, threshold: int = 42) -> Image.Image:
-    """Pixels très sombres (fond noir) → alpha 0. Garde le marron du carré K et le blanc du texte."""
-    rgba = img.convert("RGBA")
-    pixels = list(rgba.getdata())
-    out = []
-    for r, g, b, a in pixels:
-        if r <= threshold and g <= threshold and b <= threshold:
-            out.append((0, 0, 0, 0))
-        else:
-            out.append((r, g, b, a))
-    rgba.putdata(out)
-    return rgba
+def _edge_flood_replace_dark(
+    img: Image.Image,
+    darkness: int = 52,
+    repl: tuple[int, int, int] = ICON_BG,
+) -> Image.Image:
+    """Remplace les pixels très sombres reliés au bord (fond) par `repl`."""
+    im = img.convert("RGBA")
+    w, h = im.size
+    px = im.load()
+    n = w * h
+    vis = bytearray(n)
+
+    def dark(x: int, y: int) -> bool:
+        r, g, b, a = px[x, y]
+        return a > 35 and r <= darkness and g <= darkness and b <= darkness
+
+    def idx(x: int, y: int) -> int:
+        return y * w + x
+
+    q: deque[tuple[int, int]] = deque()
+    for x in range(w):
+        for yy in (0, h - 1):
+            if dark(x, yy) and not vis[idx(x, yy)]:
+                vis[idx(x, yy)] = 1
+                q.append((x, yy))
+    for y in range(h):
+        for xx in (0, w - 1):
+            if dark(xx, y) and not vis[idx(xx, y)]:
+                vis[idx(xx, y)] = 1
+                q.append((xx, y))
+
+    while q:
+        x, y = q.popleft()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < w and 0 <= ny < h and not vis[idx(nx, ny)] and dark(nx, ny):
+                vis[idx(nx, ny)] = 1
+                q.append((nx, ny))
+
+    out = im.copy()
+    op = out.load()
+    rr, gg, bb = repl
+    for y in range(h):
+        row = y * w
+        for x in range(w):
+            if vis[row + x]:
+                op[x, y] = (rr, gg, bb, 255)
+    return out
 
 
-def _icon_on_transparent(src: Image.Image, size: int, margin_ratio: float) -> Image.Image:
+def _icon_on_opaque(
+    src: Image.Image,
+    size: int,
+    margin_ratio: float,
+    bg_rgb: tuple[int, int, int] = ICON_BG,
+) -> Image.Image:
     w, h = src.size
     inner = max(1, int(size * (1 - 2 * margin_ratio)))
     ratio = min(inner / w, inner / h)
     new_w, new_h = max(1, int(w * ratio)), max(1, int(h * ratio))
     resized = src.resize((new_w, new_h), Image.LANCZOS)
-    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas = Image.new("RGBA", (size, size), (*bg_rgb, 255))
     canvas.paste(resized, ((size - new_w) // 2, (size - new_h) // 2), resized)
-    return canvas
+    return canvas.convert("RGB")
 
 
-def _transparent_favicon(src: Image.Image, size: int) -> Image.Image:
+def _opaque_favicon(src: Image.Image, size: int, bg_rgb: tuple[int, int, int] = ICON_BG) -> Image.Image:
     w, h = src.size
     ratio = min(size / w, size / h)
     new_w, new_h = max(1, int(w * ratio)), max(1, int(h * ratio))
     resized = src.resize((new_w, new_h), Image.LANCZOS)
-    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas = Image.new("RGBA", (size, size), (*bg_rgb, 255))
     canvas.paste(resized, ((size - new_w) // 2, (size - new_h) // 2), resized)
-    return canvas
+    return canvas.convert("RGB")
 
 
 def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -82,8 +128,8 @@ def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 
 
 def _draw_fallback_launcher(size: int, margin_ratio: float) -> Image.Image:
-    """Repli si le PNG source n’existe pas."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    """Repli si le PNG source n’existe pas — fond crème opaque."""
+    img = Image.new("RGBA", (size, size), (*ICON_BG, 255))
     draw = ImageDraw.Draw(img)
     m = max(2, int(size * margin_ratio))
     usable = size - 2 * m
@@ -120,10 +166,10 @@ def _draw_fallback_launcher(size: int, margin_ratio: float) -> Image.Image:
     return img
 
 
-def _load_launcher_rgba() -> Image.Image:
+def _prepare_launcher_source() -> Image.Image:
     if LAUNCHER_SRC.is_file():
         raw = Image.open(LAUNCHER_SRC).convert("RGBA")
-        return _black_background_to_transparent(raw)
+        return _edge_flood_replace_dark(raw)
     return _draw_fallback_launcher(512, 0.08)
 
 
@@ -131,20 +177,20 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     if LAUNCHER_SRC.is_file():
-        src = _load_launcher_rgba()
+        src = _prepare_launcher_source()
     else:
-        print("Avertissement :", LAUNCHER_SRC.name, "introuvable — icône de repli vectorielle.")
+        print("Avertissement :", LAUNCHER_SRC.name, "introuvable — icône de repli.")
         src = _draw_fallback_launcher(512, 0.08)
 
-    _icon_on_transparent(src, 192, margin_ratio=0.08).save(OUT_DIR / "icon-192.png", "PNG")
-    _icon_on_transparent(src, 512, margin_ratio=0.08).save(OUT_DIR / "icon-512.png", "PNG")
-    _icon_on_transparent(src, 512, margin_ratio=0.18).save(OUT_DIR / "icon-maskable-512.png", "PNG")
-    _icon_on_transparent(src, 180, margin_ratio=0.08).save(OUT_DIR / "apple-touch-icon.png", "PNG")
+    _icon_on_opaque(src, 192, margin_ratio=0.08).save(OUT_DIR / "icon-192.png", "PNG")
+    _icon_on_opaque(src, 512, margin_ratio=0.08).save(OUT_DIR / "icon-512.png", "PNG")
+    _icon_on_opaque(src, 512, margin_ratio=0.18).save(OUT_DIR / "icon-maskable-512.png", "PNG")
+    _icon_on_opaque(src, 180, margin_ratio=0.08).save(OUT_DIR / "apple-touch-icon.png", "PNG")
 
     site_logo = Image.open(SRC_LOGO_SITE).convert("RGBA")
-    _transparent_favicon(site_logo, 32).save(OUT_DIR / "favicon-32.png", "PNG")
+    _opaque_favicon(site_logo, 32).save(OUT_DIR / "favicon-32.png", "PNG")
 
-    print("Icônes PWA générées depuis", LAUNCHER_SRC.name if LAUNCHER_SRC.is_file() else "(repli)")
+    print("Icônes PWA (fond opaque) depuis", LAUNCHER_SRC.name if LAUNCHER_SRC.is_file() else "(repli)")
     print("Sortie :", OUT_DIR)
 
 

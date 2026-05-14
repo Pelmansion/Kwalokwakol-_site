@@ -39,7 +39,7 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=28">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=29">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -47,11 +47,13 @@
     <form class="csrf-bootstrap" aria-hidden="true">{% csrf_token %}</form>
 
     <div class="first-visit-splash" id="first-visit-splash" role="dialog" aria-modal="true" aria-labelledby="first-visit-brand" aria-describedby="first-visit-desc">
-      <img class="first-visit-splash__logo" src="{% static 'images/logo-kwalokwakole.png' %}" width="180" height="180" alt="Logo Kolêgroup">
-      <p class="first-visit-splash__eyebrow">KwaloKWakolê Group</p>
-      <h1 class="first-visit-splash__brand" id="first-visit-brand">Kolêgroup</h1>
-      <p class="first-visit-splash__tag" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
-      <button type="button" class="btn first-visit-splash__btn" id="first-visit-splash-close">Continuer</button>
+      <div class="first-visit-splash__logo-wrap first-visit-splash__anim first-visit-splash__anim--1">
+        <img class="first-visit-splash__logo" src="{% static 'images/icons/LOGO KWALOKWAKOLÈ GROUP.png' %}" width="320" height="96" alt="KwaloKWakolê Group" loading="eager" decoding="async">
+      </div>
+      <p class="first-visit-splash__eyebrow first-visit-splash__anim first-visit-splash__anim--2">KWALOKWAKOLÈ GROUP</p>
+      <h1 class="first-visit-splash__brand first-visit-splash__anim first-visit-splash__anim--3" id="first-visit-brand">Kolêgroup</h1>
+      <p class="first-visit-splash__tag first-visit-splash__anim first-visit-splash__anim--4" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
+      <button type="button" class="btn first-visit-splash__btn first-visit-splash__anim first-visit-splash__anim--5" id="first-visit-splash-close">Continuer</button>
     </div>
 
     {% if not user.is_authenticated or user|is_client %}
@@ -586,13 +588,19 @@
         var root = document.documentElement;
         if (!root.classList.contains("show-first-intro")) return;
         var btn = document.getElementById("first-visit-splash-close");
+        var autoTimer = null;
         function closeIntro() {
+          if (autoTimer !== null) {
+            clearTimeout(autoTimer);
+            autoTimer = null;
+          }
           try {
             localStorage.setItem("kolokwakole_intro_v1", "1");
           } catch (e) {}
           root.classList.remove("show-first-intro");
         }
         if (btn) btn.addEventListener("click", closeIntro);
+        autoTimer = setTimeout(closeIntro, 4000);
         document.addEventListener("keydown", function onEsc(e) {
           if (e.key === "Escape") {
             closeIntro();

@@ -228,7 +228,7 @@
     {
       id: "pwa_install",
       patterns: ["installer", "application", "app", "telephone", "android", "iphone", "play store", "app store", "telecharger app"],
-      response: "📱 **Installer Kolê comme une app** :\n• Sur Android : un bouton \"Installer l'app\" apparaît automatiquement\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
+      response: "📱 **Installer Kolêgroup comme une app** :\n• Sur Android : un bouton \"Installer Kolêgroup\" peut apparaître\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
       quickReplies: ["faq"],
     },
 

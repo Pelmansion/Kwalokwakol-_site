@@ -834,6 +834,7 @@
               'X-CSRFToken': getCookie('csrftoken'),
             },
             body: formData,
+            credentials: 'same-origin',
           });
           if (response.ok) {
             const data = await response.json();

@@ -1,13 +1,13 @@
 {% load static %}{
-  "name": "KwaloKWakolê Group",
-  "short_name": "Kolê",
+  "name": "Kolêgroup · KwaloKWakolê",
+  "short_name": "Kolêgroup",
   "description": "Marketplace Afro-moderne : alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#FFF8F1",
+  "background_color": "#1a1410",
   "theme_color": "#C2410C",
   "lang": "fr-FR",
   "dir": "ltr",
@@ -68,7 +68,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Accueil Kolê"
+      "label": "Accueil Kolêgroup"
     }
   ]
 }

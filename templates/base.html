@@ -6,6 +6,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var p = window.location.pathname || "";
+          if (p.indexOf("/admin") === 0) return;
+          if (new URLSearchParams(window.location.search).get("no_intro")) return;
+          if (!localStorage.getItem("kolokwakole_intro_v1")) {
+            document.documentElement.classList.add("show-first-intro");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta name="theme-color" content="#C2410C">
     <meta name="description" content="KwaloKWakolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
     <title>{% block title %}KwaloKWakolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
@@ -17,20 +29,31 @@
     {# --- PWA : manifest + icônes iOS/Android/Windows --- #}
     <link rel="manifest" href="{% url 'pwa-manifest' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/apple-touch-icon.png' %}">
-    <meta name="application-name" content="Kolê">
+    <meta name="application-name" content="Kolêgroup">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Kolê">
+    <meta name="apple-mobile-web-app-title" content="Kolêgroup">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#C2410C">
     <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-192.png' %}">
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=23">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=25">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
+    {# Cookie csrftoken sur toutes les pages (invités inclus) — requis pour fetch / panier / AJAX #}
+    <form class="csrf-bootstrap" aria-hidden="true">{% csrf_token %}</form>
+
+    <div class="first-visit-splash" id="first-visit-splash" role="dialog" aria-modal="true" aria-labelledby="first-visit-brand" aria-describedby="first-visit-desc">
+      <img class="first-visit-splash__logo" src="{% static 'images/logo-kwalokwakole.png' %}" width="180" height="180" alt="Logo Kolêgroup">
+      <p class="first-visit-splash__eyebrow">KwaloKWakolê Group</p>
+      <h1 class="first-visit-splash__brand" id="first-visit-brand">Kolêgroup</h1>
+      <p class="first-visit-splash__tag" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
+      <button type="button" class="btn first-visit-splash__btn" id="first-visit-splash-close">Continuer</button>
+    </div>
+
     {% if not user.is_authenticated or user|is_client %}
     <div class="notice">
       <div class="container">
@@ -41,12 +64,15 @@
     </div>
     {% endif %}
 
-    {# Sur téléphone : barre Retour (+ Quitter si connecté). Accueil = icône maison en bas. #}
+    {# Sur téléphone : Retour (hors page d'accueil du rôle) + Quitter si connecté. #}
+    {% show_mobile_back_button as show_mobile_back %}
     <div class="mobile-app-bar" aria-label="Navigation rapide" data-fallback-home="{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}">
+      {% if show_mobile_back %}
       <button type="button" class="mobile-app-bar__back" id="mobile-nav-back" aria-label="Page précédente">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         <span class="mobile-app-bar__back-label">Retour</span>
       </button>
+      {% endif %}
       <span class="mobile-app-bar__spacer" aria-hidden="true"></span>
       {% if user.is_authenticated %}
       <form method="post" action="{% url 'accounts:logout' %}" class="mobile-app-bar__logout-form">
@@ -458,9 +484,9 @@
     </div>
 
     {# ===================== PWA : installation & service worker ===================== #}
-    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l'application Kolê">
+    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l’application Kolêgroup">
       <span class="pwa-install-btn__icon" aria-hidden="true">📲</span>
-      <span class="pwa-install-btn__label">Installer l'app</span>
+      <span class="pwa-install-btn__label">Installer Kolêgroup</span>
     </button>
 
     <!-- <div id="pwa-update-toast" class="pwa-update-toast" hidden role="status" aria-live="polite">
@@ -531,7 +557,7 @@
           window.addEventListener('appinstalled', function () {
             installBtn.hidden = true;
             if (typeof showToast === 'function') {
-              showToast('Application installée ! Retrouvez-la sur votre écran d\'accueil.', 'success');
+              showToast('Kolêgroup est installée ! Retrouvez l’app sur votre écran d’accueil.', 'success');
             }
           });
         }
@@ -542,7 +568,8 @@
       (function () {
         var back = document.getElementById('mobile-nav-back');
         var bar = document.querySelector('.mobile-app-bar');
-        if (!back || !bar) return;
+        if (!bar) return;
+        if (!back) return;
         back.addEventListener('click', function () {
           var homeHref = bar.getAttribute('data-fallback-home') || '/';
           if (window.history.length > 1) {
@@ -554,7 +581,28 @@
       })();
     </script>
 
+    <script>
+      (function () {
+        var root = document.documentElement;
+        if (!root.classList.contains("show-first-intro")) return;
+        var btn = document.getElementById("first-visit-splash-close");
+        function closeIntro() {
+          try {
+            localStorage.setItem("kolokwakole_intro_v1", "1");
+          } catch (e) {}
+          root.classList.remove("show-first-intro");
+        }
+        if (btn) btn.addEventListener("click", closeIntro);
+        document.addEventListener("keydown", function onEsc(e) {
+          if (e.key === "Escape") {
+            closeIntro();
+            document.removeEventListener("keydown", onEsc);
+          }
+        });
+      })();
+    </script>
+
     {# ===================== Chatbot Kwa script ===================== #}
-    <script src="{% static 'js/chatbot.js' %}?v=5" defer></script>
+    <script src="{% static 'js/chatbot.js' %}?v=6" defer></script>
   </body>
 </html>

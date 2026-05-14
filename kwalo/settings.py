@@ -43,6 +43,24 @@ for _h in ALLOWED_HOSTS:
     else:
         CSRF_TRUSTED_ORIGINS.append(f"https://{_h}")
 
+# Origines supplémentaires (domaine Render, préprod, autre TLD…) — CSV dans l’environnement :
+# CSRF_TRUSTED_ORIGINS=https://mon-domaine.com,https://www.mon-domaine.com
+_extra_csrf = (os.environ.get("CSRF_TRUSTED_ORIGINS") or "").strip()
+if _extra_csrf:
+    for _raw in _extra_csrf.split(","):
+        _o = _raw.strip().rstrip("/")
+        if not _o:
+            continue
+        if not (_o.startswith("http://") or _o.startswith("https://")):
+            _o = f"https://{_o}"
+        CSRF_TRUSTED_ORIGINS.append(_o)
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS))
+
+# Cookie CSRF lisible par le JS (getCookie / fetch) — ne pas passer à HttpOnly
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
 # --- APPLICATIONS ---
 INSTALLED_APPS = [
     'django.contrib.admin',

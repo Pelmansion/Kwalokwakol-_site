@@ -30,6 +30,12 @@ Votre site est déjà une **PWA** (installable depuis le navigateur). Les **stor
    `https://votredomaine/.well-known/assetlinks.json`  
    Voir `docs/exemples/assetlinks.json.example` (remplacer le nom de package et les empreintes SHA-256 du certificat de signature de l’app).
 
+### Icône d’app / APK et manifeste web
+
+Les fichiers `static/images/icons/icon-*.png` et `apple-touch-icon.png` sont produits par **`python scripts/generate_pwa_icons.py`** et référencés par le **manifest** du site (`/manifest.webmanifest`). Chrome les utilise pour « Ajouter à l’écran d’accueil ».
+
+**Important :** un **APK ou AAB** généré avec **PWABuilder** ou **Bubblewrap** embarque une **copie** des icônes **au moment où vous construisez le projet**. Changer le site et le script ne met pas à jour l’icône déjà installée tant que vous n’avez pas **régénéré le paquet Android** et publié une **nouvelle version** sur le Play Store (ou réinstallé un APK de test).
+
 ### Option B — **Bubblewrap** (ligne de commande)
 
 Outil Google pour générer un projet TWA à partir de l’URL et du manifest. Nécessite Node.js. Documentation : [bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap).

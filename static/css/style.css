@@ -334,6 +334,11 @@ p { margin: 0 0 1em; }
 /* ================== BOTTOM NAV (mobile) ================== */
 .bottom-nav { display: none; }
 
+/* Barre haute mobile (retour + accueil) — masquée sur grand écran */
+.mobile-app-bar {
+  display: none;
+}
+
 /* ================== MAIN PAGE ================== */
 .page {
   padding: 32px 0 72px;
@@ -2069,6 +2074,13 @@ textarea::placeholder { color: #94a3b8; }
 .auth-alt a { color: var(--primary); font-weight: 700; }
 .auth-alt a:hover { color: var(--primary-dark); text-decoration: underline; }
 
+.profile-logout-form {
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+.profile-logout-form__btn { width: 100%; }
+
 /* ================== ALERTS ================== */
 .alert {
   padding: 14px 18px;
@@ -2936,7 +2948,140 @@ textarea::placeholder { color: #94a3b8; }
   .topbar,
   .notice { display: none !important; }
 
-  .page { padding: 16px 0 96px; }
+  .mobile-app-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: calc(48px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 8px 0 4px;
+    background: rgba(255, 252, 248, 0.97);
+    backdrop-filter: saturate(1.2) blur(10px);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 2px 12px rgba(27, 20, 16, 0.06);
+    z-index: 101;
+  }
+
+  .mobile-app-bar__back {
+    flex-shrink: 0;
+    min-height: 46px;
+    padding: 0 10px 0 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .mobile-app-bar__back-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-top: 1px;
+    line-height: 1;
+  }
+  .mobile-app-bar__back:active .mobile-app-bar__back-label {
+    color: var(--primary-dark);
+  }
+  .mobile-app-bar__back:active {
+    background: var(--primary-50);
+    color: var(--primary-dark);
+  }
+
+  .mobile-app-bar__home {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--primary-dark);
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+  }
+  .mobile-app-bar__home:active {
+    background: var(--primary-50);
+  }
+
+  .mobile-app-bar__logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .mobile-app-bar__home-text {
+    white-space: nowrap;
+  }
+
+  .mobile-app-bar__spacer {
+    flex: 1;
+    min-width: 4px;
+  }
+
+  .mobile-app-bar__logout-form {
+    margin: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-app-bar__logout {
+    min-height: 46px;
+    padding: 0 6px 0 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: #b91c1c;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .mobile-app-bar__logout-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #b91c1c;
+    margin-top: 1px;
+    line-height: 1;
+    max-width: 4.5rem;
+    text-align: center;
+  }
+
+  .mobile-app-bar__logout:active {
+    background: rgba(239, 68, 68, 0.12);
+    color: #991b1b;
+  }
+
+  .mobile-app-bar__logout:active .mobile-app-bar__logout-label {
+    color: #991b1b;
+  }
+
+  .page { padding: calc(14px + 48px + env(safe-area-inset-top, 0px)) 0 96px; }
 
   .bottom-nav {
     display: flex;

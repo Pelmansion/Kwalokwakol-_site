@@ -91,6 +91,25 @@
       quickReplies: ["myOrders", "contact"],
     },
     {
+      id: "mobile_nav_help",
+      patterns: [
+        "retour en arriere",
+        "revenir en arriere",
+        "page precedente",
+        "navigation telephone",
+        "bouton retour",
+        "pas de bouton retour",
+        "revenir sur accueil",
+        "comment revenir",
+        "se deconnecter",
+        "deconnexion",
+        "fermer session",
+      ],
+      response:
+        "📲 Sur **téléphone**, en haut : **« Retour »**, **« Accueil »** (logo), et à droite **« Quitter »** (icône porte) pour **te déconnecter** sans passer par le menu bureau. Sur **Mon profil** (icône Compte en bas), tu as aussi le bouton **Se déconnecter**. En bas : Accueil, Explorer, Panier…",
+      quickReplies: ["faq", "home"],
+    },
+    {
       id: "track_order",
       patterns: ["suivre", "suivi", "ou est ma commande", "statut commande", "tracking", "ma commande"],
       response: "📦 Pour **suivre ta commande**, va dans **Mon profil → Mes commandes**. Chaque commande a un statut : En préparation → Expédiée → Livrée. Tu reçois aussi des notifications par email.",

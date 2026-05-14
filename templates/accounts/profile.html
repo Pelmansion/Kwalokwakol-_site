@@ -15,5 +15,9 @@
         <a class="link" href="{% url 'accounts:admin_dashboard' %}">Administration</a>
       {% endif %}
     </div>
+    <form method="post" action="{% url 'accounts:logout' %}" class="profile-logout-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--danger profile-logout-form__btn">Se déconnecter</button>
+    </form>
   </section>
 {% endblock %}

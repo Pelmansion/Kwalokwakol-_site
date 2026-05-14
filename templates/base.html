@@ -27,7 +27,7 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=18">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -40,6 +40,28 @@
       </div>
     </div>
     {% endif %}
+
+    {# Sur téléphone la topbar est masquée : barre fixe retour + accueil #}
+    <div class="mobile-app-bar" aria-label="Navigation rapide">
+      <button type="button" class="mobile-app-bar__back" id="mobile-nav-back" aria-label="Page précédente">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        <span class="mobile-app-bar__back-label">Retour</span>
+      </button>
+      <a class="mobile-app-bar__home" href="{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}" aria-label="Aller à l'accueil">
+        <img src="{% static 'images/logo-kwalokwakole.png' %}" alt="" class="mobile-app-bar__logo" width="36" height="36" decoding="async">
+        <span class="mobile-app-bar__home-text">Accueil</span>
+      </a>
+      <span class="mobile-app-bar__spacer" aria-hidden="true"></span>
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'accounts:logout' %}" class="mobile-app-bar__logout-form">
+        {% csrf_token %}
+        <button type="submit" class="mobile-app-bar__logout" aria-label="Se déconnecter">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span class="mobile-app-bar__logout-label">Quitter</span>
+        </button>
+      </form>
+      {% endif %}
+    </div>
 
     <header class="topbar">
       <div class="container topbar__inner">
@@ -520,7 +542,23 @@
       })();
     </script>
 
+    <script>
+      (function () {
+        var back = document.getElementById('mobile-nav-back');
+        var home = document.querySelector('.mobile-app-bar__home');
+        if (!back || !home) return;
+        back.addEventListener('click', function () {
+          var homeHref = home.getAttribute('href') || '/';
+          if (window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+          window.location.href = homeHref;
+        });
+      })();
+    </script>
+
     {# ===================== Chatbot Kwa script ===================== #}
-    <script src="{% static 'js/chatbot.js' %}?v=1" defer></script>
+    <script src="{% static 'js/chatbot.js' %}?v=3" defer></script>
   </body>
 </html>

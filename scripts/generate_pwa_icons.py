@@ -1,14 +1,13 @@
-"""Génère les icônes PWA à partir du logo principal.
+"""Génère les icônes PWA à partir du logo principal (PNG).
 
 Usage :
     python scripts/generate_pwa_icons.py
 
-Le script lit une image source PNG (ex. `static/images/logo-kwalokwakole.png` exportée depuis le wordmark SVG) et produit :
-  - static/images/icons/icon-192.png
-  - static/images/icons/icon-512.png
-  - static/images/icons/icon-maskable-512.png (zone de sécurité 20 %)
-  - static/images/icons/apple-touch-icon.png (180x180)
-  - static/images/icons/favicon-32.png
+Le script lit `static/images/logo-kwalokwakole.png` (logo site) et produit :
+  - icon-192.png, icon-512.png, apple-touch-icon.png : logo sur fond **transparent**
+    (adapté à l’écran d’accueil : le pictogramme seul, sans grand carré orange plein).
+  - icon-maskable-512.png : même principe avec marge de sécurité (zone masquable).
+  - favicon-32.png : petit favicon transparent.
 """
 from __future__ import annotations
 
@@ -19,34 +18,30 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "static" / "images" / "logo-kwalokwakole.png"
 OUT_DIR = ROOT / "static" / "images" / "icons"
-BRAND_BG = (194, 65, 12)  # #C2410C (primary theme color)
 
 
 def _load_rgba() -> Image.Image:
-    img = Image.open(SRC).convert("RGBA")
-    return img
+    return Image.open(SRC).convert("RGBA")
 
 
-def _fit_on_square(src: Image.Image, size: int, bg: tuple[int, int, int], margin_ratio: float = 0.12) -> Image.Image:
-    """Place l'image source centrée sur un carré coloré."""
-    canvas = Image.new("RGB", (size, size), bg)
-    inner = int(size * (1 - 2 * margin_ratio))
+def _icon_on_transparent(src: Image.Image, size: int, margin_ratio: float = 0.10) -> Image.Image:
+    """Logo centré sur fond transparent (pas de fond orange plein écran)."""
     w, h = src.size
+    inner = max(1, int(size * (1 - 2 * margin_ratio)))
     ratio = min(inner / w, inner / h)
-    new_w, new_h = int(w * ratio), int(h * ratio)
+    new_w, new_h = max(1, int(w * ratio)), max(1, int(h * ratio))
     resized = src.resize((new_w, new_h), Image.LANCZOS)
-    offset = ((size - new_w) // 2, (size - new_h) // 2)
-    canvas.paste(resized, offset, resized if resized.mode == "RGBA" else None)
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas.paste(resized, ((size - new_w) // 2, (size - new_h) // 2), resized)
     return canvas
 
 
-def _transparent(src: Image.Image, size: int) -> Image.Image:
-    """Redimensionne le logo en gardant la transparence."""
+def _transparent_favicon(src: Image.Image, size: int) -> Image.Image:
     w, h = src.size
     ratio = min(size / w, size / h)
-    new_w, new_h = int(w * ratio), int(h * ratio)
+    new_w, new_h = max(1, int(w * ratio)), max(1, int(h * ratio))
     resized = src.resize((new_w, new_h), Image.LANCZOS)
-    canvas = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     canvas.paste(resized, ((size - new_w) // 2, (size - new_h) // 2), resized)
     return canvas
 
@@ -55,13 +50,13 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     logo = _load_rgba()
 
-    _fit_on_square(logo, 192, BRAND_BG, margin_ratio=0.10).save(OUT_DIR / "icon-192.png", "PNG")
-    _fit_on_square(logo, 512, BRAND_BG, margin_ratio=0.10).save(OUT_DIR / "icon-512.png", "PNG")
-    _fit_on_square(logo, 512, BRAND_BG, margin_ratio=0.22).save(OUT_DIR / "icon-maskable-512.png", "PNG")
-    _fit_on_square(logo, 180, BRAND_BG, margin_ratio=0.10).save(OUT_DIR / "apple-touch-icon.png", "PNG")
-    _transparent(logo, 32).save(OUT_DIR / "favicon-32.png", "PNG")
+    _icon_on_transparent(logo, 192, margin_ratio=0.10).save(OUT_DIR / "icon-192.png", "PNG")
+    _icon_on_transparent(logo, 512, margin_ratio=0.10).save(OUT_DIR / "icon-512.png", "PNG")
+    _icon_on_transparent(logo, 512, margin_ratio=0.22).save(OUT_DIR / "icon-maskable-512.png", "PNG")
+    _icon_on_transparent(logo, 180, margin_ratio=0.10).save(OUT_DIR / "apple-touch-icon.png", "PNG")
+    _transparent_favicon(logo, 32).save(OUT_DIR / "favicon-32.png", "PNG")
 
-    print("Icônes PWA générées dans", OUT_DIR)
+    print("Icônes PWA générées (fond transparent) dans", OUT_DIR)
 
 
 if __name__ == "__main__":

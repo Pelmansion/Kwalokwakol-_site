@@ -6,7 +6,7 @@
  *   - API/POST : toujours online (bypass)
  */
 
-const VERSION = 'kwalok-v3';
+const VERSION = 'kwalok-v4';
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
@@ -15,7 +15,7 @@ const OFFLINE_URL = '/hors-ligne/';
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '{% static "css/style.css" %}',
-  '{% static "images/logo-kwalokwakole-wordmark.svg" %}',
+  '{% static "images/logo-kwalokwakole.png" %}',
   '{% static "images/icons/icon-192.png" %}',
   '{% static "images/icons/icon-512.png" %}',
 ];

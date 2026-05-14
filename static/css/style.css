@@ -95,11 +95,10 @@ html.show-first-intro {
   overflow: hidden;
 }
 .first-visit-splash__logo {
-  width: min(300px, 88vw);
+  width: min(168px, 44vw);
   height: auto;
-  max-height: 72px;
   object-fit: contain;
-  border-radius: 0;
+  border-radius: 16px;
   filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
 }
 .first-visit-splash__eyebrow {
@@ -229,13 +228,12 @@ p { margin: 0 0 1em; }
 .logo__image {
   height: 56px;
   width: auto;
-  max-width: min(280px, 42vw);
   display: block;
-  object-fit: contain;
+  max-width: 100%;
 }
 
 @media (max-width: 640px) {
-  .logo__image { height: 40px; max-width: min(220px, 52vw); }
+  .logo__image { height: 44px; }
 }
 
 .logo__text {
@@ -4245,13 +4243,6 @@ textarea::placeholder { color: #94a3b8; }
   display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
   padding-bottom: 12px; border-bottom: 1px dashed var(--line, #f0e4d8);
   font-size: 13px; color: #8a7a6e; font-weight: 600;
-}
-.ticket-card__brand .ticket-brand-logo {
-  height: 36px;
-  width: auto;
-  max-width: 220px;
-  object-fit: contain;
-  flex-shrink: 0;
 }
 .ticket-card__title { margin: 0 0 20px; font-size: 24px; color: #1f1147; }
 .ticket-card__info {

@@ -24,7 +24,7 @@
 
     {# --- Favicon & icônes classiques --- #}
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/favicon-32.png' %}">
-    <link rel="icon" type="image/svg+xml" href="{% static 'images/logo-kwalokwakole-wordmark.svg' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/logo-kwalokwakole.png' %}">
 
     {# --- PWA : manifest + icônes iOS/Android/Windows --- #}
     <link rel="manifest" href="{% url 'pwa-manifest' %}">
@@ -39,7 +39,7 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=27">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=28">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -47,7 +47,7 @@
     <form class="csrf-bootstrap" aria-hidden="true">{% csrf_token %}</form>
 
     <div class="first-visit-splash" id="first-visit-splash" role="dialog" aria-modal="true" aria-labelledby="first-visit-brand" aria-describedby="first-visit-desc">
-      <img class="first-visit-splash__logo" src="{% static 'images/logo-kwalokwakole-wordmark-light.svg' %}" width="320" height="58" alt="Logo Kolêgroup">
+      <img class="first-visit-splash__logo" src="{% static 'images/logo-kwalokwakole.png' %}" width="180" height="180" alt="Logo Kolêgroup">
       <p class="first-visit-splash__eyebrow">KwaloKWakolê Group</p>
       <h1 class="first-visit-splash__brand" id="first-visit-brand">Kolêgroup</h1>
       <p class="first-visit-splash__tag" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
@@ -88,7 +88,7 @@
     <header class="topbar">
       <div class="container topbar__inner">
         <a class="logo" href="{% if user.is_authenticated %}{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}{% else %}{% url 'store:home' %}{% endif %}">
-          <img class="logo__image" src="{% static 'images/logo-kwalokwakole-wordmark.svg' %}" width="400" height="72" alt="KwaloKwakoLê Group">
+          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloKWakolê Group">
         </a>
 
         <form class="search" action="{% url 'store:product_list' %}" method="get" role="search">

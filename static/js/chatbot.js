@@ -106,7 +106,7 @@
         "fermer session",
       ],
       response:
-        "📲 Sur **téléphone**, en haut : **« Retour »**, **« Accueil »** (logo), et à droite **« Quitter »** (icône porte) pour **te déconnecter** sans passer par le menu bureau. Sur **Mon profil** (icône Compte en bas), tu as aussi le bouton **Se déconnecter**. En bas : Accueil, Explorer, Panier…",
+        "📲 Sur **téléphone**, en haut : **« Retour »**, le **logo** (raccourci vers l’accueil ou ton espace pro), et **« Quitter »** à droite si tu es connecté·e. L’entrée **Accueil** à privilégier, c’est l’**icône maison en bas**. **Compte** ouvre ton profil…",
       quickReplies: ["faq", "home"],
     },
     {

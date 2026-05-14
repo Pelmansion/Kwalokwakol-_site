@@ -27,7 +27,7 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=22">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -41,15 +41,14 @@
     </div>
     {% endif %}
 
-    {# Sur téléphone la topbar est masquée : barre fixe retour + accueil #}
+    {# Sur téléphone la topbar est masquée : barre retour + logo (accueil = barre du bas) #}
     <div class="mobile-app-bar" aria-label="Navigation rapide">
       <button type="button" class="mobile-app-bar__back" id="mobile-nav-back" aria-label="Page précédente">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         <span class="mobile-app-bar__back-label">Retour</span>
       </button>
-      <a class="mobile-app-bar__home" href="{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}" aria-label="Aller à l'accueil">
-        <img src="{% static 'images/logo-kwalokwakole.png' %}" alt="" class="mobile-app-bar__logo" width="36" height="36" decoding="async">
-        <span class="mobile-app-bar__home-text">Accueil</span>
+      <a class="mobile-app-bar__home" href="{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}" aria-label="Aller à l'accueil ou au tableau de bord">
+        <img src="{% static 'images/logo-kwalokwakole.png' %}" alt="" class="mobile-app-bar__logo" width="40" height="40" decoding="async">
       </a>
       <span class="mobile-app-bar__spacer" aria-hidden="true"></span>
       {% if user.is_authenticated %}
@@ -559,6 +558,6 @@
     </script>
 
     {# ===================== Chatbot Kwa script ===================== #}
-    <script src="{% static 'js/chatbot.js' %}?v=3" defer></script>
+    <script src="{% static 'js/chatbot.js' %}?v=4" defer></script>
   </body>
 </html>

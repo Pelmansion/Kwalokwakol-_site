@@ -23,15 +23,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-_9@-j=piy=kt$@j0$nu_g
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
-    'kolêgroup.com',
-    'www.kolêgroup.com',
-    'xn--kolgroup-y1a.com',
-    'www.xn--kolgroup-y1a.com',
     'xn--kolgroup-m1a.com',
     'www.xn--kolgroup-m1a.com',
-    'kwalokwakol-site.onrender.com',
-    'localhost',
-    '127.0.0.1',
 ]
 
 # Requis derrière HTTPS (connexion / formulaires) — évite les refus CSRF en production

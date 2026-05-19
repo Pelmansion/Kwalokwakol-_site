@@ -81,7 +81,7 @@
             {% else %}
               <p class="service-card__desc">Service proposé par {{ product.service_provider.name }}.</p>
             {% endif %}
-            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            {% include "store/_product_price.html" with product=product %}
             <p class="service-card__published">Publié par : {{ product.service_provider.owner.get_full_name|default:product.service_provider.owner.username }}</p>
           </div>
           <div class="service-card__actions">
@@ -108,7 +108,7 @@
                 <span class="badge badge--info" style="margin-left:4px;">Service</span>
               {% endif %}
             </h3>
-            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            {% include "store/_product_price.html" with product=product %}
             {% if product.avg_rating %}
               <p class="muted" style="margin:0 0 8px;">⭐ {{ product.avg_rating|floatformat:1 }}/5</p>
             {% endif %}

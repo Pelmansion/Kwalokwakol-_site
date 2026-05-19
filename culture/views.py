@@ -104,7 +104,8 @@ def artist_list(request):
     artists = _published_artists()
     q = (request.GET.get("q") or "").strip()
     genre_slug = request.GET.get("genre", "")
-    region = request.GET.get("region", "")
+    region = (request.GET.get("region") or "").strip()
+    verified_only = request.GET.get("verifie") in ("1", "true", "oui", "yes")
 
     if q:
         artists = artists.filter(
@@ -114,6 +115,8 @@ def artist_list(request):
         artists = artists.filter(primary_genre__slug=genre_slug)
     if region:
         artists = artists.filter(region__iexact=region)
+    if verified_only:
+        artists = artists.filter(is_verified=True)
 
     artists = artists.annotate(
         songs_total=Count("songs", filter=Q(songs__is_published=True), distinct=True)
@@ -125,6 +128,7 @@ def artist_list(request):
         "q": q,
         "genre_slug": genre_slug,
         "region": region,
+        "verified_only": verified_only,
     }
     return render(request, "culture/artist_list.html", context)
 
@@ -702,7 +706,7 @@ def my_purchases(request):
 # ===========================================================================
 @login_required
 def artist_activate(request):
-    """Active un profil artiste pour un vendeur ou prestataire existant."""
+    """Active ou réactive un profil artiste pour un vendeur ou prestataire existant."""
     if not user_can_become_artist(request.user):
         messages.error(
             request,
@@ -711,24 +715,52 @@ def artist_activate(request):
         return redirect("culture:home")
 
     existing = ArtistProfile.objects.filter(user=request.user).first()
-    if existing:
+    if existing and existing.is_active:
         return redirect("culture:artist_dashboard")
 
+    is_reactivation = bool(existing and not existing.is_active)
+
     if request.method == "POST":
-        form = ArtistProfileForm(request.POST, request.FILES)
+        form = ArtistProfileForm(request.POST, request.FILES, instance=existing)
         if form.is_valid():
             artist = form.save(commit=False)
-            artist.user = request.user
+            if not existing:
+                artist.user = request.user
+            artist.is_active = True
             artist.save()
             messages.success(
                 request,
-                "Profil artiste activé ! Tu peux maintenant publier ta musique et tes concerts.",
+                "Profil artiste réactivé ! Tu peux à nouveau publier ta musique et tes concerts."
+                if is_reactivation
+                else "Profil artiste activé ! Tu peux maintenant publier ta musique et tes concerts.",
             )
             return redirect("culture:artist_dashboard")
     else:
-        form = ArtistProfileForm()
+        form = ArtistProfileForm(instance=existing)
 
-    return render(request, "culture/artist_activate.html", {"form": form})
+    return render(
+        request,
+        "culture/artist_activate.html",
+        {"form": form, "is_reactivation": is_reactivation},
+    )
+
+
+@login_required
+@require_POST
+def artist_deactivate(request):
+    """Désactive le profil artiste (page publique et espace masqués jusqu'à réactivation)."""
+    artist = ArtistProfile.objects.filter(user=request.user, is_active=True).first()
+    if not artist:
+        messages.error(request, "Aucun profil artiste actif à désactiver.")
+        return redirect("culture:home")
+    artist.is_active = False
+    artist.save()
+    messages.success(
+        request,
+        "Profil artiste désactivé. Ta page n'est plus visible publiquement. "
+        "Tu peux le réactiver depuis la page Culture (activer le profil artiste).",
+    )
+    return redirect("culture:home")
 
 
 @login_required
@@ -775,7 +807,13 @@ def artist_profile_edit(request):
 @login_required
 def artist_songs(request):
     artist = require_artist(request.user)
-    songs = artist.songs.all().order_by("-created_at")
+    songs = (
+        artist.songs.all()
+        .order_by("-created_at")
+        .annotate(
+            paid_download_revenue=Sum("purchases__amount_fcfa", filter=Q(purchases__is_paid=True)),
+        )
+    )
     return render(request, "culture/artist_songs.html", {"artist": artist, "songs": songs})
 
 

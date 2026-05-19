@@ -62,6 +62,7 @@ urlpatterns = [
 
     # ---------- Espace artiste (privé) ----------
     path("espace-artiste/activer/", views.artist_activate, name="artist_activate"),
+    path("espace-artiste/desactiver/", views.artist_deactivate, name="artist_deactivate"),
     path("espace-artiste/", views.artist_dashboard, name="artist_dashboard"),
     path("espace-artiste/profil/", views.artist_profile_edit, name="artist_profile_edit"),
     path("espace-artiste/musique/", views.artist_songs, name="artist_songs"),

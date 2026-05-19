@@ -22,11 +22,13 @@
     </p>
     <div class="song-card__meta">
       {% if song.is_free %}
-        <span class="badge badge--free">GRATUIT</span>
+        <span class="badge badge--free">Gratuit</span>
       {% else %}
-        <span class="badge badge--paid">{{ song.price_fcfa|floatformat:0 }} FCFA</span>
+        <span class="badge badge--paid">Payant · {{ song.price_fcfa|floatformat:0 }} FCFA</span>
       {% endif %}
-      <span class="song-card__plays">▶ {{ song.play_count }}</span>
+      <span class="song-card__plays" title="Lectures / streams">▶ {{ song.play_count }} lecture{{ song.play_count|pluralize }}</span>
+      <span class="song-card__plays" title="Téléchargements">⬇ {{ song.download_count }}</span>
+      {% if song.allow_streaming %}<span class="song-card__stream" title="Streaming">🎧 stream</span>{% endif %}
       {% if song.duration_seconds %}<span class="song-card__duration">{{ song.duration_display }}</span>{% endif %}
     </div>
   </div>

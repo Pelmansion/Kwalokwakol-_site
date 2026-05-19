@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load culture_tags %}
 {% block title %}Culture & Événements · KolêWakolê Group{% endblock %}
 
 {% block content %}
@@ -81,6 +82,8 @@
 </section>
 {% endif %}
 
+{% if not user.is_authenticated or user|can_become_artist %}
+  {% if not user|is_artist %}
 <section class="container culture-cta">
   <div class="culture-cta__card">
     <div class="culture-cta__text">
@@ -90,4 +93,6 @@
     <a class="btn" href="{% url 'culture:artist_activate' %}">Activer mon profil artiste →</a>
   </div>
 </section>
+  {% endif %}
+{% endif %}
 {% endblock %}

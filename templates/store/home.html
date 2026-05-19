@@ -128,18 +128,16 @@
         <h2>Vibrez au rythme<br>de <em>votre région</em></h2>
         <p>Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
         <div class="culture-promo__features">
-          <span>🎵 Streaming &amp; téléchargement</span>
-          <span>🎫 Billets QR code</span>
-          <span>🎤 Artistes vérifiés</span>
+          <a class="culture-promo__feature-link" href="{% url 'culture:song_list' %}">🎵 Streaming &amp; téléchargement</a>
+          <a class="culture-promo__feature-link" href="{% url 'culture:my_tickets' %}">🎫 Billets QR code</a>
+          <a class="culture-promo__feature-link" href="{% url 'culture:artist_list' %}?verifie=1">🎤 Artistes vérifiés</a>
         </div>
         <div class="culture-promo__actions">
           <a class="btn culture-promo__cta" href="{% url 'culture:home' %}">
             Explorer Kolê Culture
             <span class="culture-promo__arrow">→</span>
           </a>
-          <a class="btn btn--ghost culture-promo__cta-ghost" href="{% url 'culture:event_list' %}">
-            🎫 Concerts à venir
-          </a>
+          <a class="btn btn--ghost culture-promo__cta-ghost" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Concerts à venir</a>
         </div>
       </div>
 
@@ -191,7 +189,7 @@
           </div>
           <div class="product-card__body">
             <h3>{{ product.name }}</h3>
-            <p class="price">{{ product.price }} FCFA</p>
+            {% include "store/_product_price.html" with product=product %}
             <div class="product-card__actions">
               <div class="product-card__actions-left">
                 <a
@@ -252,7 +250,7 @@
               </div>
               <div class="product-card__body">
                 <h3>{{ product.name }}</h3>
-                <p class="price">{{ product.price }} FCFA</p>
+                {% include "store/_product_price.html" with product=product %}
                 <div class="product-card__actions">
                   <div class="product-card__actions-left">
                     <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>

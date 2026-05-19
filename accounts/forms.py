@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
+from .auth_backends import resolve_login_to_user
 from .models import Address, UserProfile
 
 
@@ -11,18 +12,17 @@ class LoginFormWithInactiveMessage(AuthenticationForm):
     def clean(self):
         super().clean()
         if self.errors.get("__all__"):
-            username = self.cleaned_data.get("username") or (self.data.get("username") if self.data else None)
-            if username:
-                try:
-                    user = User.objects.get(username=username)
-                    if not user.is_active:
-                        self._errors.pop("__all__", None)
-                        self.add_error(
-                            None,
-                            "Ce compte n'est pas encore activé. Consultez votre boîte mail et cliquez sur le lien de confirmation.",
-                        )
-                except User.DoesNotExist:
-                    pass
+            raw = (self.cleaned_data.get("username") if self.cleaned_data else None) or (
+                self.data.get("username") if self.data else ""
+            )
+            if raw:
+                user = resolve_login_to_user(raw)
+                if user and not user.is_active:
+                    self._errors.pop("__all__", None)
+                    self.add_error(
+                        None,
+                        "Ce compte n'est pas encore activé. Consultez votre boîte mail et cliquez sur le lien de confirmation.",
+                    )
         return self.cleaned_data
 
 
@@ -51,7 +51,18 @@ class SignupForm(UserCreationForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ["avatar", "phone", "default_address", "city"]
+        fields = ["avatar", "cover_photo", "phone", "default_address", "city"]
+        labels = {
+            "avatar": "Photo de profil",
+            "cover_photo": "Photo de couverture",
+            "phone": "Téléphone",
+            "default_address": "Adresse",
+            "city": "Ville",
+        }
+        help_texts = {
+            "avatar": "Affichée dans la barre du haut, le menu compte et la navigation mobile.",
+            "cover_photo": "Bandeau décoratif sous la barre du site lorsque vous êtes connecté.",
+        }
 
 
 class AddressForm(forms.ModelForm):

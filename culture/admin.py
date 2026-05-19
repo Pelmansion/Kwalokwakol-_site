@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Q, Sum
 
 from .models import (
     ArtistProfile,
@@ -79,6 +80,7 @@ class SongAdmin(admin.ModelAdmin):
         "price_fcfa",
         "play_count",
         "download_count",
+        "purchase_revenue_fcfa",
         "is_published",
         "is_featured",
     )
@@ -88,6 +90,19 @@ class SongAdmin(admin.ModelAdmin):
     autocomplete_fields = ("artist", "genre")
     readonly_fields = ("slug", "play_count", "download_count", "created_at", "updated_at")
     inlines = [SongPurchaseInline]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).annotate(
+            _purchase_revenue=Sum("purchases__amount_fcfa", filter=Q(purchases__is_paid=True)),
+        )
+        return qs
+
+    @admin.display(description="Revenus téléch. (FCFA)")
+    def purchase_revenue_fcfa(self, obj):
+        v = getattr(obj, "_purchase_revenue", None)
+        if v is None:
+            return "0"
+        return f"{int(v):,}".replace(",", "\u202f")
 
 
 @admin.register(SongPurchase)
@@ -115,6 +130,17 @@ class TicketCategoryInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {"fields": ("organizer", "title", "slug", "description")}),
+        ("Artistes", {"fields": ("headlining_artist", "featured_artists")}),
+        ("Visuels", {"fields": ("poster", "digital_billboard")}),
+        (
+            "Lieu & dates",
+            {"fields": ("starts_at", "ends_at", "venue_name", "address", "city", "region", "map_url")},
+        ),
+        ("Publication", {"fields": ("status", "is_published", "is_featured")}),
+        ("Métadonnées", {"fields": ("created_at", "updated_at")}),
+    )
     list_display = (
         "title",
         "headlining_artist",

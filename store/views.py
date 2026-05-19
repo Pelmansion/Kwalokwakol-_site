@@ -9,7 +9,7 @@ from django.http import JsonResponse
 
 from .forms import OrderForm, ServiceRequestForm
 from accounts.models import UserProfile
-from catalog.models import Category, Product
+from catalog.models import Category, CategoryShowcaseImage, Product
 from content.models import HomepageBackground
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
@@ -98,6 +98,51 @@ def _is_app_admin(user):
     return profile.role in (UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN)
 
 
+def _react_profile_image_url(entity):
+    photo = getattr(entity, "profile_photo", None)
+    if photo:
+        try:
+            return photo.url
+        except ValueError:
+            return ""
+    return ""
+
+
+def _react_vendor_row(vendor):
+    return {
+        "id": vendor.id,
+        "name": vendor.name,
+        "url": reverse("store:vendor_detail", args=[vendor.slug]),
+        "image": _react_profile_image_url(vendor),
+    }
+
+
+def _react_service_provider_row(provider):
+    return {
+        "id": provider.id,
+        "name": provider.name,
+        "url": reverse("store:service_provider_detail", args=[provider.slug]),
+        "image": _react_profile_image_url(provider),
+        "location": provider.location or "",
+    }
+
+
+def _react_product_row(product):
+    media = product.media.first()
+    image = media.url if media else (product.image_url or "")
+    old = float(product.old_price) if product.old_price is not None else None
+    return {
+        "id": product.id,
+        "name": product.name,
+        "price": float(product.price),
+        "oldPrice": old,
+        "discountPct": product.promo_discount_percent,
+        "kind": product.kind,
+        "image": image,
+        "url": reverse("store:product_detail", args=[product.slug]),
+    }
+
+
 def home(request):
     # Admin, vendeur et prestataire n'ont pas d'accueil boutique : redirection vers leur espace
     if request.user.is_authenticated:
@@ -148,19 +193,26 @@ def home(request):
             )
     if not categories.exists():
         categories = DEFAULT_CATEGORIES
-    react_products = []
-    for product in products[:4]:
-        media = product.media.first()
-        image = media.url if media else (product.image_url or "")
-        react_products.append(
-            {
-                "id": product.id,
-                "name": product.name,
-                "price": float(product.price),
-                "image": image,
-                "url": reverse("store:product_detail", args=[product.slug]),
-            }
-        )
+    react_products = [_react_product_row(p) for p in products[:4]]
+    react_base_discover = base_products.order_by("-created_at")
+    react_discover_products = [
+        _react_product_row(p) for p in react_base_discover.filter(kind=Product.PRODUCT)[:150]
+    ]
+    react_discover_services = [
+        _react_product_row(p) for p in react_base_discover.filter(kind=Product.SERVICE)[:150]
+    ]
+    react_discover_vendors = [
+        _react_vendor_row(v)
+        for v in Vendor.objects.filter(is_active=True)
+        .filter(active_subscription_q())
+        .order_by("name")[:200]
+    ]
+    react_discover_providers = [
+        _react_service_provider_row(sp)
+        for sp in ServiceProvider.objects.filter(is_active=True)
+        .filter(active_subscription_q())
+        .order_by("name")[:200]
+    ]
     react_data = {
         "title": "Explorez les meilleures offres locales",
         "subtitle": "Produits et services artisanaux, livraison rapide et paiement sécurisé.",
@@ -170,6 +222,18 @@ def home(request):
             {"title": "Livraison 24h", "subtitle": "Disponible localement"},
         ],
         "products": react_products,
+        "discoverTabs": {
+            "products": react_discover_products,
+            "services": react_discover_services,
+            "vendors": react_discover_vendors,
+            "providers": react_discover_providers,
+        },
+        "discoverMoreUrls": {
+            "products": reverse("store:product_list"),
+            "services": f"{reverse('store:product_list')}?type=service",
+            "vendors": reverse("store:vendor_list"),
+            "providers": reverse("store:service_provider_list"),
+        },
     }
     return render(
         request,
@@ -302,10 +366,22 @@ def category_detail(request, slug):
         products = Product.objects.filter(category=category, is_active=True).filter(
             active_product_filter()
         )
+    showcase_images = CategoryShowcaseImage.objects.filter(category=category).select_related(
+        "vendor", "service_provider"
+    ).order_by("vendor_id", "service_provider_id", "position", "id")
+    if vendor:
+        showcase_images = showcase_images.filter(vendor=vendor)
+    elif service_provider:
+        showcase_images = showcase_images.filter(service_provider=service_provider)
     return render(
         request,
         "store/category.html",
-        {"category": category, "products": products, "favorites": favorites},
+        {
+            "category": category,
+            "products": products,
+            "favorites": favorites,
+            "showcase_images": showcase_images,
+        },
     )
 
 

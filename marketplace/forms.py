@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 
-from catalog.models import Category, Product
+from catalog.models import Category, CategoryShowcaseImage, Product
 from orders.models import Order
 
 from .models import ServiceProvider, Vendor
@@ -444,3 +444,19 @@ class OrderStatusForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ["status", "tracking_code"]
+
+
+class CategoryShowcaseImageForm(forms.ModelForm):
+    class Meta:
+        model = CategoryShowcaseImage
+        fields = ["image", "caption", "showcase_kind"]
+        labels = {
+            "image": "Photo",
+            "caption": "Légende (optionnelle)",
+            "showcase_kind": "Type d'espace",
+        }
+        help_texts = {
+            "image": "JPEG ou PNG — plats, chambres, accueil, etc.",
+            "caption": "Ex. : suite vue mer, plat du jour…",
+            "showcase_kind": "Pour hôtels / résidences : indiquez chambre, salle d'eau, hall…",
+        }

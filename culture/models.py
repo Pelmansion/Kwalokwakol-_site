@@ -286,6 +286,12 @@ class Event(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(max_length=200, blank=True, unique=True)
     poster = models.ImageField(upload_to="culture/events/posters/", blank=True, null=True)
+    digital_billboard = models.ImageField(
+        upload_to="culture/events/billboards/",
+        blank=True,
+        null=True,
+        help_text="Bâche numérique large (visuel promotionnel : date, lieu, tarifs, artistes…).",
+    )
     description = models.TextField()
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField(null=True, blank=True)

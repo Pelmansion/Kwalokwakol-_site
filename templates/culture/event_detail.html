@@ -28,6 +28,17 @@
   </div>
 </section>
 
+{% if event.digital_billboard %}
+<section class="event-billboard" aria-label="Bâche numérique">
+  <div class="container">
+    <h2 class="event-billboard__title">Affiche & bâche promotionnelle</h2>
+    <figure class="event-billboard__figure">
+      <img src="{{ event.digital_billboard.url }}" alt="Bâche numérique — {{ event.title }}" class="event-billboard__img" loading="lazy" width="1200" height="675">
+    </figure>
+  </div>
+</section>
+{% endif %}
+
 <section class="container culture-page">
   <div class="event-detail__grid">
     <div class="event-detail__main">

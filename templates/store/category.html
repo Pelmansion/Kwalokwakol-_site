@@ -14,6 +14,34 @@
     {% endif %}
   </section>
 
+  {% if showcase_images %}
+  <section class="container category-showcase" aria-label="Photos vitrine">
+    <h2 class="category-showcase__title">En images</h2>
+    <div class="category-showcase__strip">
+      {% for sh in showcase_images %}
+        <figure class="category-showcase__fig">
+          <div class="category-showcase__img-wrap">
+            <img src="{{ sh.image.url }}" alt="{{ sh.caption|default:category.name }}" loading="lazy" width="320" height="240">
+          </div>
+          {% if sh.caption or sh.showcase_kind and sh.showcase_kind != "general" %}
+          <figcaption class="category-showcase__cap">
+            {% if sh.showcase_kind and sh.showcase_kind != "general" %}<span class="category-showcase__kind">{{ sh.get_showcase_kind_display }}</span>{% endif %}
+            {% if sh.caption %}{{ sh.caption }}{% endif %}
+          </figcaption>
+          {% endif %}
+          {% if not category.vendor_id and not category.service_provider_id %}
+            {% if sh.vendor %}
+              <span class="category-showcase__badge">{{ sh.vendor.name }}</span>
+            {% elif sh.service_provider %}
+              <span class="category-showcase__badge">{{ sh.service_provider.name }}</span>
+            {% endif %}
+          {% endif %}
+        </figure>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
   <section class="container">
     {% if products %}
       <p class="muted" style="margin-bottom:16px;">{{ products|length }} produit{{ products|length|pluralize }} dans cette catégorie</p>
@@ -33,7 +61,7 @@
           </div>
           <div class="product-card__body">
             <h3>{{ product.name }}</h3>
-            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            {% include "store/_product_price.html" with product=product %}
             <div class="product-card__actions">
               <div class="product-card__actions-left">
                 <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"

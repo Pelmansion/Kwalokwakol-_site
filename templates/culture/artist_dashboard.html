@@ -31,6 +31,15 @@
     <div><strong>{{ sold_tickets_count }}</strong><span>Billets vendus</span></div>
   </div>
 
+  <section class="dashboard-card dashboard-card--danger-zone" aria-labelledby="artist-deactivate-heading">
+    <header><h2 id="artist-deactivate-heading">Profil artiste</h2></header>
+    <p class="muted">Désactiver masque ta page publique et l’accès à l’espace artiste jusqu’à réactivation depuis Kolê Culture.</p>
+    <form method="post" action="{% url 'culture:artist_deactivate' %}" class="dashboard-deactivate-form" onsubmit="return confirm('Désactiver ton profil artiste ? Tu pourras le réactiver plus tard depuis la page Culture.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--danger">Désactiver mon profil artiste</button>
+    </form>
+  </section>
+
   <div class="dashboard-grid">
     <section class="dashboard-card">
       <header><h2>🎵 Mes dernières chansons</h2><a href="{% url 'culture:artist_songs' %}">Tout gérer →</a></header>

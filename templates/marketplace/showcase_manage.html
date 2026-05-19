@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Vitrine : {{ category.name }} — Kolê{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>📷 Vitrine — {{ category.name }}</h1>
+      <p class="muted">Jusqu’à {{ max_showcase }} images pour attirer les clients (plats, chambres, salles d’eau, accueil…).</p>
+    </div>
+    <a class="btn btn--ghost" href="{% url 'marketplace:showcase_hub' %}">← Toutes les catégories</a>
+  </header>
+
+  {% if images %}
+    <div class="showcase-manage-grid">
+      {% for img in images %}
+        <article class="showcase-manage-card">
+          <div class="showcase-manage-card__img">
+            <img src="{{ img.image.url }}" alt="{{ img.caption|default:category.name }}" loading="lazy">
+          </div>
+          {% if img.caption or img.showcase_kind %}
+          <p class="showcase-manage-card__cap">
+            {% if img.showcase_kind %}<strong>{{ img.get_showcase_kind_display }}</strong>{% endif %}
+            {% if img.caption %}{% if img.showcase_kind %} — {% endif %}{{ img.caption }}{% endif %}
+          </p>
+          {% endif %}
+          <form method="post" class="showcase-manage-card__del" onsubmit="return confirm('Supprimer cette photo ?');">
+            {% csrf_token %}
+            <input type="hidden" name="delete_id" value="{{ img.id }}">
+            <button type="submit" class="btn btn--small btn--danger">Supprimer</button>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted" style="margin-bottom: 1rem;">Aucune photo pour l’instant.</p>
+  {% endif %}
+
+  {% if can_add %}
+    <h2 style="margin-top: 2rem; font-size: 1.1rem;">Ajouter une photo</h2>
+    <form method="post" enctype="multipart/form-data" class="culture-form" style="max-width: 480px;">
+      {% csrf_token %}
+      <label>Photo *
+        {{ form.image }}
+        {{ form.image.errors }}
+      </label>
+      <label>Type d’espace (hôtel, résidence, resto…)
+        {{ form.showcase_kind }}
+        {{ form.showcase_kind.errors }}
+      </label>
+      <label>Légende
+        {{ form.caption }}
+        {{ form.caption.errors }}
+      </label>
+      <div class="culture-form__actions">
+        <button type="submit" class="btn btn--lg">Enregistrer</button>
+      </div>
+    </form>
+  {% else %}
+    <p class="muted" style="margin-top: 1.5rem;">Nombre maximum de photos atteint. Supprimez une image pour en ajouter une autre.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -45,7 +45,7 @@
           </div>
           <div class="product-card__body">
             <h3>{{ product.name }}</h3>
-            <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+            {% include "store/_product_price.html" with product=product %}
             <div class="product-card__actions">
               <div class="product-card__actions-left">
                 <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"

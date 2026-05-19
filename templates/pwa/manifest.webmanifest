@@ -43,8 +43,36 @@
     {
       "name": "Accueil",
       "short_name": "Accueil",
-      "description": "Ouvrir la page d'accueil",
+      "description": "Page d'accueil Kolêgroup",
       "url": "/?source=pwa-shortcut",
+      "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mes billets (QR)",
+      "short_name": "Billets",
+      "description": "Mes billets de concert et QR codes",
+      "url": "{% url 'culture:my_tickets' %}?source=pwa-shortcut",
+      "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
+    },
+    {
+      "name": "Musique",
+      "short_name": "Musique",
+      "description": "Streaming et téléchargements Kolê Culture",
+      "url": "{% url 'culture:song_list' %}?source=pwa-shortcut",
+      "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
+    },
+    {
+      "name": "Artistes vérifiés",
+      "short_name": "Artistes",
+      "description": "Artistes Kolê Culture avec badge vérifié",
+      "url": "{% url 'culture:artist_list' %}?verifie=1&source=pwa-shortcut",
+      "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
+    },
+    {
+      "name": "Concerts à venir",
+      "short_name": "Concerts",
+      "description": "Prochains concerts et billetterie",
+      "url": "{% url 'culture:event_list' %}?when=upcoming&source=pwa-shortcut",
       "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
     },
     {
@@ -52,13 +80,6 @@
       "short_name": "Panier",
       "description": "Consulter mon panier",
       "url": "/panier/?source=pwa-shortcut",
-      "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
-    },
-    {
-      "name": "Favoris",
-      "short_name": "Favoris",
-      "description": "Mes produits favoris",
-      "url": "/favoris/?source=pwa-shortcut",
       "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
     }
   ],

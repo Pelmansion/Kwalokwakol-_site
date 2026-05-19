@@ -17,7 +17,7 @@
   {% if songs %}
     <table class="payments-table">
       <thead>
-        <tr><th>Titre</th><th>Genre</th><th>Tarif</th><th>Écoutes</th><th>Téléch.</th><th>Statut</th><th></th></tr>
+        <tr><th>Titre</th><th>Genre</th><th>Tarif</th><th>Écoutes</th><th>Téléch.</th><th>Revenus téléch. (FCFA)</th><th>Statut</th><th></th></tr>
       </thead>
       <tbody>
         {% for s in songs %}
@@ -27,6 +27,7 @@
           <td>{% if s.is_free %}<span class="badge badge--free">Gratuit</span>{% else %}{{ s.price_fcfa|floatformat:0 }} FCFA{% endif %}</td>
           <td>▶ {{ s.play_count }}</td>
           <td>⬇ {{ s.download_count }}</td>
+          <td>{% if s.is_free %}<span class="muted">—</span>{% else %}{{ s.paid_download_revenue|default_if_none:0|floatformat:0 }}{% endif %}</td>
           <td>{% if s.is_published %}Publiée{% else %}Brouillon{% endif %}</td>
           <td style="display:flex; gap:6px;">
             <a class="btn btn--sm" href="{% url 'culture:artist_song_edit' s.pk %}">Modifier</a>

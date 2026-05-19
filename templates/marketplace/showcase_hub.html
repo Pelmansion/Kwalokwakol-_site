@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Photos vitrine par catégorie — Kolê{% endblock %}
+
+{% block content %}
+<section class="container culture-page">
+  <header class="page-head">
+    <div>
+      <h1>📷 Photos vitrine des catégories</h1>
+      <p class="muted">Mettez en avant vos spécialités (plats, réalisations, ambiance) pour chaque catégorie où vous proposez des offres — jusqu’à {{ showcase_max }} images par catégorie.</p>
+    </div>
+    <a class="btn btn--ghost" href="{% if role_vendor %}{% url 'marketplace:dashboard' %}{% else %}{% url 'marketplace:service_provider_dashboard' %}{% endif %}">← Retour tableau de bord</a>
+  </header>
+
+  {% if rows %}
+    <ul class="showcase-hub-list">
+      {% for row in rows %}
+        <li class="showcase-hub-list__item">
+          <div>
+            <strong>{{ row.category.name }}</strong>
+            <span class="muted"> · {{ row.count }} / {{ showcase_max }} photo{{ row.count|pluralize }}</span>
+          </div>
+          <a class="btn btn--small" href="{% url 'marketplace:showcase_manage' row.category.id %}">Gérer les photos →</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty-state">
+      <p>Aucune catégorie pour l’instant. Créez une catégorie personnalisée ou assignez des produits à une catégorie du site, puis revenez ici.</p>
+      {% if role_vendor %}
+        <a class="btn" href="{% url 'marketplace:add_product' %}">Ajouter un produit</a>
+      {% else %}
+        <a class="btn" href="{% url 'marketplace:add_service' %}">Ajouter un service</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

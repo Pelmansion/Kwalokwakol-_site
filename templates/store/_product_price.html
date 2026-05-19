@@ -1,0 +1,20 @@
+{% comment %}Affichage prix avec promo (ancien prix barré, %). Variable: product, optionnel variant=detail pour la fiche produit.{% endcomment %}
+{% if variant == "detail" %}
+  {% if product.promo_discount_percent %}
+    <span class="muted" style="text-decoration: line-through; font-size: 1.05rem;">{{ product.old_price|floatformat:0 }} FCFA</span>
+    <p class="price product-detail__price" style="margin: 0;">{{ product.price|floatformat:0 }} FCFA</p>
+    <span class="badge badge--success" title="Réduction">-{{ product.promo_discount_percent }}&nbsp;%</span>
+  {% else %}
+    <p class="price product-detail__price">{{ product.price|floatformat:0 }} FCFA</p>
+  {% endif %}
+{% else %}
+  {% if product.promo_discount_percent %}
+    <div class="product-price product-price--promo" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+      <span class="muted" style="text-decoration: line-through; font-size: 0.88rem;">{{ product.old_price|floatformat:0 }} FCFA</span>
+      <span class="price" style="margin: 0;">{{ product.price|floatformat:0 }} FCFA</span>
+      <span class="badge badge--success" style="font-size: 0.72rem;">-{{ product.promo_discount_percent }}&nbsp;%</span>
+    </div>
+  {% else %}
+    <p class="price">{{ product.price|floatformat:0 }} FCFA</p>
+  {% endif %}
+{% endif %}

@@ -2,16 +2,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, DecimalField, F, Sum
+from django.db.models import Count, DecimalField, F, Max, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
-from catalog.models import Category, Product
+from catalog.models import Category, CategoryShowcaseImage, Product
 from orders.models import OrderItem
 from payments.models import Payment
 from reviews.models import Review, ReviewReply
 from notifications.models import Notification
 
 from .forms import (
+    CategoryShowcaseImageForm,
     OrderStatusForm,
     ProductForm,
     ServiceProductForm,
@@ -580,5 +581,180 @@ def service_requests_list(request):
                 "approved": approved,
                 "rejected": rejected,
             },
+        },
+    )
+
+
+SHOWCASE_MAX_IMAGES = 8
+
+
+def _showcase_owner_for_category(
+    category: Category,
+    vendor: Vendor | None,
+    provider: ServiceProvider | None,
+) -> tuple[Vendor | None, ServiceProvider | None]:
+    if category.vendor_id:
+        return category.vendor, None
+    if category.service_provider_id:
+        return None, category.service_provider
+    if vendor:
+        return vendor, None
+    if provider:
+        return None, provider
+    return None, None
+
+
+def _vendor_or_provider_can_manage_showcase(
+    category: Category,
+    *,
+    vendor: Vendor | None = None,
+    provider: ServiceProvider | None = None,
+) -> bool:
+    if category.vendor_id and vendor and category.vendor_id == vendor.id:
+        return True
+    if (
+        category.service_provider_id
+        and provider
+        and category.service_provider_id == provider.id
+    ):
+        return True
+    if not category.vendor_id and not category.service_provider_id:
+        if vendor and Product.objects.filter(vendor=vendor, category=category).exists():
+            return True
+        if provider and Product.objects.filter(service_provider=provider, category=category).exists():
+            return True
+    return False
+
+
+def _showcase_qs_for_editor(
+    category: Category,
+    vendor: Vendor | None,
+    provider: ServiceProvider | None,
+):
+    own_v, own_p = _showcase_owner_for_category(category, vendor, provider)
+    if own_v:
+        return CategoryShowcaseImage.objects.filter(category=category, vendor=own_v)
+    if own_p:
+        return CategoryShowcaseImage.objects.filter(category=category, service_provider=own_p)
+    return CategoryShowcaseImage.objects.none()
+
+
+@login_required
+def showcase_hub(request):
+    vendor = Vendor.objects.filter(owner=request.user).first()
+    provider = ServiceProvider.objects.filter(owner=request.user).first()
+    if vendor and provider:
+        messages.error(
+            request,
+            "Utilisez un compte dédié (boutique ou prestataire) pour gérer les photos vitrine.",
+        )
+        return redirect("store:home")
+    if vendor:
+        gate = _vendor_gate(vendor)
+        if gate is not None:
+            return gate
+        cat_ids = set(
+            Product.objects.filter(vendor=vendor)
+            .exclude(category_id=None)
+            .values_list("category_id", flat=True)
+        ) | set(Category.objects.filter(vendor=vendor).values_list("id", flat=True))
+        categories = Category.objects.filter(id__in=cat_ids, is_active=True).order_by("name")
+        rows = []
+        for cat in categories:
+            if not _vendor_or_provider_can_manage_showcase(cat, vendor=vendor):
+                continue
+            rows.append({"category": cat, "count": _showcase_qs_for_editor(cat, vendor, None).count()})
+        return render(
+            request,
+            "marketplace/showcase_hub.html",
+            {"rows": rows, "role_vendor": True, "showcase_max": SHOWCASE_MAX_IMAGES},
+        )
+    if provider:
+        gate = _provider_gate(provider)
+        if gate is not None:
+            return gate
+        cat_ids = set(
+            Product.objects.filter(service_provider=provider)
+            .exclude(category_id=None)
+            .values_list("category_id", flat=True)
+        ) | set(Category.objects.filter(service_provider=provider).values_list("id", flat=True))
+        categories = Category.objects.filter(id__in=cat_ids, is_active=True).order_by("name")
+        rows = []
+        for cat in categories:
+            if not _vendor_or_provider_can_manage_showcase(cat, provider=provider):
+                continue
+            rows.append({"category": cat, "count": _showcase_qs_for_editor(cat, None, provider).count()})
+        return render(
+            request,
+            "marketplace/showcase_hub.html",
+            {"rows": rows, "role_vendor": False, "showcase_max": SHOWCASE_MAX_IMAGES},
+        )
+    return redirect("store:home")
+
+
+@login_required
+def showcase_manage(request, category_id: int):
+    vendor = Vendor.objects.filter(owner=request.user).first()
+    provider = ServiceProvider.objects.filter(owner=request.user).first()
+    if not vendor and not provider:
+        return redirect("store:home")
+
+    category = get_object_or_404(Category, id=category_id, is_active=True)
+
+    if vendor:
+        gate = _vendor_gate(vendor)
+        if gate is not None:
+            return gate
+        if not _vendor_or_provider_can_manage_showcase(category, vendor=vendor):
+            messages.error(request, "Vous ne pouvez pas gérer la vitrine pour cette catégorie.")
+            return redirect("marketplace:showcase_hub")
+        owner_v, owner_p = _showcase_owner_for_category(category, vendor, None)
+        qs = _showcase_qs_for_editor(category, vendor, None)
+    else:
+        gate = _provider_gate(provider)
+        if gate is not None:
+            return gate
+        if not _vendor_or_provider_can_manage_showcase(category, provider=provider):
+            messages.error(request, "Vous ne pouvez pas gérer la vitrine pour cette catégorie.")
+            return redirect("marketplace:showcase_hub")
+        owner_v, owner_p = _showcase_owner_for_category(category, None, provider)
+        qs = _showcase_qs_for_editor(category, None, provider)
+
+    form = CategoryShowcaseImageForm()
+    if request.method == "POST":
+        del_id = request.POST.get("delete_id")
+        if del_id:
+            img = get_object_or_404(qs, pk=int(del_id))
+            img.delete()
+            messages.success(request, "Image supprimée.")
+            return redirect("marketplace:showcase_manage", category_id=category.id)
+        form = CategoryShowcaseImageForm(request.POST, request.FILES)
+        if qs.count() >= SHOWCASE_MAX_IMAGES:
+            messages.error(
+                request,
+                f"Limite de {SHOWCASE_MAX_IMAGES} photos atteinte pour cette catégorie.",
+            )
+            form = CategoryShowcaseImageForm()
+        elif form.is_valid():
+            next_pos = qs.aggregate(m=Max("position"))["m"]
+            pos = (next_pos if next_pos is not None else -1) + 1
+            inst = form.save(commit=False)
+            inst.category = category
+            inst.vendor = owner_v
+            inst.service_provider = owner_p
+            inst.position = pos
+            inst.save()
+            messages.success(request, "Photo ajoutée à la vitrine.")
+            return redirect("marketplace:showcase_manage", category_id=category.id)
+
+    return render(
+        request,
+        "marketplace/showcase_manage.html",
+        {
+            "category": category,
+            "images": qs.order_by("position", "id"),
+            "form": form,
+            "max_showcase": SHOWCASE_MAX_IMAGES,
+            "can_add": qs.count() < SHOWCASE_MAX_IMAGES,
         },
     )

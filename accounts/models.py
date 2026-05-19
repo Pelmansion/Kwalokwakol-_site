@@ -14,7 +14,20 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        null=True,
+        verbose_name="photo de profil",
+        help_text="Visible dans l’en-tête et la navigation après connexion.",
+    )
+    cover_photo = models.ImageField(
+        upload_to="user_covers/",
+        blank=True,
+        null=True,
+        verbose_name="photo de couverture",
+        help_text="Bandeau large sous la barre du site une fois connecté (optionnel).",
+    )
     phone = models.CharField(max_length=30, blank=True)
     default_address = models.CharField(max_length=250, blank=True)
     city = models.CharField(max_length=120, blank=True)

@@ -111,6 +111,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'store.context_processors.category_nav',
+                'accounts.context_processors.user_profile',
             ],
         },
     },
@@ -126,6 +127,7 @@ DATABASES = {
         ssl_require=True,
     )
 }
+
 
 # --- STATICS & MEDIA ---
 STATIC_URL = 'static/'
@@ -159,6 +161,7 @@ LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/compte/connexion/"
 
 AUTHENTICATION_BACKENDS = [
+    "accounts.auth_backends.EmailPhoneUsernameBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]

@@ -76,6 +76,7 @@ class EventForm(forms.ModelForm):
         fields = [
             "title",
             "poster",
+            "digital_billboard",
             "description",
             "starts_at",
             "ends_at",

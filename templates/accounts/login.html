@@ -30,7 +30,7 @@
       <form method="post" class="auth-form">
         {% csrf_token %}
         <div class="form-group{% if form.username.errors %} form-group--error{% endif %}">
-          <label for="{{ form.username.id_for_label }}">Email ou nom d'utilisateur</label>
+          <label for="{{ form.username.id_for_label }}">E-mail, téléphone ou nom d'utilisateur</label>
           {{ form.username }}
           {% if form.username.errors %}
             <ul class="form-errors">

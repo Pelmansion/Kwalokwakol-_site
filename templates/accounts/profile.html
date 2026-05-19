@@ -1,15 +1,46 @@
 {% extends "base.html" %}
+{% block title %}Mon profil — KwaloKWakolê Group{% endblock %}
 {% block content %}
   <section class="container page-title">
     <h1>Mon profil</h1>
+    <p class="muted">Votre photo de profil et votre couverture sont affichées sur tout le site lorsque vous êtes connecté.</p>
   </section>
-  <section class="container auth-card">
-    <form method="post" enctype="multipart/form-data">
+  <section class="container profile-edit-card">
+    {% if user_profile %}
+      {% if user_profile.cover_photo or user_profile.avatar %}
+      <div class="profile-preview{% if user_profile.avatar and not user_profile.cover_photo %} profile-preview--avatar-only{% endif %}">
+        {% if user_profile.cover_photo %}
+          <div class="profile-preview__cover">
+            <img src="{{ user_profile.cover_photo.url }}" alt="" loading="lazy">
+          </div>
+        {% endif %}
+        {% if user_profile.avatar %}
+          <div class="profile-preview__avatar">
+            <img src="{{ user_profile.avatar.url }}" alt="">
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="profile-form-fields culture-form">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button class="btn" type="submit">Mettre à jour</button>
+      {% if form.non_field_errors %}
+        <div class="form-errors">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}
+          {{ field }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+          {{ field.errors }}
+        </label>
+      {% endfor %}
+      <div class="culture-form__actions" style="margin-top: 1rem;">
+        <button class="btn btn--lg" type="submit">Mettre à jour</button>
+      </div>
     </form>
-    <div class="auth-links">
+
+    <div class="auth-links" style="margin-top: 1.5rem;">
       <a class="link" href="{% url 'accounts:order_history' %}">Voir mes commandes</a>
       {% if user.is_superuser %}
         <a class="link" href="{% url 'accounts:admin_dashboard' %}">Administration</a>

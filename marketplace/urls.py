@@ -5,6 +5,8 @@ from . import views
 app_name = "marketplace"
 
 urlpatterns = [
+    path("categories/vitrine/", views.showcase_hub, name="showcase_hub"),
+    path("categories/<int:category_id>/vitrine/", views.showcase_manage, name="showcase_manage"),
     path("inscription/", views.vendor_register, name="vendor_register"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("produit/ajouter/", views.add_product, name="add_product"),

@@ -39,7 +39,7 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=29">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=33">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -102,8 +102,8 @@
           <div class="dropdown">
             <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
               {% if user.is_authenticated %}
-                {% if user.userprofile and user.userprofile.avatar %}
-                  <img src="{{ user.userprofile.avatar.url }}" alt="Profil" class="topbar__avatar">
+                {% if user_profile and user_profile.avatar %}
+                  <img src="{{ user_profile.avatar.url }}" alt="" class="topbar__avatar">
                 {% else %}
                   <span class="icon icon-user" aria-hidden="true"></span>
                 {% endif %}
@@ -191,6 +191,12 @@
       </div>
     </header>
 
+    {% if user.is_authenticated and user_profile and user_profile.cover_photo %}
+    <div class="user-cover-strip" role="img" aria-label="Photo de couverture de votre profil">
+      <img src="{{ user_profile.cover_photo.url }}" alt="" class="user-cover-strip__img" width="1600" height="360" loading="lazy" decoding="async">
+    </div>
+    {% endif %}
+
     <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true">
       {% if messages %}
         {% for message in messages %}
@@ -240,8 +246,8 @@
       </a>
       {% endif %}
       <a class="bottom-nav__item" data-nav="account" href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}">
-        {% if user.is_authenticated and user.userprofile and user.userprofile.avatar %}
-          <img src="{{ user.userprofile.avatar.url }}" alt="Compte" class="bottom-nav__avatar">
+        {% if user.is_authenticated and user_profile and user_profile.avatar %}
+          <img src="{{ user_profile.avatar.url }}" alt="" class="bottom-nav__avatar">
         {% else %}
           <span class="bottom-nav__icon bottom-nav__icon--compte"></span>
         {% endif %}

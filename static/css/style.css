@@ -397,6 +397,105 @@ p { margin: 0 0 1em; }
   border: 2px solid var(--line);
 }
 
+/* Bandeau couverture utilisateur (connecté) */
+.user-cover-strip {
+  width: 100%;
+  max-height: 200px;
+  overflow: hidden;
+  background: linear-gradient(120deg, #1f1147, #5b21b6);
+  border-bottom: 1px solid var(--line, #e8e0d8);
+}
+.user-cover-strip__img {
+  display: block;
+  width: 100%;
+  height: clamp(72px, 18vw, 200px);
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Aperçu page profil */
+.profile-edit-card {
+  max-width: 560px;
+  margin: 0 auto 48px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #f0e4d8);
+  border-radius: 16px;
+  padding: 24px;
+}
+.profile-preview {
+  position: relative;
+  margin: -8px 0 20px;
+  border-radius: 14px;
+  overflow: visible;
+  min-height: 100px;
+  background: #f0e8e0;
+  padding-bottom: 28px;
+}
+.profile-preview__cover {
+  width: 100%;
+  max-height: 140px;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
+}
+.profile-preview__cover img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+.profile-preview__avatar {
+  position: absolute;
+  left: 16px;
+  bottom: -24px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 4px solid var(--surface, #fff);
+  box-shadow: 0 8px 24px rgba(31, 17, 71, 0.12);
+  overflow: hidden;
+  background: #fff;
+}
+.profile-preview__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-preview--avatar-only {
+  min-height: 0;
+  margin: 0 0 12px;
+  padding: 8px 0 0;
+  padding-bottom: 0;
+  background: transparent;
+  overflow: visible;
+}
+.profile-preview--avatar-only .profile-preview__avatar {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+}
+.profile-edit-card form.profile-form-fields {
+  margin-top: 36px;
+}
+.profile-edit-card label {
+  display: block;
+  margin-bottom: 14px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.profile-edit-card input[type="text"],
+.profile-edit-card input[type="file"],
+.profile-edit-card textarea,
+.profile-edit-card select {
+  width: 100%;
+  margin-top: 6px;
+}
+
 /* Icônes */
 .icon { width: 20px; height: 20px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; }
 .icon-user   { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23443A33' stroke-width='1.8' viewBox='0 0 24 24'><circle cx='12' cy='8' r='4'/><path d='M4 20c1.8-3.5 5-6 8-6s6.2 2.5 8 6'/></svg>"); }
@@ -3951,6 +4050,17 @@ textarea::placeholder { color: #94a3b8; }
   font-size: 14px;
 }
 .culture-filters input[type=search] { flex: 1; min-width: 200px; }
+.culture-filters__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3d342e;
+  cursor: pointer;
+  user-select: none;
+}
+.culture-filters__check input { width: auto; accent-color: #C2410C; }
 
 /* ---- Cards artistes ---- */
 .artist-grid {
@@ -4439,6 +4549,13 @@ textarea::placeholder { color: #94a3b8; }
 }
 .dashboard-card header h2 { margin: 0; font-size: 18px; }
 .dashboard-card header a { color: #C2410C; font-size: 13px; font-weight: 600; }
+.dashboard-card--danger-zone {
+  margin-bottom: 18px;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: linear-gradient(180deg, #fff 0%, #fff8f8 100%);
+}
+.dashboard-card--danger-zone .muted { margin: 0 0 14px; font-size: 14px; line-height: 1.5; }
+.dashboard-deactivate-form { margin: 0; }
 .simple-list { list-style: none; padding: 0; margin: 0; }
 .simple-list li {
   padding: 12px 0; border-bottom: 1px solid var(--line, #f0e4d8);
@@ -4643,7 +4760,8 @@ textarea::placeholder { color: #94a3b8; }
   flex-wrap: wrap;
   margin-bottom: 28px;
 }
-.culture-promo__features span {
+.culture-promo__features span,
+.culture-promo__feature-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -4653,6 +4771,15 @@ textarea::placeholder { color: #94a3b8; }
   border-radius: 999px;
   font-size: 12.5px;
   font-weight: 500;
+}
+.culture-promo__feature-link {
+  text-decoration: none;
+  color: rgba(255, 250, 245, 0.95);
+  transition: background .2s ease, transform .15s ease;
+}
+.culture-promo__feature-link:hover {
+  background: rgba(255, 255, 255, .16);
+  transform: translateY(-1px);
 }
 
 .culture-promo__actions {
@@ -4884,7 +5011,8 @@ textarea::placeholder { color: #94a3b8; }
     border-radius: 22px;
   }
   .culture-promo__text h2 { font-size: 30px; }
-  .culture-promo__features span { font-size: 11.5px; padding: 5px 10px; }
+  .culture-promo__features span,
+  .culture-promo__feature-link { font-size: 11.5px; padding: 5px 10px; }
   .culture-promo__visual {
     height: 220px;
   }
@@ -5275,6 +5403,154 @@ textarea::placeholder { color: #94a3b8; }
     left: max(12px, env(safe-area-inset-left)) !important;
     bottom: calc(78px + env(safe-area-inset-bottom)) !important;
   }
+}
+
+/* ---- Vitrine photos par catégorie (marketplace + page catégorie) ---- */
+.category-showcase {
+  margin-bottom: 28px;
+}
+.category-showcase__title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  margin: 0 0 14px;
+  color: #1f1147;
+}
+.category-showcase__strip {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.category-showcase__fig {
+  flex: 0 0 min(280px, 78vw);
+  margin: 0;
+  scroll-snap-align: start;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--line, #f0e4d8);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(31, 17, 71, 0.06);
+}
+.category-showcase__img-wrap {
+  aspect-ratio: 4 / 3;
+  background: #f5f0eb;
+}
+.category-showcase__fig img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.category-showcase__cap {
+  padding: 10px 12px 4px;
+  font-size: 13px;
+  color: #3d342e;
+  margin: 0;
+  line-height: 1.4;
+}
+.category-showcase__badge {
+  display: inline-block;
+  margin: 0 12px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #C2410C;
+  background: rgba(194, 65, 12, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.category-showcase__kind {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b21b6;
+  background: rgba(91, 33, 182, 0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+/* Bâche numérique concert */
+.event-billboard {
+  background: linear-gradient(180deg, #1f1147 0%, #2d1a5c 100%);
+  padding: 28px 0 36px;
+  margin: 0;
+}
+.event-billboard__title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: #faf5ff;
+  margin: 0 0 16px;
+}
+.event-billboard__figure {
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+.event-billboard__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.showcase-hub-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.showcase-hub-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--line, #f0e4d8);
+  border-radius: 14px;
+}
+
+.showcase-manage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.showcase-manage-card {
+  background: #fff;
+  border: 1px solid var(--line, #f0e4d8);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.showcase-manage-card__img {
+  aspect-ratio: 4 / 3;
+  background: #f5f0eb;
+}
+.showcase-manage-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.showcase-manage-card__cap {
+  padding: 10px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+.showcase-manage-card__del {
+  padding: 0 12px 12px;
 }
 
 /* Cacher la bulle quand on lance en mode app standalone (pour ne pas surcharger sur mobile installé) */

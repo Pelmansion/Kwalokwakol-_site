@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import Category, Product, ProductMedia, ProductVariant
+from .models import Category, CategoryShowcaseImage, Product, ProductMedia, ProductVariant
+
+
+@admin.register(CategoryShowcaseImage)
+class CategoryShowcaseImageAdmin(admin.ModelAdmin):
+    list_display = ("category", "vendor", "service_provider", "caption", "position", "id")
+    list_filter = ("category",)
+    search_fields = ("caption", "category__name")
+    raw_id_fields = ("category", "vendor", "service_provider")
 
 
 @admin.register(Category)

@@ -40,10 +40,7 @@
       <div class="product-detail__meta">
         <h1 class="product-detail__title">{{ product.name }}</h1>
         <div class="product-detail__price-row">
-          <p class="price product-detail__price">{{ product.price|floatformat:0 }} FCFA</p>
-          {% if product.old_price and product.old_price > product.price %}
-            <span class="muted" style="text-decoration:line-through; font-size:1.05rem;">{{ product.old_price|floatformat:0 }} FCFA</span>
-          {% endif %}
+          {% include "store/_product_price.html" with product=product variant="detail" %}
           {% if product.kind == 'service' %}
             <span class="badge badge--info">Service</span>
           {% else %}

@@ -5,8 +5,8 @@
 <section class="container culture-page">
   <header class="page-head">
     <div>
-      <h1>🎤 Artistes</h1>
-      <p>Découvrez les artistes de votre région</p>
+      <h1>🎤 Artistes{% if verified_only %} vérifiés{% endif %}</h1>
+      <p>{% if verified_only %}Artistes avec le badge Kolê Culture vérifié.{% else %}Découvrez les artistes de votre région{% endif %}</p>
     </div>
     <a class="btn btn--ghost" href="{% url 'culture:home' %}">← Retour Culture</a>
   </header>
@@ -20,6 +20,10 @@
       {% endfor %}
     </select>
     <input type="text" name="region" value="{{ region }}" placeholder="Région">
+    <label class="culture-filters__check">
+      <input type="checkbox" name="verifie" value="1" {% if verified_only %}checked{% endif %}>
+      Vérifiés uniquement
+    </label>
     <button class="btn" type="submit">Filtrer</button>
   </form>
 

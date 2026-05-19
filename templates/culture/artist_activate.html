@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Activer mon profil artiste · Kolê Culture{% endblock %}
+{% block title %}{% if is_reactivation %}Réactiver mon profil artiste{% else %}Activer mon profil artiste{% endif %} · Kolê Culture{% endblock %}
 
 {% block content %}
 <section class="container culture-page">
   <header class="page-head">
     <div>
-      <h1>🎤 Activer mon profil artiste</h1>
-      <p>Présentez-vous, ajoutez votre univers, vos réseaux. Vous pourrez ensuite publier votre musique et vos concerts.</p>
+      <h1>{% if is_reactivation %}🎤 Réactiver mon profil artiste{% else %}🎤 Activer mon profil artiste{% endif %}</h1>
+      <p>{% if is_reactivation %}Vérifie tes informations puis valide pour rendre à nouveau visible ta page et ton espace artiste.{% else %}Présentez-vous, ajoutez votre univers, vos réseaux. Vous pourrez ensuite publier votre musique et vos concerts.{% endif %}</p>
     </div>
   </header>
 
@@ -54,7 +54,7 @@
       <label>Spotify {{ form.spotify }}</label>
     </div>
     <div class="culture-form__actions">
-      <button class="btn btn--lg" type="submit">Activer mon profil</button>
+      <button class="btn btn--lg" type="submit">{% if is_reactivation %}Réactiver mon profil{% else %}Activer mon profil{% endif %}</button>
     </div>
   </form>
 </section>

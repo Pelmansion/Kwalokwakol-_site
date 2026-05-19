@@ -226,7 +226,7 @@
                 </div>
                 <div class="suggestion-card__body">
                   <h4>{{ product.name|truncatechars:40 }}</h4>
-                  <p class="suggestion-card__price">{{ product.price|floatformat:0 }} FCFA</p>
+                  <div class="suggestion-card__price-wrap">{% include "store/_product_price.html" with product=product %}</div>
                 </div>
               </a>
             {% endfor %}
@@ -728,6 +728,16 @@
       font-weight: 700;
       color: var(--primary);
       font-size: 0.95rem;
+    }
+    .suggestion-card__price-wrap {
+      margin: 0;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+    .suggestion-card__price-wrap .price,
+    .suggestion-card__price-wrap .product-price--promo {
+      color: inherit;
     }
 
     .cart-empty {

@@ -5,8 +5,17 @@ from .models import Address, Favorite, UserProfile
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "phone", "city")
-    search_fields = ("user__username", "phone")
+    list_display = ("user", "phone", "city", "has_avatar", "has_cover")
+    search_fields = ("user__username", "user__email", "phone")
+    raw_id_fields = ("user",)
+
+    @admin.display(description="Photo profil", boolean=True)
+    def has_avatar(self, obj):
+        return bool(obj.avatar)
+
+    @admin.display(description="Couverture", boolean=True)
+    def has_cover(self, obj):
+        return bool(obj.cover_photo)
 
 
 @admin.register(Address)

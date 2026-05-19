@@ -2,10 +2,9 @@
   background: #fff;
   border-radius: 18px;
   padding: 24px;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 24px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
 }
 
@@ -43,10 +42,93 @@
   color: #666;
 }
 
+.react-discover {
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  background: #fafafa;
+}
+
+.react-discover__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.react-discover__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.react-discover__more {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #c2410c;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.react-discover__more:hover {
+  text-decoration: underline;
+}
+
+.react-discover__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.react-tab {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.react-tab--active {
+  background: #1f1147;
+  color: #fff;
+  border-color: #1f1147;
+}
+
+.react-discover__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.react-discover__empty {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.react-hero__mini-label {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+}
+
 .react-hero__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.react-hero__grid--mini {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
 
 .react-card {
@@ -57,24 +139,91 @@
   border-radius: 14px;
   padding: 10px;
   color: inherit;
+  text-decoration: none;
+}
+
+.react-card h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.react-card__kind {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.react-card__price-row {
+  margin: 6px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.react-card__price-old {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.react-card__price-now {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.react-card__pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: #15803d;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.react-card__price-single {
+  margin: 6px 0 0;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.react-card__sub {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #666;
 }
 
 .react-card img {
   width: 100%;
-  height: 120px;
+  height: 100px;
   object-fit: cover;
   border-radius: 10px;
 }
 
+.react-card--entity img {
+  height: 88px;
+}
+
 .react-card__placeholder {
   width: 100%;
-  height: 120px;
+  height: 100px;
   border-radius: 10px;
   background: linear-gradient(130deg, #f3f3f3, #e7e7e7);
 }
 
+.react-card--entity .react-card__placeholder {
+  height: 88px;
+}
+
 @media (max-width: 900px) {
-  .react-hero {
-    grid-template-columns: 1fr;
+  .react-discover__grid {
+    max-height: 280px;
   }
 }

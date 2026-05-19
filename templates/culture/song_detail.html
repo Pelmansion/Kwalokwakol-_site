@@ -25,8 +25,18 @@
         {% if song.genre %}<span class="chip">{{ song.genre.icon }} {{ song.genre.name }}</span>{% endif %}
         {% if song.duration_seconds %}<span class="chip">⏱ {{ song.duration_display }}</span>{% endif %}
         {% if song.release_date %}<span class="chip">📅 {{ song.release_date|date:"j F Y" }}</span>{% endif %}
-        <span class="chip">▶ {{ song.play_count }} écoutes</span>
-        <span class="chip">⬇ {{ song.download_count }} téléchargements</span>
+        <span class="chip" title="Lectures / streams enregistrés sur la plateforme">▶ {{ song.play_count }} lecture{{ song.play_count|pluralize }}</span>
+        <span class="chip" title="Nombre de téléchargements du fichier">⬇ {{ song.download_count }} téléchargement{{ song.download_count|pluralize }}</span>
+        {% if song.allow_streaming %}
+          <span class="chip chip--stream">Écoute en streaming : oui{% if song.is_free %} (gratuit){% endif %}</span>
+        {% else %}
+          <span class="chip">Écoute en streaming : non</span>
+        {% endif %}
+        {% if song.is_free %}
+          <span class="chip chip--free-label">Téléchargement : gratuit</span>
+        {% else %}
+          <span class="chip chip--paid-label">Téléchargement : payant</span>
+        {% endif %}
       </div>
 
       {% if song.allow_streaming %}
@@ -37,10 +47,10 @@
 
       <div class="song-detail__actions">
         {% if song.is_free %}
-          <span class="badge badge--free">GRATUIT</span>
+          <span class="badge badge--free">Contenu gratuit</span>
           <a class="btn" href="{% url 'culture:song_play' song.slug %}" download>⬇ Télécharger gratuitement</a>
         {% else %}
-          <span class="badge badge--paid">{{ song.price_fcfa|floatformat:0 }} FCFA</span>
+          <span class="badge badge--paid">Téléchargement payant — {{ song.price_fcfa|floatformat:0 }} FCFA</span>
           {% if user_has_access %}
             <a class="btn" href="{% url 'culture:my_purchases' %}">⬇ Voir mes achats</a>
           {% else %}

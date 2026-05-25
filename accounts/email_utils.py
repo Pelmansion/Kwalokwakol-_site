@@ -43,7 +43,7 @@ def send_verification_email(request, user):
     path = reverse("accounts:verify_email") + "?token=" + quote(token, safe="")
     verify_url = request.build_absolute_uri(path)
 
-    subject = "Confirmez votre adresse email - Kwalo"
+    subject = "Confirmez votre adresse email - Kolê Group"
     body = render_to_string(
         "accounts/emails/verify_email.txt",
         {"user": user, "verify_url": verify_url},

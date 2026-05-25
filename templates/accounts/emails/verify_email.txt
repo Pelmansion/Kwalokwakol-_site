@@ -1,10 +1,10 @@
 Bonjour {{ user.username }},
 
-Vous venez de vous inscrire sur Kwalo. Pour activer votre compte, cliquez sur le lien ci-dessous :
+Vous venez de vous inscrire sur Kolê Group. Pour activer votre compte, cliquez sur le lien ci-dessous :
 
 {{ verify_url }}
 
 Ce lien est valide 48 heures. Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer ce message.
 
 À bientôt,
-L'équipe Kwalo
+L'équipe Kolê Group

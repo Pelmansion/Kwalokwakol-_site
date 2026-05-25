@@ -19,8 +19,8 @@
       })();
     </script>
     <meta name="theme-color" content="#C2410C">
-    <meta name="description" content="KwaloKWakolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
-    <title>{% block title %}KwaloKWakolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
+    <meta name="description" content="Kolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
+    <title>{% block title %}Kolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
 
     {# --- Favicon & icônes classiques --- #}
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/favicon-32.png' %}">
@@ -29,10 +29,10 @@
     {# --- PWA : manifest + icônes iOS/Android/Windows --- #}
     <link rel="manifest" href="{% url 'pwa-manifest' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/apple-touch-icon.png' %}">
-    <meta name="application-name" content="Kolêgroup">
+    <meta name="application-name" content="Kolê Group">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Kolêgroup">
+    <meta name="apple-mobile-web-app-title" content="Kolê Group">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-TileColor" content="#C2410C">
     <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-192.png' %}">
@@ -48,10 +48,10 @@
 
     <div class="first-visit-splash" id="first-visit-splash" role="dialog" aria-modal="true" aria-labelledby="first-visit-brand" aria-describedby="first-visit-desc">
       <div class="first-visit-splash__logo-wrap first-visit-splash__anim first-visit-splash__anim--1">
-        <img class="first-visit-splash__logo" src="{% static 'images/icons/LOGO KWALOKWAKOLÈ GROUP.png' %}" width="320" height="96" alt="KwaloKWakolê Group" loading="eager" decoding="async">
+        <img class="first-visit-splash__logo" src="{% static 'images/icons/LOGO KWALOKWAKOLÈ GROUP.png' %}" width="320" height="96" alt="Kolê Group" loading="eager" decoding="async">
       </div>
-      <p class="first-visit-splash__eyebrow first-visit-splash__anim first-visit-splash__anim--2">KWALOKWAKOLÈ GROUP</p>
-      <h1 class="first-visit-splash__brand first-visit-splash__anim first-visit-splash__anim--3" id="first-visit-brand">Kolêgroup</h1>
+      <p class="first-visit-splash__eyebrow first-visit-splash__anim first-visit-splash__anim--2">Kolê Group</p>
+      <h1 class="first-visit-splash__brand first-visit-splash__anim first-visit-splash__anim--3" id="first-visit-brand">Kolê Group</h1>
       <p class="first-visit-splash__tag first-visit-splash__anim first-visit-splash__anim--4" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
       <button type="button" class="btn first-visit-splash__btn first-visit-splash__anim first-visit-splash__anim--5" id="first-visit-splash-close">Continuer</button>
     </div>
@@ -90,7 +90,7 @@
     <header class="topbar">
       <div class="container topbar__inner">
         <a class="logo" href="{% if user.is_authenticated %}{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}{% else %}{% url 'store:home' %}{% endif %}">
-          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="KwaloKWakolê Group">
+          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="Kolê Group">
         </a>
 
         <form class="search" action="{% url 'store:product_list' %}" method="get" role="search">
@@ -259,7 +259,7 @@
       <div class="container">
         <div class="footer__grid">
           <div class="footer__brand">
-            <h3>KwaloKWakolê Group</h3>
+            <h3>Kolê Group</h3>
             <p>La plateforme qui rassemble les artisans, boutiques, producteurs et prestataires d'Afrique. Commandez, réservez et recevez — en toute confiance.</p>
             <form class="newsletter" onsubmit="event.preventDefault(); alert('Merci pour votre inscription !');">
               <input type="email" placeholder="Votre email" required>
@@ -312,7 +312,7 @@
         </div>
 
         <div class="footer__bottom">
-          <p>© {% now "Y" %} KwaloKWakolê Group — Tous droits réservés.</p>
+          <p>© {% now "Y" %} Kolê Group — Tous droits réservés.</p>
           <p>Fait avec <span style="color:var(--accent);">♥</span> en Afrique.</p>
         </div>
       </div>
@@ -492,9 +492,9 @@
     </div>
 
     {# ===================== PWA : installation & service worker ===================== #}
-    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l’application Kolêgroup">
+    <button type="button" id="pwa-install-btn" class="pwa-install-btn" hidden aria-label="Installer l’application Kolê Group">
       <span class="pwa-install-btn__icon" aria-hidden="true">📲</span>
-      <span class="pwa-install-btn__label">Installer Kolêgroup</span>
+      <span class="pwa-install-btn__label">Installer Kolê Group</span>
     </button>
 
     <!-- <div id="pwa-update-toast" class="pwa-update-toast" hidden role="status" aria-live="polite">
@@ -565,7 +565,7 @@
           window.addEventListener('appinstalled', function () {
             installBtn.hidden = true;
             if (typeof showToast === 'function') {
-              showToast('Kolêgroup est installée ! Retrouvez l’app sur votre écran d’accueil.', 'success');
+              showToast('Kolê Group est installée ! Retrouvez l’app sur votre écran d’accueil.', 'success');
             }
           });
         }

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Génère un PDF de description du projet KwaloKWakolê (Django).
+Génère un PDF de description du projet Kolê Group (Django).
 Usage : depuis la racine du projet : python scripts/generate_projet_pdf.py
-Sortie : docs/Description_Projet_KwaloKWakole.pdf
+Sortie : docs/Description_Projet_Kole_Group.pdf
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "docs" / "Description_Projet_KwaloKWakole.pdf"
+OUT = ROOT / "docs" / "Description_Projet_Kole_Group.pdf"
 
 
 def main() -> int:
@@ -69,7 +69,7 @@ def main() -> int:
 
     story: list = []
 
-    story.append(Paragraph("KwaloKWakolê Group", title))
+    story.append(Paragraph("Kolê Group", title))
     story.append(
         Paragraph(
             "Description du projet &mdash; plateforme e-commerce et culture "
@@ -193,8 +193,8 @@ def main() -> int:
         leftMargin=2 * cm,
         topMargin=2 * cm,
         bottomMargin=2 * cm,
-        title="Description du projet KwaloKWakolê",
-        author="KwaloKWakolê Group",
+        title="Description du projet Kolê Group",
+        author="Kolê Group",
     )
     doc.build(story)
     print(f"PDF créé : {OUT}")

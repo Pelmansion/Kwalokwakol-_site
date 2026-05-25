@@ -12,7 +12,7 @@ sur iOS qu’un PNG transparent et plus marqué qu’un fond blanc plat.
 Les bords très **clairs** reliés au contour (fond blanc / gris clair du fichier) sont
 passés en transparence avant composition sur le dégradé.
 
-Repli si fichier absent : composition « K + Kolêgroup » sur le même dégradé.
+Repli si fichier absent : composition « K + Kolê Group » sur le même dégradé.
 """
 from __future__ import annotations
 
@@ -223,19 +223,20 @@ def _draw_fallback_on_gradient(size: int, margin_ratio: float, gradient: Image.I
     tx = x0 + sq + max(4, int(usable * 0.04))
     font_main = _load_font(max(11, int(size * 0.068)))
     font_sub = _load_font(max(8, int(size * 0.036)))
-    main_text = "Kolêgroup"
-    sub_text = "GROUP"
+    main_text = "Kolê Group"
+    sub_text = ""
     y_main = y0 + max(0, int(sq * 0.08))
     main_bbox = draw.textbbox((tx, y_main), main_text, font=font_main)
     if main_bbox[2] > size - m - 2:
         font_main = _load_font(max(9, int(size * 0.052)))
         main_bbox = draw.textbbox((tx, y_main), main_text, font=font_main)
     draw.text((tx, y_main), main_text, font=font_main, fill=(255, 248, 241, 255))
-    sb = draw.textbbox((0, 0), sub_text, font=font_sub)
-    sw = sb[2] - sb[0]
-    sx = main_bbox[2] - sw
-    sy = main_bbox[3] + max(1, int(size * 0.014))
-    draw.text((sx, sy), sub_text, font=font_sub, fill=(255, 220, 200, 230))
+    if sub_text:
+        sb = draw.textbbox((0, 0), sub_text, font=font_sub)
+        sw = sb[2] - sb[0]
+        sx = main_bbox[2] - sw
+        sy = main_bbox[3] + max(1, int(size * 0.014))
+        draw.text((sx, sy), sub_text, font=font_sub, fill=(255, 220, 200, 230))
     return img
 
 

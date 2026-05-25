@@ -1,6 +1,6 @@
-# KwaloKWakolê — Plateforme e-commerce & culture
+# Kolê Group — Plateforme e-commerce & culture
 
-Site web **Django** pour **KwaloKWakolê Group** : marketplace (boutiques, prestataires de services), commandes, avis, messagerie, paiements (bac à sable), **abonnements** vendeurs / prestataires (montants fixés par l’admin), module **Culture** (artistes, musique, billets de concert avec QR), **PWA** (installation sur mobile) et assistant FAQ **Kwa** intégré.
+Site web **Django** pour **Kolê Group** : marketplace (boutiques, prestataires de services), commandes, avis, messagerie, paiements (bac à sable), **abonnements** vendeurs / prestataires (montants fixés par l’admin), module **Culture** (artistes, musique, billets de concert avec QR), **PWA** (installation sur mobile) et assistant FAQ **Kwa** intégré.
 
 ## Fonctionnalités principales
 
@@ -61,4 +61,4 @@ Avant la mise en production : `DEBUG = False`, `SECRET_KEY` et `ALLOWED_HOSTS` s
 
 ## Licence & contact
 
-Projet **KwaloKWakolê Group**. Pour toute question sur le dépôt ou les contributions, ouvrir une issue sur GitHub ou contacter les mainteneurs du projet.
+Projet **Kolê Group**. Pour toute question sur le dépôt ou les contributions, ouvrir une issue sur GitHub ou contacter les mainteneurs du projet.

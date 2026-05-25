@@ -1,6 +1,6 @@
 {% load static %}{
-  "name": "Kolêgroup · KwaloKWakolê",
-  "short_name": "Kolêgroup",
+  "name": "Kolê Group",
+  "short_name": "Kolê Group",
   "description": "Marketplace Afro-moderne : alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.",
   "start_url": "/?source=pwa",
   "scope": "/",
@@ -43,7 +43,7 @@
     {
       "name": "Accueil",
       "short_name": "Accueil",
-      "description": "Page d'accueil Kolêgroup",
+      "description": "Page d'accueil Kolê Group",
       "url": "/?source=pwa-shortcut",
       "icons": [{ "src": "{% static 'images/icons/icon-192.png' %}", "sizes": "192x192" }]
     },
@@ -89,7 +89,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Accueil Kolêgroup"
+      "label": "Accueil Kolê Group"
     }
   ]
 }

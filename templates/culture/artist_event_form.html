@@ -3,9 +3,10 @@
 
 {% block content %}
 <section class="container culture-page">
-  <header class="page-head">
+    <header class="page-head">
     <div>
       <h1>{% if is_new %}🎫 Nouveau concert{% else %}🎫 Modifier le concert{% endif %}</h1>
+      <p class="muted culture-form-intro">Ajoutez une <strong>affiche</strong> et une <strong>bâche</strong> (images JPG ou PNG, idéalement moins de 5&nbsp;Mo). Pensez à enregistrer avec le bouton en bas après avoir choisi les fichiers — le téléversement doit se faire avant la redirection vers les tarifs billet.</p>
     </div>
     <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">← Mes concerts</a>
   </header>

@@ -140,6 +140,10 @@ if not DEBUG:
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Téléversements (affiches, bâches, photos de profil) — évite les erreurs silencieuses sur gros fichiers
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024  # 15 Mo par requête (corps multipart)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
+
 # --- SÉCURITÉ HTTPS EN PRODUCTION ---
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -183,7 +187,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "kadersoro18@gmail.com"
 EMAIL_HOST_PASSWORD = "zkdjhevmnwkemqed"
-DEFAULT_FROM_EMAIL = f"Kwalo <{EMAIL_HOST_USER}>"
+DEFAULT_FROM_EMAIL = f"Kolê Group <{EMAIL_HOST_USER}>"
 
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
 

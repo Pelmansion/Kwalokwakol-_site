@@ -28,7 +28,7 @@ class LoginFormWithInactiveMessage(AuthenticationForm):
 
 class SignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
-    avatar = forms.ImageField(required=False)
+    avatar = forms.ImageField(required=False, widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}))
     phone = forms.CharField(required=False, max_length=30)
 
     class Meta:
@@ -62,6 +62,18 @@ class ProfileForm(forms.ModelForm):
         help_texts = {
             "avatar": "Affichée dans la barre du haut, le menu compte et la navigation mobile.",
             "cover_photo": "Bandeau décoratif sous la barre du site lorsque vous êtes connecté.",
+        }
+        widgets = {
+            "avatar": forms.ClearableFileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+                }
+            ),
+            "cover_photo": forms.ClearableFileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+                }
+            ),
         }
 
 

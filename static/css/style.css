@@ -1,5 +1,5 @@
 /* =============================================================
-   KwaloKWakolê Group — Design System
+   Kolê Group — Design System
    Thème : Marketplace Afro-moderne (artisanat, commerce, services)
    ============================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap');
@@ -5474,6 +5474,26 @@ textarea::placeholder { color: #94a3b8; }
   padding: 2px 7px;
   border-radius: 4px;
   vertical-align: middle;
+}
+
+/* Sous-catégories sur la fiche catégorie */
+.category-subcats {
+  margin-top: 16px;
+}
+.category-subcats__label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted, #666);
+  margin-bottom: 8px;
+}
+.category-subcats__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.category-subcats__pill {
+  text-decoration: none;
 }
 
 /* Bâche numérique concert */

@@ -25,7 +25,7 @@
         <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% static "images/hero-main.jpg" %}');">
           <div class="hero__content">
             <p class="hero__eyebrow">Artisans &amp; commerces de proximité</p>
-            <h1>KwaloKWakolê Group</h1>
+            <h1>Kolê Group</h1>
             <p>Vivres, artisanat, bâtiment et services : ce que votre quartier propose, au même endroit.</p>
             <a class="btn" href="{% url 'store:product_list' %}">Découvrir les offres</a>
             <div class="hero__stats">
@@ -128,10 +128,20 @@
         <h2>Vibrez au rythme<br>de <em>votre région</em></h2>
         <p>Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
         <div class="culture-promo__features">
+          {# Liens directs vers les pages Culture (pour tout le monde) #}
           <a class="culture-promo__feature-link" href="{% url 'culture:song_list' %}">🎵 Streaming &amp; téléchargement</a>
-          <a class="culture-promo__feature-link" href="{% url 'culture:my_tickets' %}">🎫 Billets QR code</a>
+          <a class="culture-promo__feature-link" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Billetterie &amp; QR (concerts)</a>
           <a class="culture-promo__feature-link" href="{% url 'culture:artist_list' %}?verifie=1">🎤 Artistes vérifiés</a>
         </div>
+        {% if user.is_authenticated %}
+        <p class="muted culture-promo__mes-billets" style="margin: 10px 0 0;">
+          <a class="link" href="{% url 'culture:my_tickets' %}">Voir mes billets (QR) →</a>
+        </p>
+        {% else %}
+        <p class="muted culture-promo__mes-billets" style="margin: 10px 0 0;">
+          <a class="link" href="{% url 'accounts:login' %}?next={% url 'culture:my_tickets' %}">Connexion pour afficher vos billets (QR)</a>
+        </p>
+        {% endif %}
         <div class="culture-promo__actions">
           <a class="btn culture-promo__cta" href="{% url 'culture:home' %}">
             Explorer Kolê Culture
@@ -151,7 +161,7 @@
         <div class="culture-promo__ticket">
           <div class="culture-promo__ticket-stub">VIP</div>
           <div class="culture-promo__ticket-info">
-            <small>KWALOK CULTURE</small>
+            <small>Kolê Culture</small>
             <strong>LIVE 2026</strong>
             <span>● ● ● ● ● ● ●</span>
           </div>

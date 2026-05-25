@@ -37,6 +37,14 @@ DEFAULT_CATEGORIES = [
 ]
 
 
+def _category_tree_ids(category: Category) -> list[int]:
+    """Identifiants de la catégorie et de toutes ses sous-catégories actives (récursif)."""
+    ids = [category.id]
+    for child in Category.objects.filter(parent=category, is_active=True):
+        ids.extend(_category_tree_ids(child))
+    return ids
+
+
 def _cart_pricing_context(products_for_fees, subtotal_dec: Decimal) -> dict:
     """Frais et totaux TTC (livraison = somme des tarifs des vendeurs / prestataires concernés)."""
     fee_std = cart_delivery_fee(products_for_fees, delivery_option=Order.DELIVERY_STANDARD)
@@ -196,22 +204,20 @@ def home(request):
     react_products = [_react_product_row(p) for p in products[:4]]
     react_base_discover = base_products.order_by("-created_at")
     react_discover_products = [
-        _react_product_row(p) for p in react_base_discover.filter(kind=Product.PRODUCT)[:150]
+        _react_product_row(p) for p in react_base_discover.filter(kind=Product.PRODUCT)
     ]
     react_discover_services = [
-        _react_product_row(p) for p in react_base_discover.filter(kind=Product.SERVICE)[:150]
+        _react_product_row(p) for p in react_base_discover.filter(kind=Product.SERVICE)
     ]
     react_discover_vendors = [
         _react_vendor_row(v)
-        for v in Vendor.objects.filter(is_active=True)
-        .filter(active_subscription_q())
-        .order_by("name")[:200]
+        for v in Vendor.objects.filter(is_active=True).filter(active_subscription_q()).order_by("name")
     ]
     react_discover_providers = [
         _react_service_provider_row(sp)
         for sp in ServiceProvider.objects.filter(is_active=True)
         .filter(active_subscription_q())
-        .order_by("name")[:200]
+        .order_by("name")
     ]
     react_data = {
         "title": "Explorez les meilleures offres locales",
@@ -274,10 +280,15 @@ def product_list(request):
         products = products.filter(service_provider=service_provider)
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    if category_slug:
-        products = products.filter(category__slug=category_slug)
     if subcategory_slug:
         products = products.filter(category__slug=subcategory_slug)
+    elif category_slug:
+        try:
+            cat = Category.objects.get(slug=category_slug, is_active=True)
+        except Category.DoesNotExist:
+            products = products.none()
+        else:
+            products = products.filter(category_id__in=_category_tree_ids(cat))
     if product_type:
         products = products.filter(kind=product_type)
     if min_price:
@@ -304,12 +315,11 @@ def product_list(request):
         products = products.order_by("-avg_rating")
     elif sort == "popular":
         products = products.order_by("-sales_count")
-    subcategories = Category.objects.filter(
-        parent__isnull=False,
-        is_active=True,
-        vendor__isnull=True,
-        service_provider__isnull=True,
-    )
+    scope_cats = Category.objects.filter(is_active=True, vendor__isnull=True, service_provider__isnull=True)
+    if category_slug:
+        subcategories = scope_cats.filter(parent__slug=category_slug).order_by("name")
+    else:
+        subcategories = scope_cats.filter(parent__isnull=False).order_by("parent__name", "name")
     return render(
         request,
         "store/products.html",
@@ -356,28 +366,37 @@ def category_detail(request, slug):
     favorites = _get_favorites(request.session)
     vendor = _get_vendor(request.user)
     service_provider = _get_service_provider(request.user)
+    tree_ids = _category_tree_ids(category)
+    subcategories = list(
+        Category.objects.filter(parent=category, is_active=True).order_by("name")
+    )
+    base_qs = Product.objects.filter(category_id__in=tree_ids, is_active=True)
     if vendor:
-        products = Product.objects.filter(category=category, is_active=True, vendor=vendor)
+        products = base_qs.filter(vendor=vendor)
     elif service_provider:
-        products = Product.objects.filter(
-            category=category, is_active=True, service_provider=service_provider
-        )
+        products = base_qs.filter(service_provider=service_provider)
     else:
-        products = Product.objects.filter(category=category, is_active=True).filter(
-            active_product_filter()
-        )
-    showcase_images = CategoryShowcaseImage.objects.filter(category=category).select_related(
+        products = base_qs.filter(active_product_filter())
+    products = products.select_related("category", "vendor", "service_provider").prefetch_related(
+        "media"
+    )
+    showcase_qs = CategoryShowcaseImage.objects.filter(category_id__in=tree_ids).select_related(
         "vendor", "service_provider"
-    ).order_by("vendor_id", "service_provider_id", "position", "id")
+    ).order_by("vendor_id", "service_provider_id", "category_id", "position", "id")
     if vendor:
-        showcase_images = showcase_images.filter(vendor=vendor)
+        showcase_images = showcase_qs.filter(vendor=vendor)
     elif service_provider:
-        showcase_images = showcase_images.filter(service_provider=service_provider)
+        showcase_images = showcase_qs.filter(service_provider=service_provider)
+    else:
+        showcase_images = showcase_qs
+    parent_category = category.parent if category.parent_id else None
     return render(
         request,
         "store/category.html",
         {
             "category": category,
+            "parent_category": parent_category,
+            "subcategories": subcategories,
             "products": products,
             "favorites": favorites,
             "showcase_images": showcase_images,

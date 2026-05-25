@@ -1,6 +1,6 @@
 # 📱 Kolê — PWA & Application mobile
 
-Ce document explique comment le site Django **KwaloKWakolê Group** est transformé
+Ce document explique comment le site Django **Kolê Group** est transformé
 en application installable (PWA), puis comment le publier sur **Google Play Store**
 et **Apple App Store**.
 
@@ -81,7 +81,7 @@ python scripts/generate_pwa_icons.py
 
 4. Remplir les informations :
    - **Package ID** : `ci.kwalok.app` (ou similaire, inverse-domaine)
-   - **App name** : `KwaloKWakolê Group`
+   - **App name** : `Kolê Group`
    - **Short name** : `Kolê`
    - **Version** : `1.0.0`
    - **Launcher name** : `Kolê`

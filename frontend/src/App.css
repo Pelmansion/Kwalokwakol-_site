@@ -101,7 +101,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  max-height: 340px;
+  max-height: min(3200px, 85vh);
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -224,6 +224,6 @@
 
 @media (max-width: 900px) {
   .react-discover__grid {
-    max-height: 280px;
+    max-height: min(2800px, 80vh);
   }
 }

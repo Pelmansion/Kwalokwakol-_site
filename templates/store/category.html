@@ -1,16 +1,33 @@
 {% extends "base.html" %}
 {% load marketplace_tags %}
 
-{% block title %}{{ category.name }} — KwaloKWakolê Group{% endblock %}
+{% block title %}{{ category.name }} — Kolê Group{% endblock %}
 
 {% block content %}
   <section class="container page-title">
     <span class="section-eyebrow">Catégorie</span>
+    {% if parent_category %}
+      <p class="muted" style="margin:0 0 8px; font-size:0.92rem;">
+        <a href="{% url 'store:category_detail' parent_category.slug %}">{{ parent_category.name }}</a>
+        <span aria-hidden="true"> / </span>
+        <strong>{{ category.name }}</strong>
+      </p>
+    {% endif %}
     <h1>{{ category.name }}</h1>
     {% if category.description %}
       <p>{{ category.description }}</p>
     {% else %}
-      <p>Découvrez tous les produits et services de la catégorie {{ category.name }}.</p>
+      <p>Découvrez tous les produits et services de la catégorie {{ category.name }}, y compris les sous-rubriques rattachées.</p>
+    {% endif %}
+    {% if subcategories %}
+      <nav class="category-subcats" aria-label="Sous-catégories">
+        <strong class="category-subcats__label">Affinez votre recherche :</strong>
+        <div class="category-subcats__links">
+          {% for sub in subcategories %}
+            <a class="badge badge--category category-subcats__pill" href="{% url 'store:category_detail' sub.slug %}">{{ sub.name }}</a>
+          {% endfor %}
+        </div>
+      </nav>
     {% endif %}
   </section>
 
@@ -44,7 +61,7 @@
 
   <section class="container">
     {% if products %}
-      <p class="muted" style="margin-bottom:16px;">{{ products|length }} produit{{ products|length|pluralize }} dans cette catégorie</p>
+      <p class="muted" style="margin-bottom:16px;">{{ products.count }} résultat{{ products.count|pluralize }}</p>
     {% endif %}
 
     <div class="product-grid">

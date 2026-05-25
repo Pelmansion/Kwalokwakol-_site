@@ -887,7 +887,7 @@ def artist_event_add(request):
             form.save_m2m()
             messages.success(
                 request,
-                "Concert créé. Définis maintenant les catégories de billets.",
+                "Concert créé avec les images fournies. Définissez maintenant les catégories de billets.",
             )
             return redirect("culture:artist_event_categories", pk=event.pk)
     else:
@@ -907,7 +907,10 @@ def artist_event_edit(request, pk):
         form = EventForm(request.POST, request.FILES, instance=event, artist=artist)
         if form.is_valid():
             form.save()
-            messages.success(request, "Concert mis à jour.")
+            messages.success(
+                request,
+                "Concert mis à jour. Si vous avez modifié l’affiche ou la bâche, vérifiez qu’elles s’affichent bien sur la fiche publique.",
+            )
             return redirect("culture:artist_events")
     else:
         form = EventForm(instance=event, artist=artist)

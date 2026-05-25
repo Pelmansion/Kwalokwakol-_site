@@ -61,7 +61,7 @@
         "bonjour", "salut", "bonsoir", "hello", "hi", "coucou", "yo", "hey",
         "comment ca va", "ca va", "wesh"
       ],
-      response: "Bonjour ! 👋 Je suis **Kwa**, l'assistant de KwaloKWakolê Group. Je peux t'aider à acheter, vendre, écouter de la musique ou réserver tes places de concert. Que cherches-tu ?",
+      response: "Bonjour ! 👋 Je suis **Kwa**, l'assistant de Kolê Group. Je peux t'aider à acheter, vendre, écouter de la musique ou réserver tes places de concert. Que cherches-tu ?",
       quickReplies: WELCOME_QR,
     },
 
@@ -157,7 +157,7 @@
     // ===== Culture (artistes, musique, concerts) =====
     {
       id: "culture_overview",
-      patterns: ["kwalok culture", "culture", "musique concert", "espace culturel"],
+      patterns: ["kolê culture", "kwalok culture", "culture", "musique concert", "espace culturel"],
       response: "🎤 **Kolê Culture** réunit les artistes locaux, leur musique et leurs concerts. Écoute & télécharge des sons, achète des billets avec QR code, soutiens les talents de ta région !",
       quickReplies: ["cultureHome", "songList", "eventList", "artistList"],
     },
@@ -228,7 +228,7 @@
     {
       id: "pwa_install",
       patterns: ["installer", "application", "app", "telephone", "android", "iphone", "play store", "app store", "telecharger app"],
-      response: "📱 **Installer Kolêgroup comme une app** :\n• Sur Android : un bouton \"Installer Kolêgroup\" peut apparaître\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
+      response: "📱 **Installer Kolê Group comme une app** :\n• Sur Android : un bouton \"Installer Kolê Group\" peut apparaître\n• Sur iPhone (Safari) : Partager → Sur l'écran d'accueil\n• L'app fonctionne même hors ligne pour les pages déjà visitées !",
       quickReplies: ["faq"],
     },
 
@@ -266,7 +266,7 @@
     {
       id: "who",
       patterns: ["qui es tu", "qui es-tu", "tu es qui", "ton nom", "kwa qui", "comment tu t appelles"],
-      response: "Je suis **Kwa**, l'assistant virtuel de KwaloKWakolê Group 🦊. Je connais bien le site et je peux t'orienter. Mais je ne suis pas un humain — pour des questions complexes, contacte l'équipe support.",
+      response: "Je suis **Kwa**, l'assistant virtuel de Kolê Group 🦊. Je connais bien le site et je peux t'orienter. Mais je ne suis pas un humain — pour des questions complexes, contacte l'équipe support.",
       quickReplies: ["help", "contact"],
     },
     {
@@ -275,7 +275,7 @@
         "kwalok c est quoi", "que fait kwalok", "presentation",
         "marketplace ivoirien", "qu est ce que kwalok", "wakole"
       ],
-      response: "🌍 **KwaloKWakolê Group** est une marketplace afro-moderne qui réunit en un seul endroit : alimentation locale, artisans, bâtiment, services, boutiques, et la culture (musique + concerts) de Côte d'Ivoire.",
+      response: "🌍 **Kolê Group** est une marketplace afro-moderne qui réunit en un seul endroit : alimentation locale, artisans, bâtiment, services, boutiques, et la culture (musique + concerts) de Côte d'Ivoire.",
       quickReplies: ["products", "cultureHome", "becomeVendor"],
     },
   ];

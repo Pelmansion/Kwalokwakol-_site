@@ -31,6 +31,12 @@ class ArtistProfileForm(forms.ModelForm):
             "region": forms.TextInput(attrs={"placeholder": "Ex: Poro"}),
             "phone": forms.TextInput(attrs={"placeholder": "+225 ..."}),
             "whatsapp": forms.TextInput(attrs={"placeholder": "+225 ..."}),
+            "portrait": forms.ClearableFileInput(
+                attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
+            ),
+            "cover_photo": forms.ClearableFileInput(
+                attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
+            ),
         }
 
 
@@ -57,6 +63,10 @@ class SongForm(forms.ModelForm):
             "lyrics": forms.Textarea(attrs={"rows": 6}),
             "duration_seconds": forms.NumberInput(attrs={"min": 0, "placeholder": "Ex: 215"}),
             "price_fcfa": forms.NumberInput(attrs={"min": 0, "step": 50}),
+            "cover_image": forms.ClearableFileInput(
+                attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
+            ),
+            "audio_file": forms.ClearableFileInput(attrs={"accept": "audio/mpeg,audio/wav,audio/mp3,.mp3,.wav"}),
         }
 
     def clean(self):
@@ -98,6 +108,10 @@ class EventForm(forms.ModelForm):
             "venue_name": forms.TextInput(attrs={"placeholder": "Ex: Stade municipal"}),
             "city": forms.TextInput(attrs={"placeholder": "Ex: Abidjan"}),
             "region": forms.TextInput(attrs={"placeholder": "Ex: Lagunes"}),
+            "poster": forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}),
+            "digital_billboard": forms.ClearableFileInput(
+                attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
+            ),
         }
 
     def __init__(self, *args, artist: ArtistProfile | None = None, **kwargs):

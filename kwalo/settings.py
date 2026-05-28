@@ -136,8 +136,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# En production (Render, etc.) : définir DATABASE_URL dans l'environnement.
-_database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
+# Production : DATABASE_URL dans Render → Environment (jamais de mot de passe dans le code).
+_database_url = config('DATABASE_URL', default='').strip()
 if _database_url:
     DATABASES = {
         'default': dj_database_url.config(
@@ -153,7 +153,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 
 # --- STATICS & MEDIA ---
 STATIC_URL = '/static/'

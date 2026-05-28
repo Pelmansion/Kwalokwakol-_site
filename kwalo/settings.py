@@ -1,9 +1,14 @@
 import os
 import sys
 from pathlib import Path
+
+import django
 import dj_database_url
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
+
+# Templates des widgets Django (text.html, select.html…) requis par FORM_RENDERER TemplatesSetting
+DJANGO_FORMS_TEMPLATES_DIR = Path(django.__file__).resolve().parent / "forms" / "templates"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,7 +126,7 @@ FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates', DJANGO_FORMS_TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,15 +145,26 @@ WSGI_APPLICATION = 'kwalo.wsgi.application'
 # --- DATABASE ---
 # Production : lier la base Postgres au service web sur Render (variable DATABASE_URL).
 _database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
-        conn_max_age=600,
-        ssl_require=True,
+if not DEBUG and not _database_url:
+    raise ImproperlyConfigured(
+        "DATABASE_URL est obligatoire en production. "
+        "Sur Render : liez la base Postgres au service web (Environment → DATABASE_URL)."
     )
-}
-
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # --- STATICS & MEDIA ---
 STATIC_URL = '/static/'

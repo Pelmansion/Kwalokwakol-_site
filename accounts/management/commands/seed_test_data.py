@@ -26,7 +26,8 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from accounts.models import UserProfile
-from catalog.models import Category, Product
+from catalog.models import Category, CategoryShowcaseImage, Product
+from content.models import StaticPage
 from culture.models import (
     ArtistProfile,
     Event,
@@ -35,7 +36,7 @@ from culture.models import (
     Ticket,
     TicketCategory,
 )
-from marketplace.models import ServiceProvider, Vendor
+from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from orders.models import Order, OrderItem, OrderStatusHistory
 from reviews.models import Review
 from subscriptions.models import Subscription, SubscriptionPlan
@@ -89,6 +90,7 @@ TEST_USERNAMES = {
     "client.aya", "client.kouame", "client.fatou", "client.adjoa", "client.ousmane",
     "vendor.kone", "vendor.diallo", "vendor.bamba", "vendor.coulibaly",
     "provider.kouassi", "provider.toure", "provider.yao", "provider.sangare",
+    "provider.hotel", "provider.location",
 }
 
 CITIES = ["Abidjan", "Korhogo", "Bouaké", "Yamoussoukro", "San Pedro", "Daloa", "Man"]
@@ -131,15 +133,24 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.MIGRATE_HEADING("→ Prestataires de services"))
             providers = self.create_providers()
+            providers.extend(self.create_hotel_rental_providers())
 
             self.stdout.write(self.style.MIGRATE_HEADING("→ Abonnements"))
             self.create_subscriptions(vendors, providers)
 
             self.stdout.write(self.style.MIGRATE_HEADING("→ Catégories & Produits"))
+            self.ensure_platform_categories()
             products = self.create_products(vendors, providers)
+            products.extend(self.create_hotel_rental_products(vendors, providers))
+
+            self.stdout.write(self.style.MIGRATE_HEADING("→ Articles & pages"))
+            self.create_articles()
 
             self.stdout.write(self.style.MIGRATE_HEADING("→ Commandes & Avis"))
             self.create_orders_and_reviews(clients, products)
+
+            self.stdout.write(self.style.MIGRATE_HEADING("→ Réservations hôtel & demandes de service"))
+            self.create_service_requests(clients, products)
 
             self.stdout.write(self.style.MIGRATE_HEADING("→ Profils artistes"))
             artists = self.activate_artists(vendors, providers)
@@ -175,6 +186,9 @@ class Command(BaseCommand):
         OrderStatusHistory.objects.filter(order__full_name__startswith="[DEMO]").delete()
         Order.objects.filter(full_name__startswith="[DEMO]").delete()
         Product.objects.filter(name__startswith="[DEMO]").delete()
+        ServiceRequest.objects.filter(comment__startswith="[DEMO]").delete()
+        StaticPage.objects.filter(title__startswith="[DEMO]").delete()
+        CategoryShowcaseImage.objects.filter(caption__startswith="[DEMO]").delete()
 
         # 2. Concerts & billets de démo
         Ticket.objects.filter(event__title__startswith="[DEMO]").delete()
@@ -428,6 +442,75 @@ class Command(BaseCommand):
             providers.append(provider)
         return providers
 
+    def create_hotel_rental_providers(self):
+        """Prestataires hébergement et location pour tests."""
+        seed = [
+            {
+                "username": "provider.hotel",
+                "first": "N'Guessan", "last": "Palma",
+                "name": "Hôtel Palmaires Cocody",
+                "city": "Abidjan",
+                "description": "Hôtel 3 étoiles : chambres standard, suites, petit-déjeuner, piscine, Wi-Fi.",
+                "verified": True,
+            },
+            {
+                "username": "provider.location",
+                "first": "Koffi", "last": "Auto",
+                "name": "Koffi Location & Immobilier",
+                "city": "Yamoussoukro",
+                "description": "Location voitures, motos, appartements meublés et bureaux courte durée.",
+                "verified": True,
+            },
+        ]
+        providers = []
+        for i, s in enumerate(seed):
+            user, _ = self._make_user(
+                s["username"],
+                first=s["first"], last=s["last"],
+                phone=f"+225 07 44 44 44 {i+10}",
+                city=s["city"],
+            )
+            provider, created = self._safe_get_or_create(
+                ServiceProvider,
+                owner=user,
+                email=user.email,
+                id_number=f"CI-PROV-{user.pk:04d}",
+                defaults={
+                    "name": s["name"],
+                    "description": s["description"],
+                    "phone": user.userprofile.phone,
+                    "location": s["city"],
+                    "verification_status": ServiceProvider.STATUS_VERIFIED,
+                    "verified_at": timezone.now(),
+                    "display_services_as_provider": True,
+                },
+            )
+            if created and not provider.id_document_front:
+                provider.id_document_front = make_placeholder_image(f"CNI - {s['first']}", bg=(15, 118, 110))
+                provider.id_document_back = make_placeholder_image(f"CNI verso - {s['first']}", bg=(15, 118, 110))
+                provider.profile_photo = make_placeholder_image("HP", size=(400, 400), bg=(14, 165, 233))
+                provider.save()
+            self.stdout.write(f"  {'+' if created else '·'} {s['name']} (hébergement/location)")
+            providers.append(provider)
+        return providers
+
+    def ensure_platform_categories(self):
+        """Catégories globales pour hôtels, location, tourisme."""
+        extra = [
+            ("Hébergement & Hôtels", "Chambres, suites, résidences, auberges."),
+            ("Location & Immobilier", "Voitures, motos, appartements, bureaux."),
+            ("Tourisme & Voyages", "Circuits, guides, activités et séjours."),
+        ]
+        for name, description in extra:
+            cat, created = Category.objects.get_or_create(
+                name=name,
+                vendor__isnull=True,
+                service_provider__isnull=True,
+                defaults={"description": description, "is_active": True},
+            )
+            if created:
+                self.stdout.write(f"  + catégorie « {name} »")
+
     # ------------------------------------------------------------------
     # Abonnements
     # ------------------------------------------------------------------
@@ -463,7 +546,8 @@ class Command(BaseCommand):
             (Subscription.STATUS_ACTIVE, plans[0], 0),
             (Subscription.STATUS_PENDING, plans[0], 1),
         ]
-        for provider, (status, plan, _) in zip(providers, configs_p):
+        for i, provider in enumerate(providers):
+            status, plan, _ = configs_p[i % len(configs_p)]
             sub, created = Subscription.objects.get_or_create(
                 service_provider=provider,
                 defaults={
@@ -561,6 +645,188 @@ class Command(BaseCommand):
                 self.stdout.write(f"  + [SERVICE] {name} ({price} FCFA) — {provider.name}")
             products.append(product)
         return products
+
+    def create_hotel_rental_products(self, vendors, providers):
+        """Chambres, réservations hôtel, locations véhicules et biens."""
+        cats = {
+            c.name.lower(): c
+            for c in Category.objects.filter(
+                vendor__isnull=True, service_provider__isnull=True
+            )
+        }
+
+        def cat(*names):
+            for n in names:
+                for k, v in cats.items():
+                    if n.lower() in k:
+                        return v
+            return next(iter(cats.values())) if cats else None
+
+        hotel = next((p for p in providers if p.owner.username == "provider.hotel"), None)
+        location = next((p for p in providers if p.owner.username == "provider.location"), None)
+        products = []
+
+        if hotel:
+            hotel_services = [
+                ("Chambre double — 1 nuit", 35000, "Check-in 14h, petit-déjeuner en option."),
+                ("Suite junior — 1 nuit", 65000, "Vue jardin, minibar, Wi-Fi fibre."),
+                ("Réservation salle séminaire (demi-journée)", 120000, "50 places, projecteur, café offert."),
+                ("Petit-déjeuner buffet (par personne)", 4500, "7h–10h, jus frais et viennoiseries."),
+            ]
+            for name, price, desc in hotel_services:
+                product, created = Product.objects.get_or_create(
+                    name=f"[DEMO] {name}",
+                    service_provider=hotel,
+                    defaults={
+                        "category": cat("hébergement", "hôtel"),
+                        "description": desc,
+                        "price": Decimal(str(price)),
+                        "stock": 9999,
+                        "kind": Product.SERVICE,
+                        "location": hotel.location,
+                        "is_active": True,
+                    },
+                )
+                if created:
+                    self.stdout.write(f"  + [HÔTEL] {name}")
+                products.append(product)
+
+            hotel_cat = cat("hébergement", "hôtel")
+            if hotel_cat:
+                showcase_specs = [
+                    (CategoryShowcaseImage.SPACE_ACCUEIL, "Hall & réception"),
+                    (CategoryShowcaseImage.SPACE_CHAMBRE, "Chambre double"),
+                    (CategoryShowcaseImage.SPACE_SALLE_EAU, "Salle d'eau"),
+                    (CategoryShowcaseImage.SPACE_RESTAURATION, "Restaurant"),
+                    (CategoryShowcaseImage.SPACE_EXTERIEUR, "Piscine"),
+                ]
+                for pos, (kind, label) in enumerate(showcase_specs):
+                    img, created = CategoryShowcaseImage.objects.get_or_create(
+                        category=hotel_cat,
+                        service_provider=hotel,
+                        showcase_kind=kind,
+                        defaults={
+                            "caption": f"[DEMO] {label} — {hotel.name}",
+                            "position": pos,
+                        },
+                    )
+                    if created:
+                        img.image.save(
+                            f"{slugify(label)}.png",
+                            make_placeholder_image(label, bg=(14, 165, 233)),
+                            save=True,
+                        )
+
+        if location:
+            rental_items = [
+                ("Location Toyota RAV4 — 1 jour", 45000, Product.SERVICE, "Assurance incluse, 150 km/jour."),
+                ("Location moto 125cc — 1 jour", 12000, Product.SERVICE, "Casque fourni, caution 50 000 FCFA."),
+                ("Appartement meublé 3 pièces — 1 mois", 180000, Product.SERVICE, "Cocody, eau et électricité incluses."),
+                ("Bureau équipé — 1 mois", 95000, Product.SERVICE, "Plateau, fibre, accueil sécurisé."),
+                ("Villa vacances Assinie — week-end", 250000, Product.PRODUCT, "3 chambres, plage à 5 min."),
+            ]
+            for name, price, kind, desc in rental_items:
+                owner_kw = {"service_provider": location}
+                product, created = Product.objects.get_or_create(
+                    name=f"[DEMO] {name}",
+                    **owner_kw,
+                    defaults={
+                        "category": cat("location", "immobilier"),
+                        "description": desc,
+                        "price": Decimal(str(price)),
+                        "stock": 9999 if kind == Product.SERVICE else 5,
+                        "kind": kind,
+                        "location": location.location,
+                        "is_active": True,
+                    },
+                )
+                if created:
+                    self.stdout.write(f"  + [LOCATION] {name}")
+                products.append(product)
+
+        return products
+
+    def create_articles(self):
+        """Pages éditoriales (guides, actualités) accessibles via /page/<slug>/."""
+        articles = [
+            (
+                "[DEMO] Guide des artisans de Korhogo",
+                "guide-artisans-korhogo",
+                "<p>Découvrez les ateliers de tissage, sculpture et gastronomie du Poro.</p>"
+                "<p>Sur Kolê, commandez directement auprès des artisans vérifiés.</p>",
+            ),
+            (
+                "[DEMO] Comment réserver un hôtel sur Kolê",
+                "reserver-hotel-kole",
+                "<h2>Étapes</h2><ol><li>Choisissez un établissement en catégorie Hébergement.</li>"
+                "<li>Sélectionnez la chambre ou le forfait.</li>"
+                "<li>Envoyez votre demande de réservation au prestataire.</li></ol>",
+            ),
+            (
+                "[DEMO] Location voiture et immobilier : nos conseils",
+                "conseils-location",
+                "<p>Comparez les tarifs journaliers, vérifiez la caution et l'assurance "
+                "avant de valider une location sur la plateforme.</p>",
+            ),
+            (
+                "[DEMO] Kolê Culture : concerts et musique locale",
+                "kole-culture-concerts",
+                "<p>Achetez vos billets en ligne, téléchargez les titres des artistes "
+                "ivoiriens et suivez l'actualité des festivals.</p>",
+            ),
+        ]
+        for title, slug, content in articles:
+            page, created = StaticPage.objects.get_or_create(
+                slug=slug,
+                defaults={"title": title, "content": content, "is_active": True},
+            )
+            if created:
+                self.stdout.write(f"  + article « {title[7:40]}… » → /page/{slug}/")
+
+    def create_service_requests(self, clients, products):
+        """Demandes de réservation hôtel / location (prestations)."""
+        keywords = ("nuit", "séminaire", "jour", "mois", "week-end", "demi-journée")
+        hotel_services = [
+            p
+            for p in products
+            if p.name.startswith("[DEMO]")
+            and (p.service_provider or p.vendor)
+            and any(k in p.name.lower() for k in keywords)
+        ]
+        if not hotel_services:
+            return
+
+        if ServiceRequest.objects.filter(comment__startswith="[DEMO]").exists():
+            self.stdout.write("  · Demandes de service déjà existantes, skip.")
+            return
+
+        requests_data = [
+            (0, "Chambre double — 1 nuit", "[DEMO] Réservation 12–14 juin, 2 adultes, arrivée 15h.", ServiceRequest.STATUS_APPROVED),
+            (1, "Suite junior — 1 nuit", "[DEMO] Anniversaire de mariage, lit king size si possible.", ServiceRequest.STATUS_PENDING),
+            (0, "Location Toyota RAV4 — 1 jour", "[DEMO] Location 3 jours, prise en charge aéroport.", ServiceRequest.STATUS_APPROVED),
+            (2, "Appartement meublé 3 pièces — 1 mois", "[DEMO] Mission pro 1 mois, facture entreprise.", ServiceRequest.STATUS_PENDING),
+            (1, "Location moto 125cc — 1 jour", "[DEMO] Week-end à Grand-Bassam.", ServiceRequest.STATUS_REJECTED),
+        ]
+        by_name = {p.name.replace("[DEMO] ", ""): p for p in hotel_services}
+
+        for client_idx, service_key, comment, status in requests_data:
+            product = by_name.get(service_key)
+            if not product:
+                continue
+            client = clients[client_idx % len(clients)]
+            ServiceRequest.objects.get_or_create(
+                service=product,
+                customer=client,
+                defaults={
+                    "service_provider": product.service_provider,
+                    "vendor": product.vendor,
+                    "comment": comment,
+                    "status": status,
+                    "is_interested": True,
+                },
+            )
+        count = ServiceRequest.objects.filter(comment__startswith="[DEMO]").count()
+        self.stdout.write(f"  + {count} demandes de réservation / location")
 
     # ------------------------------------------------------------------
     # Commandes & Avis
@@ -777,6 +1043,19 @@ class Command(BaseCommand):
                 ],
             },
             {
+                "headliner": artists[1],
+                "title": "[DEMO] Abidjan Zouglou Night",
+                "description": "Soirée zouglou et coupé-décalé avec DJ Diallo et invités surprise.",
+                "starts_at": now + timedelta(days=7, hours=21),
+                "venue_name": "Palais de la Culture",
+                "city": "Abidjan",
+                "region": "Lagunes",
+                "categories": [
+                    ("Entrée", 2500, 800, "#64748b", "Accès fosse."),
+                    ("VIP", 12000, 120, "#C2410C", "Loge + boissons."),
+                ],
+            },
+            {
                 "headliner": artists[0],
                 "title": "[DEMO] Kolê Culture Festival - Édition Pilote",
                 "description": "Festival inaugural de Kolê Culture : 6h de musique avec tous les artistes de la plateforme. Buvette, food trucks, ambiance familiale.",
@@ -870,6 +1149,8 @@ class Command(BaseCommand):
         self.stdout.write(f"  • Chansons        : {Song.objects.count()}")
         self.stdout.write(f"  • Concerts        : {Event.objects.count()}")
         self.stdout.write(f"  • Billets         : {Ticket.objects.count()}")
+        self.stdout.write(f"  • Pages / articles: {StaticPage.objects.filter(title__startswith='[DEMO]').count()}")
+        self.stdout.write(f"  • Réservations    : {ServiceRequest.objects.filter(comment__startswith='[DEMO]').count()}")
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS("═══ COMPTES DE TEST (mot de passe : %s) ═══" % self.password))
         self.stdout.write("")
@@ -885,9 +1166,12 @@ class Command(BaseCommand):
         for u in User.objects.filter(username__startswith="vendor.").order_by("username"):
             self.stdout.write(f"    {u.username:<20} / {self.password}    ({u.first_name} {u.last_name})")
         self.stdout.write("")
-        self.stdout.write("  PRESTATAIRES")
+        self.stdout.write("  PRESTATAIRES (dont hôtel & location)")
         for u in User.objects.filter(username__startswith="provider.").order_by("username"):
-            self.stdout.write(f"    {u.username:<20} / {self.password}    ({u.first_name} {u.last_name})")
+            tag = ""
+            if u.username in ("provider.hotel", "provider.location"):
+                tag = " 🏨" if u.username == "provider.hotel" else " 🚗"
+            self.stdout.write(f"    {u.username:<20} / {self.password}    ({u.first_name} {u.last_name}){tag}")
         self.stdout.write("")
         artist_users = list(User.objects.filter(artist_profile__isnull=False))
         if artist_users:

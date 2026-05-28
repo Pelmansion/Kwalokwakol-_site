@@ -65,11 +65,54 @@ class SongForm(forms.ModelForm):
             "lyrics": forms.Textarea(attrs={"rows": 6}),
             "duration_seconds": forms.NumberInput(attrs={"min": 0, "placeholder": "Ex: 215"}),
             "price_fcfa": forms.NumberInput(attrs={"min": 0, "step": 50}),
-            "cover_image": forms.ClearableFileInput(
-                attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
+            "cover_image": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+                    "class": "culture-form__file-input",
+                }
             ),
-            "audio_file": forms.ClearableFileInput(attrs={"accept": "audio/mpeg,audio/wav,audio/mp3,.mp3,.wav"}),
+            "audio_file": forms.FileInput(
+                attrs={
+                    "accept": "audio/mpeg,audio/wav,audio/mp3,.mp3,.wav",
+                    "class": "culture-form__file-input",
+                }
+            ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["audio_file"].required = False
+            self.fields["cover_image"].required = False
+        price_field = self.fields["price_fcfa"]
+        _orig_to_python = price_field.to_python
+
+        def to_python(value):
+            if isinstance(value, str):
+                value = value.strip().replace("\u00a0", "").replace(" ", "").replace(",", ".")
+            return _orig_to_python(value)
+
+        price_field.to_python = to_python
+
+    def clean_cover_image(self):
+        if self.data.get("cover_image-clear") == "on":
+            return None
+        uploaded = self.files.get("cover_image")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.cover_image:
+            return self.instance.cover_image
+        return None
+
+    def clean_audio_file(self):
+        if self.data.get("audio_file-clear") == "on":
+            raise forms.ValidationError("Le fichier audio est obligatoire.")
+        uploaded = self.files.get("audio_file")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.audio_file:
+            return self.instance.audio_file
+        raise forms.ValidationError("Ajoutez un fichier audio (MP3 ou WAV).")
 
     def clean(self):
         cleaned = super().clean()

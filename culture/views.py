@@ -893,6 +893,7 @@ def artist_song_add(request):
             song.save()
             messages.success(request, "Chanson ajoutée !")
             return redirect("culture:artist_songs")
+        messages.error(request, "Corrigez les erreurs indiquées dans le formulaire.")
     else:
         form = SongForm()
     return render(
@@ -914,6 +915,7 @@ def artist_song_edit(request, pk):
             form.save()
             messages.success(request, "Chanson mise à jour.")
             return redirect("culture:artist_songs")
+        messages.error(request, "Corrigez les erreurs indiquées dans le formulaire.")
     else:
         form = SongForm(instance=song)
     return render(

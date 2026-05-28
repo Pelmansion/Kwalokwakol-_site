@@ -11,52 +11,99 @@
     <a class="btn btn--ghost" href="{% url 'culture:artist_songs' %}">← Mes chansons</a>
   </header>
 
-  <form method="post" enctype="multipart/form-data" class="culture-form">
+  <form method="post" enctype="multipart/form-data" class="culture-form culture-form--song">
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <ul class="culture-form__errors culture-form__full">
+        {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+
     <div class="culture-form__grid">
       <label class="culture-form__full">Titre *
         {{ form.title }}
         {{ form.title.errors }}
       </label>
+
       <label>Genre
         {{ form.genre }}
+        {{ form.genre.errors }}
       </label>
       <label>Date de sortie
         {{ form.release_date }}
+        {{ form.release_date.errors }}
       </label>
-      <label>Pochette (image)
+
+      <div class="culture-form__file-block culture-form__full">
+        <span class="culture-form__file-title">Pochette (image)</span>
+        {% if not is_new and song.cover_image %}
+          <div class="culture-form__file-preview">
+            <img src="{{ song.cover_image.url }}" alt="Pochette actuelle" loading="lazy">
+          </div>
+        {% endif %}
+        <p class="culture-form__file-hint">Choisissez une nouvelle image pour remplacer la pochette. Laissez vide pour conserver l’actuelle.</p>
         {{ form.cover_image }}
-      </label>
-      <label>Fichier audio (MP3) *
+        {% if not is_new and song.cover_image %}
+          <label class="culture-form__file-clear">
+            <input type="checkbox" name="cover_image-clear" id="cover_image-clear">
+            Supprimer la pochette actuelle
+          </label>
+        {% endif %}
+        {% if form.cover_image.errors %}
+          <ul class="errorlist">{% for e in form.cover_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="culture-form__file-block culture-form__full">
+        <span class="culture-form__file-title">Fichier audio (MP3 / WAV) {% if is_new %}*{% endif %}</span>
+        {% if not is_new and song.audio_file %}
+          <p class="culture-form__file-current">Fichier actuel : <strong>{{ song.audio_file.name }}</strong></p>
+          <audio class="culture-form__audio-preview" controls preload="metadata" src="{{ song.audio_file.url }}"></audio>
+        {% endif %}
+        <p class="culture-form__file-hint">Téléversez un nouveau fichier seulement si vous voulez le remplacer.</p>
         {{ form.audio_file }}
-        {{ form.audio_file.errors }}
-      </label>
+        {% if form.audio_file.errors %}
+          <ul class="errorlist">{% for e in form.audio_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
       <label>Durée (secondes)
         {{ form.duration_seconds }}
-        <small>Optionnel — pour afficher la durée</small>
+        <small>Optionnel — ex. 215 pour 3 min 35 s</small>
+        {{ form.duration_seconds.errors }}
       </label>
       <label>Tarification
         {{ form.pricing }}
+        {{ form.pricing.errors }}
       </label>
       <label>Prix (si payant) en FCFA
         {{ form.price_fcfa }}
         {{ form.price_fcfa.errors }}
       </label>
-      <label class="culture-form__full">
-        {{ form.allow_streaming }} Autoriser l'écoute en streaming sur le site
+
+      <label class="culture-form__checkbox culture-form__full">
+        {{ form.allow_streaming }}
+        <span>Autoriser l’écoute en streaming sur le site</span>
       </label>
+
       <label class="culture-form__full">Description
         {{ form.description }}
+        {{ form.description.errors }}
       </label>
       <label class="culture-form__full">Paroles (optionnel)
         {{ form.lyrics }}
+        {{ form.lyrics.errors }}
       </label>
-      <label class="culture-form__full">
-        {{ form.is_published }} Publier maintenant (visible publiquement)
+
+      <label class="culture-form__checkbox culture-form__full">
+        {{ form.is_published }}
+        <span>Publier maintenant (visible publiquement)</span>
       </label>
     </div>
+
     <div class="culture-form__actions">
-      <button class="btn btn--lg" type="submit">{% if is_new %}Ajouter la chanson{% else %}Enregistrer{% endif %}</button>
+      <button class="btn btn--lg" type="submit">{% if is_new %}Ajouter la chanson{% else %}Enregistrer les modifications{% endif %}</button>
     </div>
   </form>
 </section>

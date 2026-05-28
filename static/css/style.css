@@ -1381,6 +1381,12 @@ p { margin: 0 0 1em; }
   gap: 14px;
 }
 
+a.service-card {
+  text-decoration: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
 .service-card {
   background: var(--surface);
   padding: 22px 18px;
@@ -1397,6 +1403,10 @@ p { margin: 0 0 1em; }
   flex-direction: column;
   align-items: center;
   gap: 10px;
+}
+
+.service-card__label {
+  line-height: 1.35;
 }
 
 .service-card__icon {

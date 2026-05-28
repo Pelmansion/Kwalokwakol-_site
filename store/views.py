@@ -1,4 +1,5 @@
 from decimal import Decimal
+from urllib.parse import urlencode
 
 from django.db.models import Avg, Count, Q
 from django.contrib import messages
@@ -35,6 +36,81 @@ DEFAULT_CATEGORIES = [
     "Produits vivriers",
     "Outils numériques",
 ]
+
+# Cartes « Services artisanaux populaires » (accueil) → catégorie ou recherche filtrée
+POPULAR_ARTISAN_SERVICES = [
+    {
+        "label": "Boulangerie & Pâtisserie",
+        "icon": "🥖",
+        "category_name": "Alimentation",
+        "q": "boulangerie",
+    },
+    {
+        "label": "Maçonnerie & Carrelage",
+        "icon": "🧱",
+        "category_name": "Métiers du bâtiment",
+        "q": "maçonnerie",
+    },
+    {
+        "label": "Coiffure & Beauté",
+        "icon": "✂️",
+        "category_name": "Services artisanaux",
+        "q": "coiffure",
+        "type": "service",
+    },
+    {
+        "label": "Menuiserie & Fabrication",
+        "icon": "🪚",
+        "category_name": "Production",
+        "q": "menuiserie",
+    },
+    {
+        "label": "Teinturier & Pressing",
+        "icon": "👔",
+        "q": "teinturier pressing",
+        "type": "service",
+    },
+    {
+        "label": "Électroménager",
+        "icon": "🔌",
+        "category_name": "Électroménager",
+    },
+]
+
+
+def _platform_category(name: str) -> Category | None:
+    return (
+        Category.objects.filter(
+            name=name,
+            is_active=True,
+            parent__isnull=True,
+            vendor__isnull=True,
+            service_provider__isnull=True,
+        )
+        .first()
+    )
+
+
+def _popular_artisan_service_links() -> list[dict]:
+    links = []
+    for item in POPULAR_ARTISAN_SERVICES:
+        params = {}
+        if item.get("q"):
+            params["q"] = item["q"]
+        if item.get("type"):
+            params["type"] = item["type"]
+        cat = _platform_category(item["category_name"]) if item.get("category_name") else None
+
+        if params or not (cat and cat.slug):
+            if cat and cat.slug:
+                params.setdefault("categorie", cat.slug)
+            url = reverse("store:product_list")
+            if params:
+                url = f"{url}?{urlencode(params)}"
+        else:
+            url = reverse("store:category_detail", args=[cat.slug])
+        links.append({**item, "url": url})
+    return links
 
 
 def _category_tree_ids(category: Category) -> list[int]:
@@ -251,6 +327,7 @@ def home(request):
             "react_data": react_data,
             "favorites": favorites,
             "hero_background": HomepageBackground.get_active(),
+            "popular_services": _popular_artisan_service_links(),
         },
     )
 

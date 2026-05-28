@@ -283,12 +283,12 @@
   <section class="services container">
     <h2>Services artisanaux populaires</h2>
     <div class="service-grid">
-      <div class="service-card">Boulangerie & Pâtisserie</div>
-      <div class="service-card">Maçonnerie & Carrelage</div>
-      <div class="service-card">Coiffure & Beauté</div>
-      <div class="service-card">Menuiserie & Fabrication</div>
-      <div class="service-card">Teinturier & Pressing</div>
-      <div class="service-card">Électroménager</div>
+      {% for svc in popular_services %}
+        <a class="service-card" href="{{ svc.url }}">
+          <span class="service-card__icon" aria-hidden="true">{{ svc.icon }}</span>
+          <span class="service-card__label">{{ svc.label }}</span>
+        </a>
+      {% endfor %}
     </div>
   </section>
 {% endblock %}

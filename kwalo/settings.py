@@ -1,7 +1,9 @@
 import os
+import sys
 from pathlib import Path
 import dj_database_url
 from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -136,8 +138,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# Production : DATABASE_URL dans Render → Environment (jamais de mot de passe dans le code).
-_database_url = config('DATABASE_URL', default='').strip()
+# Production : lier la base Postgres au service web sur Render (variable DATABASE_URL).
+_database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
+if not DEBUG and not _database_url:
+    raise ImproperlyConfigured(
+        "DATABASE_URL est obligatoire en production. "
+        "Sur Render : liez la base Postgres au service web (Environment → DATABASE_URL)."
+    )
 if _database_url:
     DATABASES = {
         'default': dj_database_url.config(
@@ -160,7 +167,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # Manifest strict → 500 si un {% static %} manque après collectstatic ; version plus tolérante.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Préfixe / obligatoire : sinon sur /compte/profil/ le navigateur demande /compte/media/… (404)
 MEDIA_URL = '/media/'
@@ -227,3 +235,21 @@ GENIUS_API_KEY = config("GENIUS_API_KEY", default="").strip()
 GENIUS_API_SECRET = config("GENIUS_API_SECRET", default="").strip()
 GENIUS_WEBHOOK_SECRET = config("GENIUS_WEBHOOK_SECRET", default="").strip()
 GENIUS_DEFAULT_COUNTRY = config("GENIUS_DEFAULT_COUNTRY", default="CI").strip() or "CI"
+
+# --- LOGS (Render : onglet Logs → traceback des erreurs 500) ---
+if not DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "stream": sys.stdout},
+        },
+        "root": {"handlers": ["console"], "level": "INFO"},
+        "loggers": {
+            "django.request": {
+                "handlers": ["console"],
+                "level": "ERROR",
+                "propagate": False,
+            },
+        },
+    }

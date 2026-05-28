@@ -50,3 +50,28 @@ def require_artist(user) -> ArtistProfile:
     if not artist or not artist.is_active:
         raise PermissionDenied("Profil artiste inactif ou inexistant.")
     return artist
+
+
+def resolve_artist_for_dashboard(request):
+    """
+    Renvoie (artist, redirect_response).
+    Redirection claire si profil artiste absent ou inactif (évite PermissionDenied / 500).
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    user = request.user
+    artist = get_artist_or_redirect(user)
+    if not artist:
+        if user_can_become_artist(user):
+            messages.info(
+                request,
+                "Activez votre profil artiste pour accéder à l'espace artiste.",
+            )
+            return None, redirect("culture:artist_activate")
+        messages.error(request, "Cet espace est réservé aux vendeurs et prestataires artistes.")
+        return None, redirect("culture:home")
+    if not artist.is_active:
+        messages.info(request, "Réactivez votre profil artiste pour accéder à cet espace.")
+        return None, redirect("culture:artist_activate")
+    return artist, None

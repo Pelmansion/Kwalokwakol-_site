@@ -25,7 +25,18 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = [
     'xn--kolgroup-m1a.com',
     'www.xn--kolgroup-m1a.com',
+    'kolêgroup.com',
+    'www.kolêgroup.com',
 ]
+_render_host = (os.environ.get('RENDER_EXTERNAL_HOSTNAME') or '').strip()
+if _render_host:
+    ALLOWED_HOSTS.append(_render_host)
+_extra_hosts = (os.environ.get('ALLOWED_HOSTS') or '').strip()
+if _extra_hosts:
+    for _h in _extra_hosts.split(','):
+        _h = _h.strip()
+        if _h and _h not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(_h)
 if DEBUG:
     ALLOWED_HOSTS += ['localhost', '127.0.0.1', '[::1]']
 
@@ -125,20 +136,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
-#         conn_max_age=600,
-#         ssl_require=True,
-#     )
-# }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# En production (Render, etc.) : définir DATABASE_URL dans l'environnement.
+_database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # --- STATICS & MEDIA ---

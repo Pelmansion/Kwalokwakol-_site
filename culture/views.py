@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
+
+logger = logging.getLogger(__name__)
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -41,6 +44,7 @@ from .utils import (
     generate_qr_svg,
     get_artist_or_redirect,
     require_artist,
+    resolve_artist_for_dashboard,
     user_can_become_artist,
 )
 
@@ -799,19 +803,37 @@ def artist_deactivate(request):
 
 @login_required
 def artist_dashboard(request):
-    artist = require_artist(request.user)
-    songs = artist.songs.all().order_by("-created_at")[:5]
-    events = artist.events.order_by("-starts_at")
-    events_preview = events[:8]
-    revenue = (
-        SongPurchase.objects.filter(song__artist=artist, is_paid=True).aggregate(
-            total=Sum("amount_fcfa")
-        )["total"]
-        or Decimal("0")
-    )
-    sold_tickets_count = Ticket.objects.filter(
-        event__headlining_artist=artist, status__in=[Ticket.STATUS_VALID, Ticket.STATUS_USED]
-    ).count()
+    artist, redirect_resp = resolve_artist_for_dashboard(request)
+    if redirect_resp:
+        return redirect_resp
+
+    try:
+        songs = list(artist.songs.order_by("-created_at")[:5])
+        events_qs = (
+            artist.events.prefetch_related("ticket_categories")
+            .order_by("-starts_at")
+        )
+        events_total = events_qs.count()
+        events_preview = list(events_qs[:8])
+        revenue = (
+            SongPurchase.objects.filter(song__artist=artist, is_paid=True).aggregate(
+                total=Sum("amount_fcfa")
+            )["total"]
+            or Decimal("0")
+        )
+        sold_tickets_count = Ticket.objects.filter(
+            event__headlining_artist=artist,
+            status__in=[Ticket.STATUS_VALID, Ticket.STATUS_USED],
+        ).count()
+    except Exception:
+        logger.exception("artist_dashboard failed for user %s", request.user.pk)
+        messages.error(
+            request,
+            "Impossible de charger l'espace artiste. Si le problème persiste, "
+            "contactez le support (mise à jour base de données en cours).",
+        )
+        return redirect("culture:home")
+
     return render(
         request,
         "culture/artist_dashboard.html",
@@ -819,7 +841,7 @@ def artist_dashboard(request):
             "artist": artist,
             "songs": songs,
             "events": events_preview,
-            "events_total": events.count(),
+            "events_total": events_total,
             "revenue": revenue,
             "sold_tickets_count": sold_tickets_count,
             "genius_payment": genius_is_configured(),

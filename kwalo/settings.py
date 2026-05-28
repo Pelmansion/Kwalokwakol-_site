@@ -140,26 +140,15 @@ WSGI_APPLICATION = 'kwalo.wsgi.application'
 # --- DATABASE ---
 # Production : lier la base Postgres au service web sur Render (variable DATABASE_URL).
 _database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
-if not DEBUG and not _database_url:
-    raise ImproperlyConfigured(
-        "DATABASE_URL est obligatoire en production. "
-        "Sur Render : liez la base Postgres au service web (Environment → DATABASE_URL)."
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
+        conn_max_age=600,
+        ssl_require=True,
     )
-if _database_url:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=_database_url,
-            conn_max_age=600,
-            ssl_require=not DEBUG,
-        )
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
+
 
 # --- STATICS & MEDIA ---
 STATIC_URL = '/static/'

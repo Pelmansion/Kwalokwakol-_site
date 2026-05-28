@@ -1,0 +1,34 @@
+<div class="artist-tag-picker" data-field="{{ widget.name }}">
+  <div class="artist-tag-picker__chips" role="list" aria-live="polite"></div>
+  <div class="artist-tag-picker__field">
+    <input
+      type="text"
+      class="artist-tag-picker__input"
+      placeholder="Tapez un nom d'artiste…"
+      autocomplete="off"
+      aria-label="Ajouter un artiste invité"
+    >
+    <ul class="artist-tag-picker__suggestions" hidden role="listbox"></ul>
+  </div>
+  <select
+    name="{{ widget.name }}"
+    id="{{ widget.attrs.id }}"
+    multiple
+    class="artist-tag-picker__native"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+      {% if group_name %}
+        <optgroup label="{{ group_name }}">
+      {% endif %}
+      {% for option in group_choices %}
+        <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+      {% endfor %}
+      {% if group_name %}
+        </optgroup>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <p class="artist-tag-picker__hint">Recherchez un artiste, cliquez sur un nom ou appuyez sur <kbd>Entrée</kbd> pour l’ajouter. Répétez pour en ajouter plusieurs.</p>
+</div>

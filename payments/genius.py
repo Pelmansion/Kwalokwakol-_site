@@ -24,6 +24,12 @@ class GeniusPaymentError(Exception):
     """Erreur API GeniusPay ou réponse inattendue."""
 
 
+GENIUS_UNAVAILABLE_USER_MSG = (
+    "Le paiement en ligne (GeniusPay) n'est pas disponible pour le moment. "
+    "Réessayez plus tard ou contactez le support Kolê."
+)
+
+
 def is_configured() -> bool:
     key = (getattr(settings, "GENIUS_API_KEY", None) or "").strip()
     secret = (getattr(settings, "GENIUS_API_SECRET", None) or "").strip()

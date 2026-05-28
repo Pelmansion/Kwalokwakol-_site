@@ -128,9 +128,18 @@
             <h3>{{ product.name }}</h3>
             <p class="dashboard-product-card__price">{{ product.price|floatformat:0 }} FCFA</p>
             <div class="dashboard-product-card__actions">
-              <a href="{% url 'store:product_detail' product.slug %}">👁️ Voir</a>
-              <a href="{% url 'marketplace:edit_product' product.id %}">✏️ Modifier</a>
-              <a class="danger" href="{% url 'marketplace:delete_product' product.id %}">🗑️ Supprimer</a>
+              <a class="dashboard-product-card__btn" href="{% url 'store:product_detail' product.slug %}">
+                <span class="dashboard-product-card__btn-icon" aria-hidden="true">👁️</span>
+                <span class="dashboard-product-card__btn-label">Voir</span>
+              </a>
+              <a class="dashboard-product-card__btn" href="{% url 'marketplace:edit_product' product.id %}">
+                <span class="dashboard-product-card__btn-icon" aria-hidden="true">✏️</span>
+                <span class="dashboard-product-card__btn-label">Modifier</span>
+              </a>
+              <a class="dashboard-product-card__btn dashboard-product-card__btn--danger" href="{% url 'marketplace:delete_product' product.id %}">
+                <span class="dashboard-product-card__btn-icon" aria-hidden="true">🗑️</span>
+                <span class="dashboard-product-card__btn-label">Supprimer</span>
+              </a>
             </div>
           </div>
         </article>

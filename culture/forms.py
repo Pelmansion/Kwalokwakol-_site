@@ -1,6 +1,8 @@
 from django import forms
+from django.forms import modelformset_factory
 
 from .models import ArtistProfile, Event, Song, TicketCategory
+from .widgets import CultureSplitDateTimeWidget, FeaturedArtistsWidget
 
 
 class ArtistProfileForm(forms.ModelForm):
@@ -101,8 +103,8 @@ class EventForm(forms.ModelForm):
             "is_published",
         ]
         widgets = {
-            "starts_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "ends_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "starts_at": CultureSplitDateTimeWidget(),
+            "ends_at": CultureSplitDateTimeWidget(),
             "description": forms.Textarea(attrs={"rows": 5}),
             "title": forms.TextInput(attrs={"placeholder": "Ex: Festival Korhogo Live 2026"}),
             "venue_name": forms.TextInput(attrs={"placeholder": "Ex: Stade municipal"}),
@@ -112,6 +114,7 @@ class EventForm(forms.ModelForm):
             "digital_billboard": forms.ClearableFileInput(
                 attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
             ),
+            "featured_artists": FeaturedArtistsWidget(),
         }
 
     def __init__(self, *args, artist: ArtistProfile | None = None, **kwargs):
@@ -126,12 +129,21 @@ class TicketCategoryForm(forms.ModelForm):
         model = TicketCategory
         fields = ["name", "description", "price_fcfa", "quantity_total", "color", "is_active"]
         widgets = {
-            "name": forms.TextInput(attrs={"placeholder": "Ex: Standard / VIP / Carré Or"}),
+            "name": forms.TextInput(attrs={"placeholder": "Ex: Standard / VIP / VVIP"}),
             "description": forms.TextInput(attrs={"placeholder": "Avantages inclus (optionnel)"}),
             "price_fcfa": forms.NumberInput(attrs={"min": 0, "step": 100}),
-            "quantity_total": forms.NumberInput(attrs={"min": 1}),
-            "color": forms.TextInput(attrs={"type": "color"}),
+            "quantity_total": forms.NumberInput(attrs={"min": 1, "placeholder": "Ex: 100"}),
+            "color": forms.TextInput(attrs={"type": "color", "class": "culture-form__color"}),
         }
+
+
+TicketCategoryFormSet = modelformset_factory(
+    TicketCategory,
+    form=TicketCategoryForm,
+    extra=3,
+    max_num=12,
+    can_delete=False,
+)
 
 
 class TicketBuyerForm(forms.Form):

@@ -6,44 +6,50 @@
   <header class="page-head">
     <div>
       <h1>🎫 Mes concerts</h1>
-      <p>Gérez vos événements et leur billetterie</p>
+      <p>Créez autant d'événements que vous voulez — chacun avec ses catégories de billets (Standard, VIP, VVIP…).</p>
     </div>
-    <div style="display:flex; gap:8px;">
+    <div class="page-head__actions">
       <a class="btn" href="{% url 'culture:artist_event_add' %}">+ Nouveau concert</a>
       <a class="btn btn--ghost" href="{% url 'culture:artist_dashboard' %}">← Tableau de bord</a>
     </div>
   </header>
 
   {% if events %}
-    <table class="payments-table">
-      <thead>
-        <tr><th>Événement</th><th>Date</th><th>Lieu</th><th>Billets</th><th>Statut</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for e in events %}
-        <tr>
-          <td><strong>{{ e.title }}</strong></td>
-          <td>{{ e.starts_at|date:"j F Y · H\hi" }}</td>
-          <td>{{ e.venue_name }}, {{ e.city }}</td>
-          <td>{{ e.total_sold }} / {{ e.total_capacity }}</td>
-          <td>
-            {% if e.is_published %}<span class="badge badge--free">Publié</span>
-            {% else %}<span class="badge">Brouillon</span>{% endif %}
-            {% if e.is_past %} <span class="badge">Passé</span>{% endif %}
-          </td>
-          <td style="display:flex; gap:6px; flex-wrap:wrap;">
-            <a class="btn btn--sm" href="{% url 'culture:artist_event_edit' e.pk %}">Modifier</a>
-            <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_categories' e.pk %}">Billets</a>
-            <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_tickets' e.pk %}">Ventes</a>
-            <form method="post" action="{% url 'culture:artist_event_delete' e.pk %}" onsubmit="return confirm('Supprimer ce concert ?');">
-              {% csrf_token %}
-              <button class="btn btn--sm btn--ghost" type="submit">Supprimer</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="artist-events-grid">
+      {% for e in events %}
+        <article class="artist-event-card">
+          <a class="artist-event-card__poster" href="{% url 'culture:artist_event_edit' e.pk %}">
+            {% if e.poster %}
+              <img src="{{ e.poster.url }}" alt="" loading="lazy">
+            {% else %}
+              <span class="artist-event-card__placeholder">🎫</span>
+            {% endif %}
+          </a>
+          <div class="artist-event-card__body">
+            <h3><a href="{% url 'culture:artist_event_edit' e.pk %}">{{ e.title }}</a></h3>
+            <p class="muted">{{ e.starts_at|date:"j F Y · H\hi" }}</p>
+            <p class="muted">{{ e.venue_name }}, {{ e.city }}</p>
+            <p class="artist-event-card__stats">{{ e.total_sold }} / {{ e.total_capacity }} billets vendus</p>
+            <div class="artist-event-card__badges">
+              {% if e.is_published %}<span class="badge badge--free">Publié</span>{% else %}<span class="badge">Brouillon</span>{% endif %}
+              {% if e.is_past %}<span class="badge">Passé</span>{% endif %}
+            </div>
+            <div class="artist-event-card__actions">
+              <a class="btn btn--sm" href="{% url 'culture:artist_event_edit' e.pk %}">Modifier</a>
+              <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_categories' e.pk %}">Catégories</a>
+              <a class="btn btn--sm btn--ghost" href="{% url 'culture:artist_event_tickets' e.pk %}">Ventes</a>
+              <form method="post" action="{% url 'culture:artist_event_delete' e.pk %}" onsubmit="return confirm('Supprimer ce concert ?');">
+                {% csrf_token %}
+                <button class="btn btn--sm btn--ghost" type="submit">Supprimer</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    <p class="muted" style="margin-top:1.5rem;text-align:center;">
+      <a class="btn btn--ghost" href="{% url 'culture:artist_event_add' %}">+ Ajouter un autre concert</a>
+    </p>
   {% else %}
     <div class="empty-state">
       <p>Vous n'avez pas encore créé de concert.</p>

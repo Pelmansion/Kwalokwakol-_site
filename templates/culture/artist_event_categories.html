@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Catégories de billets · {{ event.title }}{% endblock %}
 
 {% block content %}
@@ -46,42 +47,63 @@
           </tbody>
         </table>
       {% else %}
-        <p class="muted">Aucune catégorie pour l'instant. Créez-en une à droite.</p>
+        <p class="muted">Aucune catégorie pour l'instant. Ajoutez-en une ou plusieurs à droite.</p>
       {% endif %}
     </section>
 
     <section class="dashboard-card">
-      <header><h2>+ Ajouter une catégorie</h2></header>
-      <form method="post" class="culture-form">
+      <header><h2>+ Ajouter des catégories</h2></header>
+      <p class="muted" style="margin: 0 0 1rem; font-size: 13px;">Remplissez une ou plusieurs lignes (Standard, VIP, VVIP…), puis enregistrez en une fois.</p>
+      <form method="post" class="culture-form ticket-category-formset" id="ticket-category-formset">
         {% csrf_token %}
-        <div class="culture-form__grid">
-          <label class="culture-form__full">Nom *
-            {{ form.name }}
-            {{ form.name.errors }}
-          </label>
-          <label class="culture-form__full">Description (avantages)
-            {{ form.description }}
-          </label>
-          <label>Prix (FCFA) *
-            {{ form.price_fcfa }}
-            {{ form.price_fcfa.errors }}
-          </label>
-          <label>Quantité totale *
-            {{ form.quantity_total }}
-            {{ form.quantity_total.errors }}
-          </label>
-          <label>Couleur
-            {{ form.color }}
-          </label>
-          <label>
-            {{ form.is_active }} Activée
-          </label>
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+          <ul class="errorlist">{% for err in formset.non_form_errors %}<li>{{ err }}</li>{% endfor %}</ul>
+        {% endif %}
+        <div class="ticket-category-rows" id="ticket-category-rows">
+          {% for form in formset %}
+          <div class="ticket-category-row" data-form-index="{{ forloop.counter0 }}">
+            <div class="ticket-category-row__head">
+              <strong>Catégorie {{ forloop.counter }}</strong>
+            </div>
+            <div class="culture-form__grid">
+              <label class="culture-form__full">Nom
+                {{ form.name }}
+                {{ form.name.errors }}
+              </label>
+              <label class="culture-form__full">Description (avantages)
+                {{ form.description }}
+              </label>
+              <label>Prix (FCFA)
+                {{ form.price_fcfa }}
+                {{ form.price_fcfa.errors }}
+              </label>
+              <label>Quantité totale
+                {{ form.quantity_total }}
+                {{ form.quantity_total.errors }}
+              </label>
+              <label class="culture-form__color-label">Couleur
+                {{ form.color }}
+              </label>
+              <label class="culture-form__checkbox">
+                {{ form.is_active }}
+                <span>Activée</span>
+              </label>
+            </div>
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+          </div>
+          {% endfor %}
         </div>
-        <div class="culture-form__actions">
-          <button class="btn" type="submit">Créer la catégorie</button>
+        <div class="culture-form__actions ticket-category-formset__actions">
+          <button type="button" class="btn btn--ghost" id="ticket-category-add-row">+ Ajouter une ligne</button>
+          <button class="btn" type="submit">Enregistrer les catégories</button>
         </div>
       </form>
     </section>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/ticket-category-formset.js' %}"></script>
 {% endblock %}

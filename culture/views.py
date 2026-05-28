@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from payments.genius import (
+    GENIUS_UNAVAILABLE_USER_MSG,
     GeniusPaymentError,
     create_checkout_payment,
     fetch_payment,
@@ -24,7 +25,7 @@ from .forms import (
     EventForm,
     SongForm,
     TicketBuyerForm,
-    TicketCategoryForm,
+    TicketCategoryFormSet,
 )
 from .models import (
     ArtistProfile,
@@ -185,7 +186,12 @@ def song_detail(request, slug):
     return render(
         request,
         "culture/song_detail.html",
-        {"song": song, "related": related, "user_has_access": user_has_access},
+        {
+            "song": song,
+            "related": related,
+            "user_has_access": user_has_access,
+            "genius_payment": genius_is_configured(),
+        },
     )
 
 
@@ -257,12 +263,20 @@ def song_buy(request, slug):
             purchase.save(update_fields=["genius_reference"])
         return redirect(res["checkout_url"])
 
-    return redirect("culture:song_payment", slug=song.slug, reference=purchase.reference)
+    purchase.delete()
+    messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
+    return redirect("culture:song_detail", slug=song.slug)
 
 
 @login_required
 def song_payment_sandbox(request, slug, reference):
-    """Page de paiement simulé (sandbox)."""
+    """Ancienne page de test — redirige vers GeniusPay si configuré."""
+    if genius_is_configured():
+        messages.info(
+            request,
+            "Le paiement s'effectue sur GeniusPay. Relancez l'achat depuis la fiche de la chanson.",
+        )
+        return redirect("culture:song_detail", slug=slug)
     song = get_object_or_404(_published_songs(), slug=slug)
     purchase = get_object_or_404(SongPurchase, reference=reference, song=song, user=request.user)
 
@@ -413,7 +427,11 @@ def event_detail(request, slug):
     return render(
         request,
         "culture/event_detail.html",
-        {"event": event, "categories": categories},
+        {
+            "event": event,
+            "categories": categories,
+            "genius_payment": genius_is_configured(),
+        },
     )
 
 
@@ -426,6 +444,9 @@ def ticket_purchase(request, slug):
     categories = event.ticket_categories.filter(is_active=True)
 
     if request.method == "POST":
+        if not genius_is_configured():
+            messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
+            return redirect("culture:event_detail", slug=event.slug)
         category_id = request.POST.get("category_id")
         category = get_object_or_404(categories, pk=category_id)
         form = TicketBuyerForm(request.POST)
@@ -501,9 +522,11 @@ def ticket_purchase(request, slug):
                         )
                         return redirect("culture:event_detail", slug=event.slug)
 
-                return redirect(
-                    "culture:ticket_payment", slug=event.slug, reference=first_ref
-                )
+                for t in tickets:
+                    t.delete()
+                request.session.pop("pending_tickets", None)
+                messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
+                return redirect("culture:event_detail", slug=event.slug)
     else:
         form = TicketBuyerForm(
             initial={
@@ -515,11 +538,22 @@ def ticket_purchase(request, slug):
     return render(
         request,
         "culture/ticket_purchase.html",
-        {"event": event, "categories": categories, "form": form},
+        {
+            "event": event,
+            "categories": categories,
+            "form": form,
+            "genius_payment": genius_is_configured(),
+        },
     )
 
 
 def ticket_payment_sandbox(request, slug, reference):
+    if genius_is_configured():
+        messages.info(
+            request,
+            "Le paiement s'effectue sur GeniusPay. Reprenez l'achat depuis la page du concert.",
+        )
+        return redirect("culture:event_detail", slug=slug)
     event = get_object_or_404(_published_events(), slug=slug)
     pending_refs = request.session.get("pending_tickets", [str(reference)])
     tickets = Ticket.objects.filter(reference__in=pending_refs, event=event).select_related(
@@ -767,7 +801,8 @@ def artist_deactivate(request):
 def artist_dashboard(request):
     artist = require_artist(request.user)
     songs = artist.songs.all().order_by("-created_at")[:5]
-    events = artist.events.order_by("-starts_at")[:5]
+    events = artist.events.order_by("-starts_at")
+    events_preview = events[:8]
     revenue = (
         SongPurchase.objects.filter(song__artist=artist, is_paid=True).aggregate(
             total=Sum("amount_fcfa")
@@ -783,9 +818,11 @@ def artist_dashboard(request):
         {
             "artist": artist,
             "songs": songs,
-            "events": events,
+            "events": events_preview,
+            "events_total": events.count(),
             "revenue": revenue,
             "sold_tickets_count": sold_tickets_count,
+            "genius_payment": genius_is_configured(),
         },
     )
 
@@ -887,7 +924,7 @@ def artist_event_add(request):
             form.save_m2m()
             messages.success(
                 request,
-                "Concert créé avec les images fournies. Définissez maintenant les catégories de billets.",
+                "Concert créé. Définissez les catégories de billets, puis ajoutez d'autres concerts si besoin.",
             )
             return redirect("culture:artist_event_categories", pk=event.pk)
     else:
@@ -933,21 +970,39 @@ def artist_event_categories(request, pk):
             messages.success(request, "Catégorie supprimée.")
             return redirect("culture:artist_event_categories", pk=event.pk)
 
-        form = TicketCategoryForm(request.POST)
-        if form.is_valid():
-            cat = form.save(commit=False)
-            cat.event = event
-            cat.save()
-            messages.success(request, f"Catégorie « {cat.name} » créée.")
+        empty_qs = TicketCategory.objects.none()
+        formset = TicketCategoryFormSet(request.POST, queryset=empty_qs)
+        if formset.is_valid():
+            saved = []
+            base_order = event.ticket_categories.count()
+            for i, form in enumerate(formset):
+                if not form.cleaned_data or not form.cleaned_data.get("name"):
+                    continue
+                cat = form.save(commit=False)
+                cat.event = event
+                cat.display_order = base_order + len(saved)
+                cat.save()
+                saved.append(cat)
+            if saved:
+                names = ", ".join(c.name for c in saved)
+                messages.success(
+                    request,
+                    f"{len(saved)} catégorie(s) créée(s) : {names}.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "Renseignez au moins une ligne (nom, prix et quantité).",
+                )
             return redirect("culture:artist_event_categories", pk=event.pk)
     else:
-        form = TicketCategoryForm()
+        formset = TicketCategoryFormSet(queryset=TicketCategory.objects.none())
 
     categories = event.ticket_categories.all()
     return render(
         request,
         "culture/artist_event_categories.html",
-        {"event": event, "categories": categories, "form": form},
+        {"event": event, "categories": categories, "formset": formset},
     )
 
 

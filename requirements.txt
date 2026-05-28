@@ -25,5 +25,6 @@ reportlab
 django-import-export
 requests
 dj-database-url
-python-decouple
+# Variables .env — paquet PyPI « python-decouple » (pas le paquet « decouple » sans préfixe)
+python-decouple==3.8
 

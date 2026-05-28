@@ -26,6 +26,8 @@ ALLOWED_HOSTS = [
     'xn--kolgroup-m1a.com',
     'www.xn--kolgroup-m1a.com',
 ]
+if DEBUG:
+    ALLOWED_HOSTS += ['localhost', '127.0.0.1', '[::1]']
 
 # Requis derrière HTTPS (connexion / formulaires) — évite les refus CSRF en production
 _local_csrf_hosts = frozenset({"localhost", "127.0.0.1", "[::1]"})
@@ -100,6 +102,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'kwalo.urls'
 
+# Widgets de formulaires personnalisés (ex. artistes invités) — templates dans templates/
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -120,24 +125,32 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
+#         conn_max_age=600,
+#         ssl_require=True,
+#     )
+# }
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
 # --- STATICS & MEDIA ---
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = 'media/'
+# Préfixe / obligatoire : sinon sur /compte/profil/ le navigateur demande /compte/media/… (404)
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Téléversements (affiches, bâches, photos de profil) — évite les erreurs silencieuses sur gros fichiers

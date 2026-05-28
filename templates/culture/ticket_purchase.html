@@ -56,7 +56,13 @@
     </div>
 
     <div class="ticket-purchase-form__submit">
-      <button type="submit" class="btn btn--lg">Continuer vers le paiement →</button>
+      {% if genius_payment %}
+        <p class="muted" style="margin:0 0 12px;font-size:13px;">Paiement sécurisé via <strong>GeniusPay</strong> (Wave, Orange Money, MTN MoMo, carte bancaire).</p>
+        <button type="submit" class="btn btn--lg">Continuer vers GeniusPay →</button>
+      {% else %}
+        <p class="muted" style="margin:0 0 12px;color:#991b1b;font-size:13px;">Paiement en ligne temporairement indisponible. Réessayez plus tard.</p>
+        <button type="submit" class="btn btn--lg" disabled>Paiement indisponible</button>
+      {% endif %}
     </div>
   </form>
 </section>

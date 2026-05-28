@@ -82,6 +82,7 @@ def profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Votre profil a bien été mis à jour (dont les photos si vous en avez téléversé des nouvelles).")
+            return redirect("accounts:profile")
     else:
         form = ProfileForm(instance=profile_obj)
     return render(request, "accounts/profile.html", {"form": form})

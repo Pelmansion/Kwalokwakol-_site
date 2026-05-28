@@ -20,7 +20,11 @@
         📍 {{ event.venue_name }}, {{ event.city }}
       </p>
       {% if event.is_open_for_sale %}
-        <a class="btn btn--lg" href="{% url 'culture:ticket_purchase' event.slug %}">🎫 Acheter mes billets</a>
+        {% if genius_payment %}
+          <a class="btn btn--lg" href="{% url 'culture:ticket_purchase' event.slug %}">🎫 Acheter via GeniusPay</a>
+        {% else %}
+          <span class="badge badge--paid">Billetterie — paiement en ligne indisponible</span>
+        {% endif %}
       {% else %}
         <span class="badge badge--paid">Billetterie fermée</span>
       {% endif %}
@@ -80,8 +84,8 @@
               </li>
             {% endfor %}
           </ul>
-          {% if event.is_open_for_sale %}
-          <a class="btn" href="{% url 'culture:ticket_purchase' event.slug %}">Acheter →</a>
+          {% if event.is_open_for_sale and genius_payment %}
+          <a class="btn" href="{% url 'culture:ticket_purchase' event.slug %}">Acheter via GeniusPay →</a>
           {% endif %}
         {% else %}
           <p class="muted">Aucune catégorie de billet disponible pour l'instant.</p>

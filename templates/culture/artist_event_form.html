@@ -32,12 +32,11 @@
       </label>
       <label class="culture-form__full">Artistes invités
         {{ form.featured_artists }}
-        <small>Maintenez Ctrl pour sélectionner plusieurs artistes</small>
       </label>
-      <label>Date & heure de début *
+      <label class="culture-form__datetime-label">Date & heure de début *
         {{ form.starts_at }}
       </label>
-      <label>Date & heure de fin
+      <label class="culture-form__datetime-label">Date & heure de fin
         {{ form.ends_at }}
       </label>
       <label>Lieu / salle *
@@ -58,8 +57,9 @@
       <label>Statut
         {{ form.status }}
       </label>
-      <label>
-        {{ form.is_published }} Publier (visible & billetterie ouverte)
+      <label class="culture-form__checkbox">
+        {{ form.is_published }}
+        <span>Publier (visible &amp; billetterie ouverte)</span>
       </label>
     </div>
     <div class="culture-form__actions">
@@ -67,4 +67,8 @@
     </div>
   </form>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ form.media }}
 {% endblock %}

@@ -120,8 +120,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'kwalo.urls'
 
-# Widgets de formulaires personnalisés (ex. artistes invités) — templates dans templates/
-FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
+# Widgets personnalisés (culture) + widgets Django (text.html, select.html…)
+FORM_RENDERER = "kwalo.form_renderers.KwaloFormRenderer"
 
 TEMPLATES = [
     {
@@ -143,12 +143,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# Production : lier la base Postgres au service web sur Render (variable DATABASE_URL).
+# Production : DATABASE_URL dans Render (base Postgres liée au service web).
 _database_url = (os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')).strip()
 if not DEBUG and not _database_url:
     raise ImproperlyConfigured(
         "DATABASE_URL est obligatoire en production. "
-        "Sur Render : liez la base Postgres au service web (Environment → DATABASE_URL)."
+        "Sur Render : liez la base Postgres au service web."
     )
 if _database_url:
     DATABASES = {

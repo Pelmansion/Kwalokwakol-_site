@@ -52,6 +52,11 @@ def require_artist(user) -> ArtistProfile:
     return artist
 
 
+def require_artist_or_redirect(request):
+    """Alias pour toutes les vues espace artiste (évite PermissionDenied → 500)."""
+    return resolve_artist_for_dashboard(request)
+
+
 def resolve_artist_for_dashboard(request):
     """
     Renvoie (artist, redirect_response).

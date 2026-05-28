@@ -43,7 +43,7 @@ from .models import (
 from .utils import (
     generate_qr_svg,
     get_artist_or_redirect,
-    require_artist,
+    require_artist_or_redirect,
     resolve_artist_for_dashboard,
     user_can_become_artist,
 )
@@ -851,7 +851,9 @@ def artist_dashboard(request):
 
 @login_required
 def artist_profile_edit(request):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     if request.method == "POST":
         form = ArtistProfileForm(request.POST, request.FILES, instance=artist)
         if form.is_valid():
@@ -865,7 +867,9 @@ def artist_profile_edit(request):
 
 @login_required
 def artist_songs(request):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     songs = (
         artist.songs.all()
         .order_by("-created_at")
@@ -878,7 +882,9 @@ def artist_songs(request):
 
 @login_required
 def artist_song_add(request):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     if request.method == "POST":
         form = SongForm(request.POST, request.FILES)
         if form.is_valid():
@@ -898,7 +904,9 @@ def artist_song_add(request):
 
 @login_required
 def artist_song_edit(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     song = get_object_or_404(Song, pk=pk, artist=artist)
     if request.method == "POST":
         form = SongForm(request.POST, request.FILES, instance=song)
@@ -918,7 +926,9 @@ def artist_song_edit(request, pk):
 @login_required
 @require_POST
 def artist_song_delete(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     song = get_object_or_404(Song, pk=pk, artist=artist)
     song.delete()
     messages.success(request, "Chanson supprimée.")
@@ -927,14 +937,18 @@ def artist_song_delete(request, pk):
 
 @login_required
 def artist_events(request):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     events = artist.events.all().order_by("-starts_at")
     return render(request, "culture/artist_events.html", {"artist": artist, "events": events})
 
 
 @login_required
 def artist_event_add(request):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     if request.method == "POST":
         form = EventForm(request.POST, request.FILES, artist=artist)
         if form.is_valid():
@@ -960,7 +974,9 @@ def artist_event_add(request):
 
 @login_required
 def artist_event_edit(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     event = get_object_or_404(Event, pk=pk, headlining_artist=artist)
     if request.method == "POST":
         form = EventForm(request.POST, request.FILES, instance=event, artist=artist)
@@ -982,7 +998,9 @@ def artist_event_edit(request, pk):
 
 @login_required
 def artist_event_categories(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     event = get_object_or_404(Event, pk=pk, headlining_artist=artist)
 
     if request.method == "POST":
@@ -1031,7 +1049,9 @@ def artist_event_categories(request, pk):
 @login_required
 @require_POST
 def artist_event_delete(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     event = get_object_or_404(Event, pk=pk, headlining_artist=artist)
     event.delete()
     messages.success(request, "Concert supprimé.")
@@ -1040,7 +1060,9 @@ def artist_event_delete(request, pk):
 
 @login_required
 def artist_event_tickets(request, pk):
-    artist = require_artist(request.user)
+    artist, redirect_resp = require_artist_or_redirect(request)
+    if redirect_resp:
+        return redirect_resp
     event = get_object_or_404(Event, pk=pk, headlining_artist=artist)
     tickets = event.tickets.exclude(status=Ticket.STATUS_PENDING).order_by("-created_at")
     paid_total = (

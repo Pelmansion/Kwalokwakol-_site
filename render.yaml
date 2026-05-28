@@ -22,6 +22,25 @@ services:
         sync: false
       - key: GENIUS_API_SECRET
         sync: false
+      # Dossier persistant pour les uploads (nécessite un disque Render — voir bloc disk ci-dessous)
+      # - key: MEDIA_ROOT
+      #   value: /data/media
+      # Stockage cloud (Cloudflare R2 / S3) — à remplir dans le dashboard Render :
+      # - key: AWS_ACCESS_KEY_ID
+      #   sync: false
+      # - key: AWS_SECRET_ACCESS_KEY
+      #   sync: false
+      # - key: AWS_STORAGE_BUCKET_NAME
+      #   sync: false
+      # - key: AWS_S3_ENDPOINT_URL
+      #   sync: false
+      # - key: AWS_S3_CUSTOM_DOMAIN
+      #   sync: false
+    # Décommenter avec un plan Render qui supporte les disques (sinon préférer R2/S3) :
+    # disk:
+    #   name: kwalo-media
+    #   mountPath: /data/media
+    #   sizeGB: 10
 
 databases:
   - name: kwalokwakole

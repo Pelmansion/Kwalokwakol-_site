@@ -27,4 +27,6 @@ requests
 dj-database-url
 # Variables .env — paquet PyPI « python-decouple » (pas le paquet « decouple » sans préfixe)
 python-decouple==3.8
+django-storages[s3]==1.14.4
+boto3==1.35.99
 

@@ -7,6 +7,8 @@ import dj_database_url
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
 
+from kwalo.media_storage import configure_media
+
 # Templates des widgets Django (text.html, select.html…) requis par FORM_RENDERER TemplatesSetting
 DJANGO_FORMS_TEMPLATES_DIR = Path(django.__file__).resolve().parent / "forms" / "templates"
 
@@ -158,13 +160,25 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-if not DEBUG:
-    # Manifest strict → 500 si un {% static %} manque après collectstatic ; version plus tolérante.
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+_staticfiles_backend = (
+    "django.contrib.staticfiles.storage.StaticFilesStorage"
+    if DEBUG
+    else "whitenoise.storage.CompressedStaticFilesStorage"
+)
 
-# Préfixe / obligatoire : sinon sur /compte/profil/ le navigateur demande /compte/media/… (404)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Fichiers uploadés : dossier media/ (local) ou MEDIA_ROOT (disque Render) ou bucket S3/R2
+_media = configure_media(
+    base_dir=BASE_DIR,
+    debug=DEBUG,
+    installed_apps=INSTALLED_APPS,
+)
+MEDIA_URL = _media["MEDIA_URL"]
+MEDIA_ROOT = _media["MEDIA_ROOT"]
+
+STORAGES = {
+    "default": _media["STORAGES_DEFAULT"],
+    "staticfiles": {"BACKEND": _staticfiles_backend},
+}
 
 # Téléversements (affiches, bâches, photos de profil) — évite les erreurs silencieuses sur gros fichiers
 DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024  # 15 Mo par requête (corps multipart)

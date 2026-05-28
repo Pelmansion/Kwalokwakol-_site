@@ -2,6 +2,11 @@
 # Commande de démarrage Render — migrations à chaque lancement, puis Gunicorn.
 set -o errexit
 
+# Dossier des fichiers uploadés (disque Render ou media/ local)
+MEDIA_DIR="${MEDIA_ROOT:-media}"
+mkdir -p "$MEDIA_DIR"
+echo "==> Dossier médias prêt : $MEDIA_DIR"
+
 echo "==> Migrations base de données..."
 python manage.py migrate --noinput
 

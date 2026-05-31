@@ -44,8 +44,19 @@
   </section>
 
   <section class="container">
+    {% if matched_vendor %}
+      <div class="search-shop-banner" role="status">
+        <p>Boutique : <strong>{{ matched_vendor.name }}</strong></p>
+        <a class="btn btn--small btn--ghost" href="{% url 'store:vendor_detail' matched_vendor.slug %}">Voir la fiche boutique</a>
+      </div>
+    {% elif matched_provider %}
+      <div class="search-shop-banner" role="status">
+        <p>Prestataire : <strong>{{ matched_provider.name }}</strong></p>
+        <a class="btn btn--small btn--ghost" href="{% url 'store:service_provider_detail' matched_provider.slug %}">Voir le profil</a>
+      </div>
+    {% endif %}
     {% if products %}
-      <p class="muted" style="margin-bottom:16px;">{{ products|length }} résultat{{ products|length|pluralize }} trouvé{{ products|length|pluralize }}</p>
+      <p class="muted" style="margin-bottom:16px;">{{ products|length }} résultat{{ products|length|pluralize }} trouvé{{ products|length|pluralize }}{% if search_query %} pour « {{ search_query }} »{% endif %}</p>
     {% endif %}
 
     <div class="product-grid">
@@ -132,8 +143,17 @@
           <div class="empty" style="padding:64px 24px;">
             <div style="font-size:3rem; margin-bottom:12px;">🔍</div>
             <h3 style="font-family: var(--font-serif); margin: 0 0 8px;">Aucun produit trouvé</h3>
-            <p style="margin: 0 0 16px; color: var(--muted);">Essayez de modifier vos filtres ou réinitialisez la recherche.</p>
-            {% if request.GET.q or request.GET.categorie or request.GET.type or request.GET.min_price or request.GET.max_price or request.GET.localisation or request.GET.disponible %}
+            <p style="margin: 0 0 16px; color: var(--muted);">
+              {% if search_query %}
+                Aucun article visible pour cette recherche. Essayez le nom exact de la boutique ou parcourez la liste des vendeurs.
+              {% else %}
+                Essayez de modifier vos filtres ou réinitialisez la recherche.
+              {% endif %}
+            </p>
+            {% if search_query %}
+              <a href="{% url 'store:vendor_list' %}" class="btn btn--ghost" style="margin-right:8px;">Voir les boutiques</a>
+            {% endif %}
+            {% if request.GET.q or request.GET.categorie or request.GET.type or request.GET.min_price or request.GET.max_price or request.GET.localisation or request.GET.disponible or request.GET.vendeur %}
               <a href="{% url 'store:product_list' %}" class="btn">Voir tous les produits</a>
             {% endif %}
           </div>

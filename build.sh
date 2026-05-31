@@ -6,3 +6,4 @@ pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 python scripts/check_form_templates.py
+python scripts/check_media_config.py || true

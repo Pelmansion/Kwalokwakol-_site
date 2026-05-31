@@ -1574,6 +1574,20 @@ a.service-card {
   background: #fff;
 }
 
+.search-shop-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: var(--primary-50, #fff7ed);
+  border: 1px solid var(--primary-100, #fed7aa);
+  border-radius: var(--radius);
+}
+.search-shop-banner p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); }
+
 .filters__form input[name="q"] { flex: 1; min-width: 160px; }
 .filters__form input[name="min_price"],
 .filters__form input[name="max_price"] { width: 110px; }

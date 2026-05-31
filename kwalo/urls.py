@@ -66,12 +66,18 @@ urlpatterns = [
     path("", include("store.urls")),
 ]
 
-# Fichiers uploadés (avatars, vitrine, couvertures…) — static() ne crée des routes que si DEBUG=True
-_media_prefix = settings.MEDIA_URL.strip("/")
-urlpatterns += [
-    re_path(
-        rf"^{_media_prefix}/(?P<path>.*)$",
-        serve,
-        {"document_root": settings.MEDIA_ROOT},
-    ),
-]
+# Fichiers uploadés en local / disque persistant uniquement (R2/S3 = URLs directes HTTPS)
+_uses_cloud_media = (
+    settings.STORAGES.get("default", {}).get("BACKEND", "")
+    != "django.core.files.storage.FileSystemStorage"
+)
+if not _uses_cloud_media:
+    _media_prefix = settings.MEDIA_URL.strip("/")
+    if _media_prefix:
+        urlpatterns += [
+            re_path(
+                rf"^{_media_prefix}/(?P<path>.*)$",
+                serve,
+                {"document_root": settings.MEDIA_ROOT},
+            ),
+        ]

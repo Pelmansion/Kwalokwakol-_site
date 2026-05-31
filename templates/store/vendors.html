@@ -30,7 +30,8 @@
           {% if vendor.description %}
             <p class="vendor-card__desc">{{ vendor.description|truncatewords:20 }}</p>
           {% endif %}
-          <a class="btn btn--small" href="{% url 'store:vendor_detail' vendor.slug %}">Voir la boutique</a>
+          <a class="btn btn--small" href="{% url 'store:product_list' %}?vendeur={{ vendor.slug }}">Voir les articles</a>
+          <a class="btn btn--small btn--ghost" href="{% url 'store:vendor_detail' vendor.slug %}">Fiche boutique</a>
         </article>
       {% empty %}
         <div class="empty-state" style="grid-column:1/-1;">

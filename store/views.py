@@ -334,6 +334,8 @@ def home(request):
 
 def product_list(request):
     query = request.GET.get("q", "").strip()
+    vendor_slug = request.GET.get("vendeur", "").strip()
+    provider_slug = request.GET.get("prestataire", "").strip()
     category_slug = request.GET.get("categorie", "").strip()
     subcategory_slug = request.GET.get("sous_categorie", "").strip()
     product_type = request.GET.get("type", "").strip()
@@ -351,12 +353,51 @@ def product_list(request):
         .filter(active_product_filter())
         .select_related("category", "vendor", "service_provider")
     )
+    matched_vendor = None
+    matched_provider = None
     if vendor:
         products = products.filter(vendor=vendor)
     elif service_provider:
         products = products.filter(service_provider=service_provider)
+    if vendor_slug:
+        matched_vendor = Vendor.objects.filter(
+            slug=vendor_slug, is_active=True
+        ).filter(active_subscription_q()).first()
+        if matched_vendor:
+            products = products.filter(vendor=matched_vendor)
+        else:
+            products = products.none()
+    elif provider_slug:
+        matched_provider = ServiceProvider.objects.filter(
+            slug=provider_slug, is_active=True
+        ).filter(active_subscription_q()).first()
+        if matched_provider:
+            products = products.filter(service_provider=matched_provider)
+        else:
+            products = products.none()
     if query:
-        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        vendor_ids = list(
+            Vendor.objects.filter(is_active=True)
+            .filter(active_subscription_q())
+            .filter(Q(name__icontains=query) | Q(slug__icontains=query))
+            .values_list("pk", flat=True)
+        )
+        provider_ids = list(
+            ServiceProvider.objects.filter(is_active=True)
+            .filter(active_subscription_q())
+            .filter(Q(name__icontains=query) | Q(slug__icontains=query))
+            .values_list("pk", flat=True)
+        )
+        products = products.filter(
+            Q(name__icontains=query)
+            | Q(description__icontains=query)
+            | Q(vendor_id__in=vendor_ids)
+            | Q(service_provider_id__in=provider_ids)
+        )
+        if len(vendor_ids) == 1 and not matched_vendor:
+            matched_vendor = Vendor.objects.filter(pk=vendor_ids[0]).first()
+        if len(provider_ids) == 1 and not matched_provider:
+            matched_provider = ServiceProvider.objects.filter(pk=provider_ids[0]).first()
     if subcategory_slug:
         products = products.filter(category__slug=subcategory_slug)
     elif category_slug:
@@ -404,6 +445,9 @@ def product_list(request):
             "products": products,
             "subcategories": subcategories,
             "favorites": favorites,
+            "matched_vendor": matched_vendor,
+            "matched_provider": matched_provider,
+            "search_query": query,
         },
     )
 

@@ -212,7 +212,7 @@ def song_play(request, slug):
         ip_address=_ip(request),
     )
 
-    response = FileResponse(open(song.audio_file.path, "rb"), content_type="audio/mpeg")
+    response = FileResponse(song.audio_file.open("rb"), content_type="audio/mpeg")
     response["Accept-Ranges"] = "bytes"
     return response
 
@@ -393,7 +393,7 @@ def song_download(request, token):
     Song.objects.filter(pk=song.pk).update(download_count=F("download_count") + 1)
 
     response = FileResponse(
-        open(song.audio_file.path, "rb"),
+        song.audio_file.open("rb"),
         as_attachment=True,
         filename=f"{song.artist.stage_name} - {song.title}.mp3",
     )

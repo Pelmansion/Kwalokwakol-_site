@@ -87,11 +87,14 @@ class Command(BaseCommand):
             .first()
         )
         if not cat:
-            cat = Category.objects.create(
-                name="Démo catalogue Kolê",
-                description="Catégorie auto pour produits de démonstration.",
-                is_active=True,
+            self.stdout.write(
+                self.style.ERROR(
+                    "Aucune catégorie plateforme active. Lancez d'abord :\n"
+                    "  python manage.py seed_data\n"
+                    "ou créez une catégorie dans l'admin Django."
+                )
             )
+            return
 
         n_created = 0
         n_updated = 0

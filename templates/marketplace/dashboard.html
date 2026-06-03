@@ -146,37 +146,48 @@
       <h2>Commandes &amp; livraisons</h2>
       <p class="dash-section__subtitle">Gérez le statut et le suivi de vos commandes</p>
     </div>
-    <div class="order-list">
+    <div class="table-card orders-table">
+      <div class="table-row table-row--head orders-table__head">
+        <div>Produit</div>
+        <div>Commande</div>
+        <div>Client</div>
+        <div>Statut</div>
+        <div>Montant</div>
+        <div>Gestion</div>
+      </div>
       {% for item in order_items %}
-        <article class="order-item">
-          <div class="order-item__info">
+        <div class="table-row orders-table__row">
+          <div class="orders-table__product">
             <strong>{{ item.product.name }}</strong>
-            <div class="muted">🧾 Commande #{{ item.order.id }} · Quantité: {{ item.quantity }}</div>
-            <div class="muted">👤 {{ item.order.full_name }} · {{ item.order.city }}</div>
-            <div class="muted">
-              <span class="badge {% if item.order.status == 'delivered' %}badge--success{% elif item.order.status == 'cancelled' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size:0.72rem;">{{ item.order.get_status_display }}</span>
-              · Paiement : {{ item.order.get_payment_status_display }}
-            </div>
           </div>
-          <div class="order-item__actions">
-            <div class="order-item__price">{{ item.unit_price|floatformat:0 }} FCFA</div>
-            <form class="order-item__form" method="post" action="{% url 'marketplace:update_order' item.order.id %}">
+          <div class="orders-table__order">
+            <span>#{{ item.order.id }}</span>
+            <span class="orders-table__qty">Qté {{ item.quantity }}</span>
+          </div>
+          <div class="orders-table__client">
+            <span>{{ item.order.full_name }}</span>
+            <span class="orders-table__city">{{ item.order.city }}</span>
+          </div>
+          <div class="orders-table__status">
+            <span class="badge {% if item.order.status == 'delivered' %}badge--success{% elif item.order.status == 'cancelled' %}badge--danger{% else %}badge--warning{% endif %}">{{ item.order.get_status_display }}</span>
+            <span class="orders-table__payment">Paiement : {{ item.order.get_payment_status_display }}</span>
+          </div>
+          <div class="orders-table__price">{{ item.unit_price|floatformat:0 }} FCFA</div>
+          <div class="orders-table__manage">
+            <form class="orders-table__form" method="post" action="{% url 'marketplace:update_order' item.order.id %}">
               {% csrf_token %}
-              <select name="status">
+              <select name="status" aria-label="Statut de la commande">
                 {% for value,label in item.order.STATUS_CHOICES %}
                   <option value="{{ value }}" {% if item.order.status == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
-              <input type="text" name="tracking_code" value="{{ item.order.tracking_code }}" placeholder="Code suivi">
-              <button class="btn btn--small btn--primary" type="submit">💾 MAJ</button>
+              <input type="text" name="tracking_code" value="{{ item.order.tracking_code }}" placeholder="Code suivi" aria-label="Code suivi">
+              <button class="btn btn--small btn--primary" type="submit">MAJ</button>
             </form>
           </div>
-        </article>
-      {% empty %}
-        <div class="empty" style="padding: 30px 20px; text-align: center;">
-          <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
-          <p style="margin: 0; color: var(--muted);">Aucune commande pour le moment.</p>
         </div>
+      {% empty %}
+        <p class="empty orders-table__empty">Aucune commande pour le moment.</p>
       {% endfor %}
     </div>
   </section>
@@ -186,37 +197,39 @@
       <h2>Demandes de services</h2>
       <p class="dash-section__subtitle">Acceptez ou refusez les demandes de vos clients</p>
     </div>
-    <div class="order-list">
+    <div class="table-card service-requests-table">
+      <div class="table-row table-row--head service-requests-table__head">
+        <div>Service</div>
+        <div>Client</div>
+        <div>Message</div>
+        <div>Statut</div>
+        <div>Actions</div>
+      </div>
       {% for request in service_requests %}
-        <article class="order-item">
-          <div class="order-item__info">
-            <strong>{{ request.service.name }}</strong>
-            <div class="muted">👤 Client : {{ request.customer.username }}</div>
-            {% if request.comment %}
-              <div class="muted">💬 « {{ request.comment }} »</div>
-            {% endif %}
-            <div class="muted">
-              <span class="badge {% if request.status == 'approved' %}badge--success{% elif request.status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}" style="font-size:0.72rem;">{{ request.get_status_display }}</span>
-            </div>
+        <div class="table-row service-requests-table__row">
+          <div><strong>{{ request.service.name }}</strong></div>
+          <div>{{ request.customer.username }}</div>
+          <div class="service-requests-table__comment">{% if request.comment %}« {{ request.comment }} »{% else %}<span class="orders-table__muted">—</span>{% endif %}</div>
+          <div>
+            <span class="badge {% if request.status == 'approved' %}badge--success{% elif request.status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">{{ request.get_status_display }}</span>
           </div>
-          {% if request.status == 'pending' %}
-            <div class="order-item__actions">
+          <div class="service-requests-table__actions">
+            {% if request.status == 'pending' %}
               <form method="post" action="{% url 'marketplace:update_service_request' request.id 'approve' %}">
                 {% csrf_token %}
-                <button class="btn btn--small btn--success" type="submit">✓ Valider</button>
+                <button class="btn btn--small btn--success" type="submit">Valider</button>
               </form>
               <form method="post" action="{% url 'marketplace:update_service_request' request.id 'reject' %}">
                 {% csrf_token %}
-                <button class="btn btn--small btn--ghost" type="submit">✗ Refuser</button>
+                <button class="btn btn--small btn--ghost" type="submit">Refuser</button>
               </form>
-            </div>
-          {% endif %}
-        </article>
-      {% empty %}
-        <div class="empty" style="padding: 30px 20px; text-align: center;">
-          <div style="font-size: 2rem; margin-bottom: 8px;">🤝</div>
-          <p style="margin: 0; color: var(--muted);">Aucune demande de service pour le moment.</p>
+            {% else %}
+              <span class="orders-table__muted">—</span>
+            {% endif %}
+          </div>
         </div>
+      {% empty %}
+        <p class="empty orders-table__empty">Aucune demande de service pour le moment.</p>
       {% endfor %}
     </div>
   </section>

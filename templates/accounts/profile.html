@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load media_tags %}
 {% block title %}Mon profil — Kolê Group{% endblock %}
 {% block content %}
   <section class="container page-title">
@@ -11,12 +12,12 @@
       <div class="profile-preview{% if user_profile.avatar and not user_profile.cover_photo %} profile-preview--avatar-only{% endif %}">
         {% if user_profile.cover_photo %}
           <div class="profile-preview__cover">
-            <img src="{{ user_profile.cover_photo.url }}" alt="" loading="lazy">
+            <img src="{{ user_profile.cover_photo|file_url }}" alt="" loading="lazy" {% img_onerror_attr %}>
           </div>
         {% endif %}
         {% if user_profile.avatar %}
           <div class="profile-preview__avatar">
-            <img src="{{ user_profile.avatar.url }}" alt="">
+            <img src="{{ user_profile.avatar|file_url }}" alt="" {% img_onerror_attr %}>
           </div>
         {% endif %}
       </div>

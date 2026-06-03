@@ -207,7 +207,7 @@ def add_product(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = ProductForm(request.POST, vendor=vendor)
+        form = ProductForm(request.POST, request.FILES, vendor=vendor)
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = vendor
@@ -229,7 +229,7 @@ def edit_product(request, product_id):
         return gate
     product = get_object_or_404(Product, id=product_id, vendor=vendor)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product, vendor=vendor)
+        form = ProductForm(request.POST, request.FILES, instance=product, vendor=vendor)
         if form.is_valid():
             product = form.save(commit=False)
             _assign_vendor_product_category(product, form, vendor)
@@ -270,7 +270,7 @@ def vendor_profile(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = VendorProfileForm(request.POST, instance=vendor)
+        form = VendorProfileForm(request.POST, request.FILES, instance=vendor)
         if form.is_valid():
             form.save()
             return redirect("marketplace:dashboard")
@@ -451,7 +451,9 @@ def service_provider_profile(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = ServiceProviderProfileForm(request.POST, instance=service_provider)
+        form = ServiceProviderProfileForm(
+            request.POST, request.FILES, instance=service_provider
+        )
         if form.is_valid():
             form.save()
             return redirect("marketplace:service_provider_dashboard")
@@ -473,7 +475,9 @@ def add_service(request):
     if gate is not None:
         return gate
     if request.method == "POST":
-        form = ServiceProductForm(request.POST, service_provider=service_provider)
+        form = ServiceProductForm(
+            request.POST, request.FILES, service_provider=service_provider
+        )
         if form.is_valid():
             product = form.save(commit=False)
             product.service_provider = service_provider

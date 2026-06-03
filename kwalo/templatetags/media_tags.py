@@ -1,0 +1,55 @@
+"""URLs fiables pour les fichiers uploadés (profil, produits, culture…)."""
+
+from django import template
+from django.conf import settings
+
+register = template.Library()
+
+_PLACEHOLDER = "/static/images/icons/icon-192.png"
+
+
+@register.filter
+def file_url(file_field):
+    """URL absolue ou racine du site pour un ImageField / FileField."""
+    if not file_field:
+        return ""
+    try:
+        url = file_field.url
+    except (ValueError, AttributeError):
+        return ""
+    if not url:
+        return ""
+    if url.startswith(("http://", "https://")):
+        return url
+    if url.startswith("/"):
+        return url
+    return f"{settings.MEDIA_URL.rstrip('/')}/{url.lstrip('/')}"
+
+
+def get_product_image_url(product):
+    """Image produit : fichier uploadé, média, puis URL externe."""
+    if not product:
+        return ""
+    image = getattr(product, "image", None)
+    if image:
+        u = file_url(image)
+        if u:
+            return u
+    try:
+        media = product.media.filter(is_primary=True).first() or product.media.first()
+        if media and media.url:
+            return media.url
+    except Exception:
+        pass
+    return (getattr(product, "image_url", None) or "").strip()
+
+
+@register.simple_tag
+def product_image_url(product):
+    return get_product_image_url(product)
+
+
+@register.filter
+def img_onerror_attr(_unused=""):
+    """Attribut HTML onerror vers une icône de secours."""
+    return f'onerror="this.onerror=null;this.src=\'{_PLACEHOLDER}\';"'

@@ -76,13 +76,7 @@
       {% for service in services %}
         <article class="dashboard-product-card">
           <div class="dashboard-product-card__image">
-            {% if service.media.first %}
-              <img src="{{ service.media.first.url }}" alt="{{ service.name }}" loading="lazy">
-            {% elif service.image_url %}
-              <img src="{{ service.image_url }}" alt="{{ service.name }}" loading="lazy">
-            {% else %}
-              <div class="image-placeholder">🛠️</div>
-            {% endif %}
+            {% include "store/_product_image.html" with product=service %}
           </div>
           <div class="dashboard-product-card__body">
             <h3>{{ service.name }}</h3>

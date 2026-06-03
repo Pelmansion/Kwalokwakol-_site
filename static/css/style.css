@@ -1616,11 +1616,17 @@ a.service-card {
 
 .media-grid img,
 .media-grid video,
-.product-detail__image img {
+.product-detail__image img,
+.product-detail__fallback img {
   width: 100%;
   border-radius: var(--radius);
   object-fit: cover;
   aspect-ratio: 4 / 3;
+}
+
+.product-detail__fallback .image-placeholder {
+  min-height: 380px;
+  border-radius: var(--radius);
 }
 
 .product-detail__info {

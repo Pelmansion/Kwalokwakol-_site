@@ -212,8 +212,9 @@ def _react_service_provider_row(provider):
 
 
 def _react_product_row(product):
-    media = product.media.first()
-    image = media.url if media else (product.image_url or "")
+    from kwalo.templatetags.media_tags import get_product_image_url
+
+    image = get_product_image_url(product)
     old = float(product.old_price) if product.old_price is not None else None
     return {
         "id": product.id,

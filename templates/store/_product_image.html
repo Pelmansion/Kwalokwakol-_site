@@ -1,0 +1,11 @@
+{% load media_tags %}
+{% if product %}
+  {% product_image_url product as img_src %}
+  {% if img_src %}
+    <img src="{{ img_src }}" alt="{{ product.name }}" loading="lazy" decoding="async" {% img_onerror_attr %}>
+  {% else %}
+    <div class="image-placeholder" aria-hidden="true"></div>
+  {% endif %}
+{% else %}
+  <div class="image-placeholder" aria-hidden="true"></div>
+{% endif %}

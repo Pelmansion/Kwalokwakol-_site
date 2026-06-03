@@ -134,18 +134,52 @@ class ProductForm(forms.ModelForm):
     )
     image_url = forms.URLField(
         required=False,
-        label="URL de l'image",
-        help_text="Lien vers une image du produit ou service"
+        label="URL de l'image (optionnel)",
+        help_text="Si vous n'uploadez pas de fichier, vous pouvez coller un lien vers une image en ligne.",
     )
-    
+
     class Meta:
         model = Product
-        fields = ["category", "name", "description", "price", "stock", "kind", "image_url"]
+        fields = [
+            "category",
+            "name",
+            "description",
+            "price",
+            "stock",
+            "kind",
+            "image",
+            "image_url",
+        ]
+        widgets = {
+            "image": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+                }
+            ),
+        }
+        labels = {
+            "image": "Photo du produit",
+        }
+        help_texts = {
+            "image": "JPEG ou PNG — affichée dans la boutique. Prioritaire sur l'URL ci-dessous.",
+        }
 
     def __init__(self, *args, vendor=None, **kwargs):
         self._vendor = vendor
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = marketplace_category_queryset(vendor=vendor)
+        if self.instance and self.instance.pk:
+            self.fields["image"].required = False
+
+    def clean_image(self):
+        if self.data.get("image-clear") == "on":
+            return None
+        uploaded = self.files.get("image")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.image:
+            return self.instance.image
+        return None
 
     def clean(self):
         cleaned = super().clean()
@@ -409,13 +443,26 @@ class ServiceProductForm(forms.ModelForm):
     )
     image_url = forms.URLField(
         required=False,
-        label="URL de l'image",
-        help_text="Lien vers une image illustrant le service"
+        label="URL de l'image (optionnel)",
+        help_text="Si vous n'uploadez pas de fichier, vous pouvez coller un lien vers une image en ligne.",
     )
-    
+
     class Meta:
         model = Product
-        fields = ["category", "name", "description", "price", "image_url"]
+        fields = ["category", "name", "description", "price", "image", "image_url"]
+        widgets = {
+            "image": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+                }
+            ),
+        }
+        labels = {
+            "image": "Photo du service",
+        }
+        help_texts = {
+            "image": "JPEG ou PNG — affichée dans la boutique. Prioritaire sur l'URL ci-dessous.",
+        }
 
     def __init__(self, *args, service_provider=None, **kwargs):
         self._service_provider = service_provider
@@ -423,6 +470,18 @@ class ServiceProductForm(forms.ModelForm):
         self.fields["category"].queryset = marketplace_category_queryset(
             service_provider=service_provider
         )
+        if self.instance and self.instance.pk:
+            self.fields["image"].required = False
+
+    def clean_image(self):
+        if self.data.get("image-clear") == "on":
+            return None
+        uploaded = self.files.get("image")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.image:
+            return self.instance.image
+        return None
 
     def clean(self):
         cleaned = super().clean()

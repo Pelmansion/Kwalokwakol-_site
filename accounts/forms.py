@@ -64,17 +64,37 @@ class ProfileForm(forms.ModelForm):
             "cover_photo": "Bandeau décoratif sous la barre du site lorsque vous êtes connecté.",
         }
         widgets = {
-            "avatar": forms.ClearableFileInput(
+            "avatar": forms.FileInput(
                 attrs={
                     "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
                 }
             ),
-            "cover_photo": forms.ClearableFileInput(
+            "cover_photo": forms.FileInput(
                 attrs={
                     "accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
                 }
             ),
         }
+
+    def clean_avatar(self):
+        if self.data.get("avatar-clear") == "on":
+            return None
+        uploaded = self.files.get("avatar")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.avatar:
+            return self.instance.avatar
+        return None
+
+    def clean_cover_photo(self):
+        if self.data.get("cover_photo-clear") == "on":
+            return None
+        uploaded = self.files.get("cover_photo")
+        if uploaded:
+            return uploaded
+        if self.instance.pk and self.instance.cover_photo:
+            return self.instance.cover_photo
+        return None
 
 
 class AddressForm(forms.ModelForm):

@@ -34,7 +34,7 @@
           <div class="provider-card__top">
             {% if provider.profile_photo %}
               <div class="provider-card__avatar">
-                <img src="{{ provider.profile_photo.url }}" alt="{{ provider.name }}" loading="lazy">
+                <img src="{{ provider.profile_photo|file_url }}" alt="{{ provider.name }}" loading="lazy" {% img_onerror_attr %}>
               </div>
             {% else %}
               <div class="provider-card__avatar provider-card__avatar--placeholder">

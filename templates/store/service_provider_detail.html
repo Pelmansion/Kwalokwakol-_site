@@ -15,7 +15,7 @@
         <div class="profile-card__identity">
           {% if service_provider.profile_photo %}
             <div class="profile-card__photo">
-              <img src="{{ service_provider.profile_photo.url }}" alt="{{ service_provider.name }}">
+              <img src="{{ service_provider.profile_photo|file_url }}" alt="{{ service_provider.name }}" {% img_onerror_attr %}>
             </div>
           {% else %}
             <div class="profile-card__photo profile-card__photo--placeholder">

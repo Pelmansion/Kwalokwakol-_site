@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load marketplace_tags %}
+{% load media_tags %}
 
 {% block title %}{{ product.name }} — Kolê Group{% endblock %}
 
@@ -25,10 +26,10 @@
             {% endif %}
           {% endfor %}
         </div>
-      {% elif product.image_url %}
-        <img src="{{ product.image_url }}" alt="{{ product.name }}">
       {% else %}
-        <div class="image-placeholder image-placeholder--large"></div>
+        <div class="product-detail__fallback">
+          {% include "store/_product_image.html" with product=product %}
+        </div>
       {% endif %}
     </div>
 
@@ -95,7 +96,7 @@
           <div class="service-detail-prestataire__header">
             {% if product.service_provider.profile_photo %}
               <div class="service-detail-prestataire__photo">
-                <img src="{{ product.service_provider.profile_photo.url }}" alt="{{ product.service_provider.name }}">
+                <img src="{{ product.service_provider.profile_photo|file_url }}" alt="{{ product.service_provider.name }}" {% img_onerror_attr %}>
               </div>
             {% else %}
               <div class="service-detail-prestataire__photo service-detail-prestataire__photo--placeholder">

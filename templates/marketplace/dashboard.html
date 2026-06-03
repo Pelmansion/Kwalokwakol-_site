@@ -109,13 +109,7 @@
       {% for product in products %}
         <article class="dashboard-product-card">
           <div class="dashboard-product-card__image">
-            {% if product.media.first %}
-              <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
-            {% elif product.image_url %}
-              <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
-            {% else %}
-              <div class="image-placeholder">📦</div>
-            {% endif %}
+            {% include "store/_product_image.html" with product=product %}
             {% if product.stock == 0 %}
               <span class="dashboard-product-card__stock dashboard-product-card__stock--out">Rupture</span>
             {% elif product.stock < 5 %}

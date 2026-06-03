@@ -17,13 +17,7 @@
               {% for item in items %}
                 <li class="cart-item" id="cart-item-{{ item.product.id }}">
                   <a href="{% url 'store:product_detail' item.product.slug %}" class="cart-item__thumb">
-                    {% if item.product.media.first %}
-                      <img src="{{ item.product.media.first.url }}" alt="{{ item.product.name }}" loading="lazy">
-                    {% elif item.product.image_url %}
-                      <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" loading="lazy">
-                    {% else %}
-                      <div class="cart-item__placeholder">📦</div>
-                    {% endif %}
+                    {% include "store/_product_image.html" with product=item.product %}
                   </a>
 
                   <div class="cart-item__info">
@@ -216,13 +210,7 @@
             {% for product in suggestions %}
               <a href="{% url 'store:product_detail' product.slug %}" class="suggestion-card">
                 <div class="suggestion-card__image">
-                  {% if product.media.first %}
-                    <img src="{{ product.media.first.url }}" alt="{{ product.name }}" loading="lazy">
-                  {% elif product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
-                  {% else %}
-                    <div class="suggestion-card__placeholder">📦</div>
-                  {% endif %}
+                  {% include "store/_product_image.html" with product=product %}
                 </div>
                 <div class="suggestion-card__body">
                   <h4>{{ product.name|truncatechars:40 }}</h4>

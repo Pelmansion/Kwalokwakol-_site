@@ -1,6 +1,7 @@
 {% load static %}
 {% load marketplace_tags %}
 {% load culture_tags %}
+{% load media_tags %}
 <!doctype html>
 <html lang="fr">
   <head>
@@ -103,7 +104,7 @@
             <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
               {% if user.is_authenticated %}
                 {% if user_profile and user_profile.avatar %}
-                  <img src="{{ user_profile.avatar.url }}" alt="" class="topbar__avatar">
+                  <img src="{{ user_profile.avatar|file_url }}" alt="" class="topbar__avatar" {% img_onerror_attr %}>
                 {% else %}
                   <span class="icon icon-user" aria-hidden="true"></span>
                 {% endif %}
@@ -193,7 +194,7 @@
 
     {% if user.is_authenticated and user_profile and user_profile.cover_photo %}
     <div class="user-cover-strip" role="img" aria-label="Photo de couverture de votre profil">
-      <img src="{{ user_profile.cover_photo.url }}" alt="" class="user-cover-strip__img" width="1600" height="360" loading="lazy" decoding="async">
+      <img src="{{ user_profile.cover_photo|file_url }}" alt="" class="user-cover-strip__img" width="1600" height="360" loading="lazy" decoding="async" {% img_onerror_attr %}>
     </div>
     {% endif %}
 
@@ -247,7 +248,7 @@
       {% endif %}
       <a class="bottom-nav__item" data-nav="account" href="{% if user.is_authenticated %}{% url 'accounts:profile' %}{% else %}{% url 'accounts:login' %}{% endif %}">
         {% if user.is_authenticated and user_profile and user_profile.avatar %}
-          <img src="{{ user_profile.avatar.url }}" alt="" class="bottom-nav__avatar">
+          <img src="{{ user_profile.avatar|file_url }}" alt="" class="bottom-nav__avatar" {% img_onerror_attr %}>
         {% else %}
           <span class="bottom-nav__icon bottom-nav__icon--compte"></span>
         {% endif %}

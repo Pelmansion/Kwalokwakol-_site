@@ -187,6 +187,12 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     old_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
+    image = models.ImageField(
+        upload_to="catalog/products/%Y/%m/",
+        blank=True,
+        null=True,
+        verbose_name="photo du produit",
+    )
     image_url = models.URLField(blank=True)
     kind = models.CharField(max_length=20, choices=KIND_CHOICES, default=PRODUCT)
     location = models.CharField(max_length=200, blank=True)

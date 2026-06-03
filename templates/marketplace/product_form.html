@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load media_tags %}
 {% block content %}
   <section class="container page-title">
     <h1>{% if product %}Modifier{% else %}Ajouter{% endif %} un produit/service</h1>
     <p class="muted">Gérez vos offres et services artisanaux.</p>
   </section>
   <section class="container auth-card">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       
       <p class="muted">Tous les champs marqués d'un astérisque (*) sont obligatoires, sauf indication contraire.</p>
@@ -92,7 +93,23 @@
       </div>
 
       <div class="form-group">
-        <label for="{{ form.image_url.id_for_label }}">URL de l'image</label>
+        <label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+        {% if product and product.image %}
+          <p class="muted" style="margin-bottom:8px;">
+            <img src="{{ product.image|file_url }}" alt="Photo actuelle" style="max-height:120px;border-radius:8px;" loading="lazy">
+          </p>
+        {% endif %}
+        {{ form.image }}
+        {% if form.image.help_text %}
+          <small class="help-text">{{ form.image.help_text }}</small>
+        {% endif %}
+        {% if form.image.errors %}
+          <div class="error">{{ form.image.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.image_url.id_for_label }}">{{ form.image_url.label }}</label>
         {{ form.image_url }}
         {% if form.image_url.help_text %}
           <small class="help-text">{{ form.image_url.help_text }}</small>

@@ -39,17 +39,9 @@
         <ul class="order-card__items">
           {% for item in order.items.all %}
             <li class="order-item">
-              {% with media=item.product.media.first %}
                 <div class="order-item__thumb">
-                  {% if media %}
-                    <img src="{{ media.url }}" alt="{{ item.product.name }}">
-                  {% elif item.product.image_url %}
-                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
-                  {% else %}
-                    <span aria-hidden="true">📦</span>
-                  {% endif %}
+                  {% include "store/_product_image.html" with product=item.product %}
                 </div>
-              {% endwith %}
               <div class="order-item__body">
                 <div class="order-item__name">{{ item.product.name|default:"Produit supprimé" }}</div>
                 <div class="order-item__meta muted">

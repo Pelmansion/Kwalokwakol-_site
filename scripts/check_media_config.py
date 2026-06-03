@@ -18,6 +18,39 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 
 
+_AWS_VARS = (
+    "AWS_STORAGE_BUCKET_NAME",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_S3_ENDPOINT_URL",
+    "AWS_S3_REGION_NAME",
+    "AWS_S3_CUSTOM_DOMAIN",
+    "AWS_LOCATION",
+)
+
+
+def _print_aws_env_status() -> None:
+    print("\n--- Variables AWS_* vues par ce shell ---")
+    for name in _AWS_VARS:
+        raw = os.environ.get(name)
+        if not raw:
+            print(f"  {name}: (absente ou vide)")
+        elif "SECRET" in name or "KEY" in name and name != "AWS_S3_CUSTOM_DOMAIN":
+            print(f"  {name}: definie ({len(raw)} caracteres)")
+        else:
+            print(f"  {name}: {raw.strip()}")
+    bucket = (os.environ.get("AWS_STORAGE_BUCKET_NAME") or "").strip()
+    key = (os.environ.get("AWS_ACCESS_KEY_ID") or "").strip()
+    secret = (os.environ.get("AWS_SECRET_ACCESS_KEY") or "").strip()
+    if not bucket:
+        print(
+            "\nCause probable : AWS_STORAGE_BUCKET_NAME manquant sur CE service web, "
+            "ou redeploiement pas encore fait apres ajout des variables."
+        )
+    elif not key or not secret:
+        print("\nCause probable : cles API R2 incomplètes (ID ou secret manquant).")
+
+
 def main() -> int:
     backend = settings.STORAGES["default"]["BACKEND"]
     cloud = getattr(settings, "USE_CLOUD_MEDIA", False)
@@ -56,6 +89,7 @@ def main() -> int:
             "  -> Configurez Cloudflare R2 (voir docs/RENDER_MEDIAS.md)\n"
             "  -> ou MEDIA_ROOT=/data/media + disque Render payant"
         )
+        _print_aws_env_status()
         return 1
 
     print("\n[OK] Mode local (dossier media/).")

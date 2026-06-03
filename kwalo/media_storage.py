@@ -68,8 +68,8 @@ def configure_media(
             "region_name": region,
             "file_overwrite": False,
             "querystring_auth": False,
-            # R2 : pas d'ACL S3 classiques
             "default_acl": None,
+            "addressing_style": "path",
         }
         if location:
             s3_options["location"] = location

@@ -23,40 +23,41 @@ def _cache_bust(url: str, token: str) -> str:
 @register.filter
 def file_url(file_field):
     """URL absolue ou racine du site pour un ImageField / FileField."""
-    if not file_field:
-        return ""
     try:
-        url = file_field.url
-    except (ValueError, AttributeError):
-        return ""
-    if not url:
-        return ""
-    if not url.startswith(("http://", "https://", "/")):
-        url = f"{settings.MEDIA_URL.rstrip('/')}/{url.lstrip('/')}"
-    try:
+        if not file_field:
+            return ""
+        try:
+            url = file_field.url
+        except (ValueError, AttributeError, OSError):
+            return ""
+        if not url:
+            return ""
+        if not url.startswith(("http://", "https://", "/")):
+            url = f"{settings.MEDIA_URL.rstrip('/')}/{url.lstrip('/')}"
         storage_name = getattr(file_field, "name", None) or ""
+        token = storage_name or url.rsplit("/", 1)[-1]
+        return _cache_bust(url, token)
     except Exception:
-        storage_name = ""
-    token = storage_name or url.rsplit("/", 1)[-1]
-    return _cache_bust(url, token)
+        return ""
 
 
 def get_product_image_url(product):
     """Image produit : fichier uploadé, média, puis URL externe."""
-    if not product:
-        return ""
-    image = getattr(product, "image", None)
-    if image:
-        u = file_url(image)
-        if u:
-            return u
     try:
-        media = product.media.filter(is_primary=True).first() or product.media.first()
-        if media and media.url:
-            return _cache_bust(media.url, f"media-{media.pk}")
+        if not product:
+            return ""
+        image = getattr(product, "image", None)
+        if image and getattr(image, "name", None):
+            u = file_url(image)
+            if u:
+                return u
+        if hasattr(product, "media"):
+            media = product.media.filter(is_primary=True).first() or product.media.first()
+            if media and getattr(media, "url", None):
+                return _cache_bust(media.url, f"media-{media.pk}")
+        return (getattr(product, "image_url", None) or "").strip()
     except Exception:
-        pass
-    return (getattr(product, "image_url", None) or "").strip()
+        return ""
 
 
 @register.simple_tag

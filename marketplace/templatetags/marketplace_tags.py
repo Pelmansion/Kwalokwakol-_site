@@ -2,8 +2,12 @@ from django import template
 
 from marketplace.models import ServiceProvider, Vendor
 from accounts.models import UserProfile
+from store.templatetags.media_tags import register as _media_register
 
 register = template.Library()
+# Tags médias (file_url, product_image_url…) disponibles avec {% load marketplace_tags %}
+register.filters.update(_media_register.filters)
+register.tags.update(_media_register.tags)
 
 
 @register.filter

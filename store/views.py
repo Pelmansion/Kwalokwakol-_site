@@ -26,6 +26,11 @@ from reviews.models import Review
 from subscriptions.utils import active_product_filter, active_subscription_q
 
 
+def handle_server_error(request):
+    """Page d’erreur lisible (évite l’écran blanc « Server Error (500) »)."""
+    return render(request, "500.html", status=500)
+
+
 DEFAULT_CATEGORIES = [
     "Alimentation",
     "Métiers du bâtiment",

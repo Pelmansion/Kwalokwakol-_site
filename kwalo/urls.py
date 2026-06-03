@@ -66,6 +66,8 @@ urlpatterns = [
     path("", include("store.urls")),
 ]
 
+handler500 = "store.views.handle_server_error"
+
 # Fichiers uploadés en local / disque persistant uniquement (R2/S3 = URLs directes HTTPS)
 _uses_cloud_media = (
     settings.STORAGES.get("default", {}).get("BACKEND", "")

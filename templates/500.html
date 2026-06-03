@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Erreur — Kolê Group{% endblock %}
+{% block content %}
+  <section class="container page-title" style="text-align:center;padding:48px 16px;">
+    <h1>Oups, une erreur est survenue</h1>
+    <p class="muted" style="max-width:520px;margin:16px auto;">
+      La page n’a pas pu s’afficher correctement. Réessayez dans un instant ou retournez à l’accueil.
+    </p>
+    <p style="margin-top:24px;">
+      <a class="btn" href="{% url 'store:home' %}">Retour à l’accueil</a>
+      <a class="btn btn--ghost" href="{% url 'store:product_list' %}">Voir le catalogue</a>
+    </p>
+  </section>
+{% endblock %}

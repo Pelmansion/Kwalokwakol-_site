@@ -56,6 +56,11 @@ def configure_media(
             installed_apps.append("storages")
 
         endpoint = (os.environ.get("AWS_S3_ENDPOINT_URL") or "").strip() or None
+        
+        # === CORRECTION : Sécurité de l'endpoint URL ===
+        if endpoint and not endpoint.startswith(("http://", "https://")):
+            endpoint = f"https://{endpoint}"
+
         custom_domain = (os.environ.get("AWS_S3_CUSTOM_DOMAIN") or "").strip() or None
         public_base = (os.environ.get("AWS_S3_PUBLIC_BASE_URL") or "").strip().rstrip("/")
         region = (os.environ.get("AWS_S3_REGION_NAME") or "auto").strip()
@@ -85,7 +90,6 @@ def configure_media(
             if location:
                 media_url = f"{media_url}{location}/"
         elif endpoint:
-            # Fallback — souvent non public ; préférer AWS_S3_CUSTOM_DOMAIN (pub-xxx.r2.dev)
             media_url = f"{endpoint.rstrip('/')}/{bucket}/"
             if location:
                 media_url = f"{media_url}{location}/"

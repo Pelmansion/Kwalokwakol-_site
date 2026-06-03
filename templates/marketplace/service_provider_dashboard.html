@@ -8,13 +8,6 @@
       <div class="dashboard-hero__main">
         <span class="section-eyebrow">Espace prestataire</span>
         <h1>Dashboard prestataire</h1>
-        <div class="dashboard-hero__meta">
-          <span>🤝 <strong>{{ service_provider.name }}</strong></span>
-          {% if service_provider.location %}<span>📍 {{ service_provider.location }}</span>{% endif %}
-          <span class="badge {% if service_provider.verification_status == 'verified' %}badge--success{% elif service_provider.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">
-            {% if service_provider.verification_status == 'verified' %}✓ Vérifié{% elif service_provider.verification_status == 'rejected' %}✗ Rejeté{% else %}⏳ En attente{% endif %}
-          </span>
-        </div>
       </div>
       <div class="dashboard-hero__actions">
         <a class="btn btn--ghost" href="{% url 'subscriptions:my_subscription' %}">💳 Abonnement</a>

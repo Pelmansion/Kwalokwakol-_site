@@ -8,13 +8,6 @@
       <div class="dashboard-hero__main">
         <span class="section-eyebrow">Espace vendeur</span>
         <h1>Dashboard vendeur</h1>
-        <div class="dashboard-hero__meta">
-          <span>🏪 <strong>{{ vendor.name }}</strong></span>
-          {% if vendor.location %}<span>📍 {{ vendor.location }}</span>{% endif %}
-          <span class="badge {% if vendor.verification_status == 'verified' %}badge--success{% elif vendor.verification_status == 'rejected' %}badge--danger{% else %}badge--warning{% endif %}">
-            {% if vendor.verification_status == 'verified' %}✓ Vérifié{% elif vendor.verification_status == 'rejected' %}✗ Rejeté{% else %}⏳ En attente{% endif %}
-          </span>
-        </div>
       </div>
       <div class="dashboard-hero__actions">
         <a class="btn btn--ghost" href="{% url 'subscriptions:my_subscription' %}">💳 Abonnement</a>

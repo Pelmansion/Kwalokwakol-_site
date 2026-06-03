@@ -2,6 +2,7 @@
 
 from django import template
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -49,7 +50,7 @@ def product_image_url(product):
     return get_product_image_url(product)
 
 
-@register.filter
-def img_onerror_attr(_unused=""):
-    """Attribut HTML onerror vers une icône de secours."""
-    return f'onerror="this.onerror=null;this.src=\'{_PLACEHOLDER}\';"'
+@register.simple_tag
+def img_onerror_attr():
+    """Attribut HTML onerror vers une icône de secours (usage : {% img_onerror_attr %})."""
+    return mark_safe(f'onerror="this.onerror=null;this.src=\'{_PLACEHOLDER}\';"')

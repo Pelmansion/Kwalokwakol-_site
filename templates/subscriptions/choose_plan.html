@@ -51,7 +51,13 @@
 
       {% if plans %}
         <div class="form-actions" style="margin-top: 30px; justify-content: center;">
-          <button type="submit" class="btn btn--primary" style="padding: 14px 32px; font-size: 1.05rem;">Continuer vers le paiement →</button>
+          <button type="submit" class="btn btn--primary" style="padding: 14px 32px; font-size: 1.05rem;">
+            {% if genius_payment %}
+              Payer avec GeniusPay (Wave, Orange, MTN, carte…) →
+            {% else %}
+              Continuer vers le paiement →
+            {% endif %}
+          </button>
         </div>
       {% endif %}
     </form>

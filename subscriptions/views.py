@@ -107,8 +107,10 @@ def choose_plan(request):
             sub.save()
             messages.success(
                 request,
-                f"Formule {plan.name} sélectionnée. Procédez au paiement pour activer votre compte.",
+                f"Formule {plan.name} sélectionnée. Redirection vers le paiement sécurisé…",
             )
+            if genius_is_configured() and sub.monthly_amount and sub.monthly_amount > 0:
+                return _begin_subscription_payment(request, sub)
             return redirect("subscriptions:my_subscription")
     else:
         form = ChoosePlanForm(target=target)
@@ -122,6 +124,7 @@ def choose_plan(request):
             "target": target,
             "vendor": vendor,
             "provider": provider,
+            "genius_payment": genius_is_configured(),
         },
     )
 
@@ -153,14 +156,11 @@ def my_subscription(request):
     )
 
 
-@login_required
-@require_POST
-def start_payment(request):
-    """Crée un paiement en attente puis redirige vers GeniusPay (obligatoire si configuré)."""
-    sub = get_user_subscription(request.user)
-    if not sub:
-        return redirect("subscriptions:choose_plan")
-
+def _begin_subscription_payment(request, sub: Subscription):
+    """
+    Crée un paiement GeniusPay et redirige vers la page de checkout
+    (Wave, Orange Money, MTN, carte…). Utilisé pour le premier paiement et le renouvellement.
+    """
     if not sub.monthly_amount or sub.monthly_amount <= 0:
         messages.error(
             request,
@@ -168,60 +168,85 @@ def start_payment(request):
         )
         return redirect("subscriptions:my_subscription")
 
-    if sub.is_active_now():
-        messages.info(request, "Votre abonnement est déjà actif.")
-        return redirect("subscriptions:my_subscription")
+    if sub.status == Subscription.STATUS_CANCELLED:
+        messages.error(
+            request,
+            "Cet abonnement est annulé. Choisissez une nouvelle formule pour réactiver votre espace.",
+        )
+        return redirect("subscriptions:choose_plan")
 
     owner = sub.owner_profile
+    if not owner:
+        messages.error(request, "Profil vendeur ou prestataire introuvable.")
+        return redirect("subscriptions:my_subscription")
+
     user = owner.owner
     plan_label = sub.plan.name if sub.plan else "Abonnement Kolê"
     phone = getattr(owner, "phone", "") or ""
+    renewing = sub.is_active_now()
+    action_label = "Renouvellement" if renewing else "Activation"
 
-    if genius_is_configured():
-        payment = SubscriptionPayment.objects.create(
-            subscription=sub,
-            amount=sub.monthly_amount,
-            provider=SubscriptionPayment.PROVIDER_GENIUS,
-            reference="",
+    if not genius_is_configured():
+        messages.error(
+            request,
+            "Le paiement en ligne (GeniusPay) n'est pas configuré sur le serveur. "
+            "Contactez l'administrateur ou réessayez plus tard.",
         )
-        success_url = request.build_absolute_uri(
-            reverse("subscriptions:genius_return", kwargs={"payment_id": payment.id})
-        )
-        error_url = request.build_absolute_uri(
-            reverse("subscriptions:genius_error", kwargs={"payment_id": payment.id})
-        )
-        try:
-            amt_int = int(payment.amount)
-            res = create_checkout_payment(
-                amount=payment.amount,
-                description=f"{plan_label} — {amt_int} FCFA / mois"[:500],
-                customer_name=user.get_full_name() or user.username,
-                customer_email=user.email or "",
-                customer_phone=phone,
-                metadata={
-                    "subscription_payment_id": str(payment.id),
-                    "kind": "subscription",
-                },
-                success_url=success_url,
-                error_url=error_url,
-            )
-        except GeniusPaymentError as exc:
-            payment.delete()
-            messages.error(request, str(exc))
-            return redirect("subscriptions:my_subscription")
+        return redirect("subscriptions:my_subscription")
 
-        ref = (res.get("reference") or "")[:80]
-        if ref:
-            payment.reference = ref
-            payment.save(update_fields=["reference"])
-        return redirect(res["checkout_url"])
-
-    messages.error(
-        request,
-        "Le paiement en ligne (GeniusPay) n'est pas configuré sur le serveur. "
-        "Contactez l'administrateur ou réessayez plus tard.",
+    payment = SubscriptionPayment.objects.create(
+        subscription=sub,
+        amount=sub.monthly_amount,
+        provider=SubscriptionPayment.PROVIDER_GENIUS,
+        reference="",
     )
-    return redirect("subscriptions:my_subscription")
+    success_url = request.build_absolute_uri(
+        reverse("subscriptions:genius_return", kwargs={"payment_id": payment.id})
+    )
+    error_url = request.build_absolute_uri(
+        reverse("subscriptions:genius_error", kwargs={"payment_id": payment.id})
+    )
+    try:
+        amt_int = int(payment.amount)
+        res = create_checkout_payment(
+            amount=payment.amount,
+            description=f"{action_label} {plan_label} — {amt_int} FCFA / mois"[:500],
+            customer_name=user.get_full_name() or user.username,
+            customer_email=user.email or "",
+            customer_phone=phone,
+            metadata={
+                "subscription_payment_id": str(payment.id),
+                "kind": "subscription",
+                "renewal": "1" if renewing else "0",
+            },
+            success_url=success_url,
+            error_url=error_url,
+        )
+    except GeniusPaymentError as exc:
+        payment.delete()
+        messages.error(request, str(exc))
+        return redirect("subscriptions:my_subscription")
+
+    ref = (res.get("reference") or "")[:80]
+    if ref:
+        payment.reference = ref
+        payment.save(update_fields=["reference"])
+    checkout_url = res.get("checkout_url")
+    if not checkout_url:
+        payment.delete()
+        messages.error(request, "GeniusPay n'a pas renvoyé d'URL de paiement.")
+        return redirect("subscriptions:my_subscription")
+    return redirect(checkout_url)
+
+
+@login_required
+@require_POST
+def start_payment(request):
+    """Crée un paiement en attente puis redirige vers GeniusPay."""
+    sub = get_user_subscription(request.user)
+    if not sub:
+        return redirect("subscriptions:choose_plan")
+    return _begin_subscription_payment(request, sub)
 
 
 @login_required

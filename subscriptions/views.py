@@ -14,9 +14,10 @@ from django.views.decorators.http import require_POST
 
 from marketplace.models import ServiceProvider, Vendor
 from payments.genius import (
+    GENIUS_UNAVAILABLE_USER_MSG,
     GeniusPaymentError,
-    create_checkout_payment,
     fetch_payment,
+    initiate_checkout,
     is_configured as genius_is_configured,
 )
 
@@ -186,14 +187,6 @@ def _begin_subscription_payment(request, sub: Subscription):
     renewing = sub.is_active_now()
     action_label = "Renouvellement" if renewing else "Activation"
 
-    if not genius_is_configured():
-        messages.error(
-            request,
-            "Le paiement en ligne (GeniusPay) n'est pas configuré sur le serveur. "
-            "Contactez l'administrateur ou réessayez plus tard.",
-        )
-        return redirect("subscriptions:my_subscription")
-
     payment = SubscriptionPayment.objects.create(
         subscription=sub,
         amount=sub.monthly_amount,
@@ -208,7 +201,7 @@ def _begin_subscription_payment(request, sub: Subscription):
     )
     try:
         amt_int = int(payment.amount)
-        res = create_checkout_payment(
+        res = initiate_checkout(
             amount=payment.amount,
             description=f"{action_label} {plan_label} — {amt_int} FCFA / mois"[:500],
             customer_name=user.get_full_name() or user.username,
@@ -231,12 +224,7 @@ def _begin_subscription_payment(request, sub: Subscription):
     if ref:
         payment.reference = ref
         payment.save(update_fields=["reference"])
-    checkout_url = res.get("checkout_url")
-    if not checkout_url:
-        payment.delete()
-        messages.error(request, "GeniusPay n'a pas renvoyé d'URL de paiement.")
-        return redirect("subscriptions:my_subscription")
-    return redirect(checkout_url)
+    return redirect(res["checkout_url"])
 
 
 @login_required
@@ -251,34 +239,20 @@ def start_payment(request):
 
 @login_required
 def payment_sandbox(request, payment_id: int):
-    """Sandbox simulée pour régler un abonnement (si GeniusPay non configuré)."""
+    """Ancienne URL de test — redirige vers GeniusPay ou la page abonnement."""
     payment = get_object_or_404(SubscriptionPayment, id=payment_id)
     sub = payment.subscription
-
-    # Sécurité : seul le propriétaire peut régler
     owner = sub.owner_profile
     if not owner or owner.owner_id != request.user.id:
         raise Http404
 
     if payment.provider == SubscriptionPayment.PROVIDER_GENIUS:
-        return redirect("subscriptions:genius_return", payment_id=payment.id)
+        if payment.reference:
+            return redirect("subscriptions:genius_return", payment_id=payment.id)
+        return _begin_subscription_payment(request, sub)
 
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "success":
-            payment.mark_success()
-            messages.success(request, "Paiement validé ! Votre abonnement est actif.")
-            return redirect("subscriptions:payment_success", payment_id=payment.id)
-        if action == "fail":
-            payment.mark_failed("Paiement refusé (simulation)")
-            messages.error(request, "Le paiement a échoué. Vous pouvez réessayer.")
-            return redirect("subscriptions:my_subscription")
-
-    return render(
-        request,
-        "subscriptions/payment_sandbox.html",
-        {"payment": payment, "subscription": sub},
-    )
+    messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
+    return redirect("subscriptions:my_subscription")
 
 
 @login_required

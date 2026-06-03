@@ -139,6 +139,38 @@ def create_checkout_payment(
     }
 
 
+def initiate_checkout(
+    *,
+    amount: Decimal | float,
+    description: str,
+    customer_name: str,
+    customer_email: str = "",
+    customer_phone: str = "",
+    metadata: dict[str, str] | None = None,
+    success_url: str,
+    error_url: str,
+) -> dict[str, Any]:
+    """
+    Point d'entrée unique pour ouvrir le checkout GeniusPay
+    (abonnements, commandes boutique, musique, billets).
+    """
+    if not is_configured():
+        raise GeniusPaymentError(GENIUS_UNAVAILABLE_USER_MSG)
+    res = create_checkout_payment(
+        amount=amount,
+        description=description,
+        customer_name=customer_name,
+        customer_email=customer_email,
+        customer_phone=customer_phone,
+        metadata=metadata or {},
+        success_url=success_url,
+        error_url=error_url,
+    )
+    if not res.get("checkout_url"):
+        raise GeniusPaymentError("Réponse GeniusPay sans URL de paiement.")
+    return res
+
+
 def fetch_payment(reference: str) -> dict[str, Any]:
     """GET /payments/{reference} — statut completed / pending / failed."""
     if not is_configured():

@@ -22,8 +22,11 @@ def category_nav(request):
         except (TypeError, ValueError):
             continue
     favorites_count = len(favorites)
+    from payments.genius import is_configured as genius_is_configured
+
     return {
         "nav_categories": categories,
         "cart_count": cart_count,
         "favorites_count": favorites_count,
+        "genius_payment": genius_is_configured(),
     }

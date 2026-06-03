@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from orders.models import Order
 
 from .genius import (
+    GENIUS_UNAVAILABLE_USER_MSG,
     GeniusPaymentError,
     fetch_payment,
     is_configured,
@@ -48,11 +49,14 @@ def payment_sandbox(request, payment_id):
         )
         return redirect("store:order_success", order_id=order.id)
 
-    messages.warning(
-        request,
-        "Ce lien de simulation n'est plus utilisé. Le paiement en ligne se fait via GeniusPay.",
-    )
-    return redirect("store:home")
+    if is_configured():
+        messages.info(
+            request,
+            "Le paiement en ligne se fait via GeniusPay. Repassez commande depuis votre panier.",
+        )
+    else:
+        messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
+    return redirect("store:cart_detail")
 
 
 @login_required

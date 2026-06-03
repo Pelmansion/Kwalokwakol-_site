@@ -18,7 +18,7 @@ from orders.models import Order, OrderItem
 from store.delivery import cart_delivery_fee
 from payments.genius import (
     GeniusPaymentError,
-    create_checkout_payment,
+    initiate_checkout,
     is_configured as genius_is_configured,
 )
 from payments.models import Payment
@@ -1059,13 +1059,17 @@ def checkout(request):
             reverse("payments:genius_error", kwargs={"payment_id": payment.id})
         )
         try:
-            res = create_checkout_payment(
+            res = initiate_checkout(
                 amount=order.total_amount,
                 description=f"Commande #{order.id} — Kolê",
                 customer_name=order.full_name,
                 customer_email=order.email,
                 customer_phone=order.phone,
-                metadata={"payment_id": str(payment.id), "order_id": str(order.id)},
+                metadata={
+                    "payment_id": str(payment.id),
+                    "order_id": str(order.id),
+                    "kind": "order",
+                },
                 success_url=success_url,
                 error_url=error_url,
             )

@@ -15,11 +15,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from django.conf import settings
+
 from payments.genius import (
     GENIUS_UNAVAILABLE_USER_MSG,
     GeniusPaymentError,
-    create_checkout_payment,
     fetch_payment,
+    initiate_checkout,
     is_configured as genius_is_configured,
 )
 
@@ -244,7 +246,7 @@ def song_buy(request, slug):
             )
         )
         try:
-            res = create_checkout_payment(
+            res = initiate_checkout(
                 amount=purchase.amount_fcfa,
                 description=f"Achat musique — {song.title}"[:500],
                 customer_name=request.user.get_full_name() or request.user.username,
@@ -274,12 +276,15 @@ def song_buy(request, slug):
 
 @login_required
 def song_payment_sandbox(request, slug, reference):
-    """Ancienne page de test — redirige vers GeniusPay si configuré."""
+    """Ancienne page de test — redirige vers GeniusPay."""
     if genius_is_configured():
         messages.info(
             request,
             "Le paiement s'effectue sur GeniusPay. Relancez l'achat depuis la fiche de la chanson.",
         )
+        return redirect("culture:song_detail", slug=slug)
+    if not settings.DEBUG:
+        messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
         return redirect("culture:song_detail", slug=slug)
     song = get_object_or_404(_published_songs(), slug=slug)
     purchase = get_object_or_404(SongPurchase, reference=reference, song=song, user=request.user)
@@ -478,59 +483,52 @@ def ticket_purchase(request, slug):
                 first_ref = tickets[0].reference
                 total = sum(t.amount_fcfa for t in tickets)
 
-                if genius_is_configured():
-                    success_url = request.build_absolute_uri(
-                        reverse(
-                            "culture:ticket_genius_return",
-                            kwargs={"slug": event.slug, "reference": first_ref},
-                        )
+                success_url = request.build_absolute_uri(
+                    reverse(
+                        "culture:ticket_genius_return",
+                        kwargs={"slug": event.slug, "reference": first_ref},
                     )
-                    error_url = request.build_absolute_uri(
-                        reverse(
-                            "culture:ticket_genius_error",
-                            kwargs={"slug": event.slug, "reference": first_ref},
-                        )
+                )
+                error_url = request.build_absolute_uri(
+                    reverse(
+                        "culture:ticket_genius_error",
+                        kwargs={"slug": event.slug, "reference": first_ref},
                     )
-                    try:
-                        res = create_checkout_payment(
-                            amount=total,
-                            description=f"Billets — {event.title}"[:500],
-                            customer_name=form.cleaned_data["buyer_name"],
-                            customer_email=form.cleaned_data["buyer_email"],
-                            customer_phone=(form.cleaned_data["buyer_phone"] or "")[:30],
-                            metadata={
-                                "kind": "ticket_batch",
-                                "ticket_refs": ",".join(str(t.reference) for t in tickets),
-                            },
-                            success_url=success_url,
-                            error_url=error_url,
-                        )
-                    except GeniusPaymentError as exc:
-                        for t in tickets:
-                            t.delete()
-                        request.session.pop("pending_tickets", None)
-                        messages.error(request, str(exc))
-                        return redirect("culture:event_detail", slug=event.slug)
-                    gref = (res.get("reference") or "")[:80]
-                    if gref:
-                        Ticket.objects.filter(pk__in=[t.pk for t in tickets]).update(
-                            genius_reference=gref
-                        )
-                    else:
-                        for t in tickets:
-                            t.delete()
-                        request.session.pop("pending_tickets", None)
-                        messages.error(
-                            request,
-                            "Référence de paiement GeniusPay manquante. Réessayez la billetterie.",
-                        )
-                        return redirect("culture:event_detail", slug=event.slug)
-
-                for t in tickets:
-                    t.delete()
-                request.session.pop("pending_tickets", None)
-                messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
-                return redirect("culture:event_detail", slug=event.slug)
+                )
+                try:
+                    res = initiate_checkout(
+                        amount=total,
+                        description=f"Billets — {event.title}"[:500],
+                        customer_name=form.cleaned_data["buyer_name"],
+                        customer_email=form.cleaned_data["buyer_email"],
+                        customer_phone=(form.cleaned_data["buyer_phone"] or "")[:30],
+                        metadata={
+                            "kind": "ticket_batch",
+                            "ticket_refs": ",".join(str(t.reference) for t in tickets),
+                        },
+                        success_url=success_url,
+                        error_url=error_url,
+                    )
+                except GeniusPaymentError as exc:
+                    for t in tickets:
+                        t.delete()
+                    request.session.pop("pending_tickets", None)
+                    messages.error(request, str(exc))
+                    return redirect("culture:event_detail", slug=event.slug)
+                gref = (res.get("reference") or "")[:80]
+                if not gref:
+                    for t in tickets:
+                        t.delete()
+                    request.session.pop("pending_tickets", None)
+                    messages.error(
+                        request,
+                        "Référence de paiement GeniusPay manquante. Réessayez la billetterie.",
+                    )
+                    return redirect("culture:event_detail", slug=event.slug)
+                Ticket.objects.filter(pk__in=[t.pk for t in tickets]).update(
+                    genius_reference=gref
+                )
+                return redirect(res["checkout_url"])
     else:
         form = TicketBuyerForm(
             initial={
@@ -557,6 +555,9 @@ def ticket_payment_sandbox(request, slug, reference):
             request,
             "Le paiement s'effectue sur GeniusPay. Reprenez l'achat depuis la page du concert.",
         )
+        return redirect("culture:event_detail", slug=slug)
+    if not settings.DEBUG:
+        messages.error(request, GENIUS_UNAVAILABLE_USER_MSG)
         return redirect("culture:event_detail", slug=slug)
     event = get_object_or_404(_published_events(), slug=slug)
     pending_refs = request.session.get("pending_tickets", [str(reference)])

@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
 from .auth_backends import resolve_login_to_user
+from .media_utils import replace_image_field, uploaded_image_file, validate_profile_image
 from .models import Address, UserProfile
 
 
@@ -48,25 +49,6 @@ class SignupForm(UserCreationForm):
         return user
 
 
-def _uploaded_image_file(files, field_name):
-    """Fichier image réellement envoyé (ignore le champ vide du navigateur)."""
-    uploaded = files.get(field_name)
-    if uploaded and getattr(uploaded, "size", 0) > 0:
-        return uploaded
-    return None
-
-
-def _validate_profile_image(uploaded, *, label):
-    max_bytes = 5 * 1024 * 1024
-    if uploaded.size > max_bytes:
-        raise forms.ValidationError(
-            f"{label} : fichier trop lourd (max. 5 Mo). Compressez l’image ou choisissez un autre fichier."
-        )
-    content_type = (getattr(uploaded, "content_type", None) or "").lower()
-    if content_type and not content_type.startswith("image/"):
-        raise forms.ValidationError(f"{label} : format non pris en charge (JPG ou PNG recommandé).")
-
-
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
@@ -96,31 +78,31 @@ class ProfileForm(forms.ModelForm):
         }
 
     def clean_avatar(self):
-        uploaded = _uploaded_image_file(self.files, "avatar")
+        uploaded = uploaded_image_file(self.files, "avatar")
         if uploaded:
-            _validate_profile_image(uploaded, label="Photo de profil")
+            validate_profile_image(uploaded, label="Photo de profil")
             return uploaded
         if self.instance.pk and self.instance.avatar:
             return self.instance.avatar
         return None
 
     def clean_cover_photo(self):
-        uploaded = _uploaded_image_file(self.files, "cover_photo")
+        uploaded = uploaded_image_file(self.files, "cover_photo")
         if uploaded:
-            _validate_profile_image(uploaded, label="Photo de couverture")
+            validate_profile_image(uploaded, label="Photo de couverture")
             return uploaded
         if self.instance.pk and self.instance.cover_photo:
             return self.instance.cover_photo
         return None
 
     def save(self, commit=True):
+        avatar_new = uploaded_image_file(self.files, "avatar")
+        cover_new = uploaded_image_file(self.files, "cover_photo")
         profile = super().save(commit=False)
-        avatar = _uploaded_image_file(self.files, "avatar")
-        cover = _uploaded_image_file(self.files, "cover_photo")
-        if avatar:
-            profile.avatar = avatar
-        if cover:
-            profile.cover_photo = cover
+        if avatar_new:
+            replace_image_field(profile, "avatar", avatar_new)
+        if cover_new:
+            replace_image_field(profile, "cover_photo", cover_new)
         if commit:
             profile.save()
             self.save_m2m()

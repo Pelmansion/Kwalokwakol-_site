@@ -82,6 +82,7 @@ def profile(request):
         if form.is_valid():
             try:
                 form.save()
+                profile_obj.refresh_from_db()
             except Exception:
                 messages.error(
                     request,

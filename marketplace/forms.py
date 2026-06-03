@@ -1,6 +1,7 @@
 from django import forms
 from django.db.models import Q
 
+from accounts.media_utils import replace_image_field, uploaded_image_file, validate_profile_image
 from catalog.models import Category, CategoryShowcaseImage, Product
 from orders.models import Order
 
@@ -172,14 +173,23 @@ class ProductForm(forms.ModelForm):
             self.fields["image"].required = False
 
     def clean_image(self):
-        if self.data.get("image-clear") == "on":
-            return None
-        uploaded = self.files.get("image")
+        uploaded = uploaded_image_file(self.files, "image")
         if uploaded:
+            validate_profile_image(uploaded, label="Photo du produit")
             return uploaded
         if self.instance.pk and self.instance.image:
             return self.instance.image
         return None
+
+    def save(self, commit=True):
+        image_new = uploaded_image_file(self.files, "image")
+        product = super().save(commit=False)
+        if image_new:
+            replace_image_field(product, "image", image_new)
+        if commit:
+            product.save()
+            self.save_m2m()
+        return product
 
     def clean(self):
         cleaned = super().clean()
@@ -474,14 +484,23 @@ class ServiceProductForm(forms.ModelForm):
             self.fields["image"].required = False
 
     def clean_image(self):
-        if self.data.get("image-clear") == "on":
-            return None
-        uploaded = self.files.get("image")
+        uploaded = uploaded_image_file(self.files, "image")
         if uploaded:
+            validate_profile_image(uploaded, label="Photo du service")
             return uploaded
         if self.instance.pk and self.instance.image:
             return self.instance.image
         return None
+
+    def save(self, commit=True):
+        image_new = uploaded_image_file(self.files, "image")
+        product = super().save(commit=False)
+        if image_new:
+            replace_image_field(product, "image", image_new)
+        if commit:
+            product.save()
+            self.save_m2m()
+        return product
 
     def clean(self):
         cleaned = super().clean()

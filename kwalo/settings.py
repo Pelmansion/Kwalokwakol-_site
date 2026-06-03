@@ -175,6 +175,9 @@ _media = configure_media(
 MEDIA_URL = _media["MEDIA_URL"]
 MEDIA_ROOT = _media["MEDIA_ROOT"]
 
+# === CORRECTION : Requis pour le script check_media_config.py ===
+USE_CLOUD_MEDIA = _media["USE_CLOUD_MEDIA"]
+
 STORAGES = {
     "default": _media["STORAGES_DEFAULT"],
     "staticfiles": {"BACKEND": _staticfiles_backend},

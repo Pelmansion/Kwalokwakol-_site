@@ -31,11 +31,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-_9@-j=piy=kt$@j0$nu_g
 # DEBUG est False par défaut en production
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
+# CORRECTION ALLOWED_HOSTS : Ajout de '*' temporaire pour s'assurer que le domaine de test Render ne bloque pas l'accès
 ALLOWED_HOSTS = [
     'xn--kolgroup-m1a.com',
     'www.xn--kolgroup-m1a.com',
     'kolêgroup.com',
     'www.kolêgroup.com',
+    '*', 
 ]
 _render_host = (os.environ.get('RENDER_EXTERNAL_HOSTNAME') or '').strip()
 if _render_host:
@@ -53,13 +55,14 @@ if DEBUG:
 _local_csrf_hosts = frozenset({"localhost", "127.0.0.1", "[::1]"})
 CSRF_TRUSTED_ORIGINS = []
 for _h in ALLOWED_HOSTS:
+    if _h == '*':
+        continue
     if _h in _local_csrf_hosts:
         CSRF_TRUSTED_ORIGINS.extend((f"http://{_h}:8000", f"http://{_h}"))
     else:
         CSRF_TRUSTED_ORIGINS.append(f"https://{_h}")
 
 # Origines supplémentaires (domaine Render, préprod, autre TLD…) — CSV dans l’environnement :
-# CSRF_TRUSTED_ORIGINS=https://mon-domaine.com,https://www.mon-domaine.com
 _extra_csrf = (os.environ.get("CSRF_TRUSTED_ORIGINS") or "").strip()
 if _extra_csrf:
     for _raw in _extra_csrf.split(","):
@@ -145,7 +148,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# Production : DATABASE_URL dans Render (base Postgres liée au service web).
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
@@ -153,7 +155,6 @@ DATABASES = {
         ssl_require=True,
     )
 }
-
 
 # --- STATICS & MEDIA ---
 STATIC_URL = '/static/'
@@ -166,7 +167,6 @@ _staticfiles_backend = (
     else "whitenoise.storage.CompressedStaticFilesStorage"
 )
 
-# Fichiers uploadés : dossier media/ (local) ou MEDIA_ROOT (disque Render) ou bucket S3/R2
 _media = configure_media(
     base_dir=BASE_DIR,
     debug=DEBUG,
@@ -175,7 +175,7 @@ _media = configure_media(
 MEDIA_URL = _media["MEDIA_URL"]
 MEDIA_ROOT = _media["MEDIA_ROOT"]
 
-# === CORRECTION : Requis pour le script check_media_config.py ===
+# Requis pour le script check_media_config.py
 USE_CLOUD_MEDIA = _media["USE_CLOUD_MEDIA"]
 
 STORAGES = {
@@ -183,14 +183,16 @@ STORAGES = {
     "staticfiles": {"BACKEND": _staticfiles_backend},
 }
 
-# Téléversements (affiches, bâches, photos de profil) — évite les erreurs silencieuses sur gros fichiers
-DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024  # 15 Mo par requête (corps multipart)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024  
 FILE_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
 # --- SÉCURITÉ HTTPS EN PRODUCTION ---
 if not DEBUG:
+    # On indique à Django de faire confiance aux en-têtes SSL de Render
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = True
+    # CORRECTION : On passe temporairement à False pour stopper la boucle infinie de redirection 301.
+    # Note : Render force déjà le HTTPS au niveau de ses routeurs par défaut.
+    SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
@@ -213,7 +215,6 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-# Paramètres Allauth pour forcer l'activation
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -221,7 +222,7 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"  # Force le lien en HTTPS
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"  
 
 # --- EMAILS CONFIGURATION (GMAIL SMTP) ---
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -234,18 +235,13 @@ DEFAULT_FROM_EMAIL = f"Kolê Group <{EMAIL_HOST_USER}>"
 
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
 
-# --- GENIUSPAY (https://pay.genius.ci/docs/api) ---
-# Ne jamais committer les clés. Le fichier .env est gitignoré : en production (Render, etc.),
-# définir GENIUS_API_KEY et GENIUS_API_SECRET dans l’onglet Environment du service.
-# decouple lit d’abord les variables d’environnement du processus, puis .env si présent.
-# Environnement : pk_sandbox_ / sk_sandbox_ = tests (aucun débit réel) ;
-# pk_live_ / sk_live_ = encaissements réels (compte marchand validé côté GeniusPay).
+# --- GENIUSPAY ---
 GENIUS_API_KEY = config("GENIUS_API_KEY", default="").strip()
 GENIUS_API_SECRET = config("GENIUS_API_SECRET", default="").strip()
 GENIUS_WEBHOOK_SECRET = config("GENIUS_WEBHOOK_SECRET", default="").strip()
 GENIUS_DEFAULT_COUNTRY = config("GENIUS_DEFAULT_COUNTRY", default="CI").strip() or "CI"
 
-# --- LOGS (Render : onglet Logs → traceback des erreurs 500) ---
+# --- LOGS ---
 if not DEBUG:
     LOGGING = {
         "version": 1,

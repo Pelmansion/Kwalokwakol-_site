@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+
 from django import forms
+
+logger = logging.getLogger(__name__)
 
 
 def uploaded_image_file(files, field_name):
@@ -24,11 +28,23 @@ def validate_profile_image(uploaded, *, label):
         raise forms.ValidationError(f"{label} : format non pris en charge (JPG ou PNG recommandé).")
 
 
-def replace_image_field(instance, field_name, new_file):
-    """Supprime l'ancien fichier puis assigne le nouveau (évite doublons / cache R2)."""
-    if not new_file:
+def delete_stored_file(field_file) -> None:
+    """Supprime un fichier déjà enregistré (ignore si absent ou erreur R2)."""
+    if not field_file:
+        return
+    name = getattr(field_file, "name", None) or ""
+    if not name:
+        return
+    try:
+        field_file.storage.delete(name)
+    except Exception as exc:
+        logger.warning("Suppression média ignorée (%s): %s", name, exc)
+
+
+def clear_old_image_before_upload(instance, field_name: str, *, new_upload) -> None:
+    """Efface l’ancien fichier en base avant d’enregistrer le nouveau."""
+    if not new_upload:
         return
     current = getattr(instance, field_name, None)
-    if current:
-        current.delete(save=False)
-    setattr(instance, field_name, new_file)
+    if current and current.name:
+        delete_stored_file(current)

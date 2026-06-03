@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 
-from accounts.media_utils import replace_image_field, uploaded_image_file, validate_profile_image
+from accounts.media_utils import clear_old_image_before_upload, uploaded_image_file, validate_profile_image
 from catalog.models import Category, CategoryShowcaseImage, Product
 from orders.models import Order
 
@@ -183,9 +183,8 @@ class ProductForm(forms.ModelForm):
 
     def save(self, commit=True):
         image_new = uploaded_image_file(self.files, "image")
+        clear_old_image_before_upload(self.instance, "image", new_upload=image_new)
         product = super().save(commit=False)
-        if image_new:
-            replace_image_field(product, "image", image_new)
         if commit:
             product.save()
             self.save_m2m()
@@ -494,9 +493,8 @@ class ServiceProductForm(forms.ModelForm):
 
     def save(self, commit=True):
         image_new = uploaded_image_file(self.files, "image")
+        clear_old_image_before_upload(self.instance, "image", new_upload=image_new)
         product = super().save(commit=False)
-        if image_new:
-            replace_image_field(product, "image", image_new)
         if commit:
             product.save()
             self.save_m2m()

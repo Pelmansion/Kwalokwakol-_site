@@ -1,4 +1,7 @@
 import json
+import logging
+
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -15,6 +18,8 @@ from orders.models import Order
 from .email_utils import get_user_from_token, send_verification_email
 from .forms import ProfileForm, SignupForm
 from .models import UserProfile
+
+logger = logging.getLogger(__name__)
 
 
 def signup(request):
@@ -83,12 +88,15 @@ def profile(request):
             try:
                 form.save()
                 profile_obj.refresh_from_db()
-            except Exception:
+            except Exception as exc:
+                logger.exception("Échec enregistrement photos profil user=%s", request.user.pk)
                 messages.error(
                     request,
                     "Impossible d’enregistrer les photos. Vérifiez la configuration R2 sur le serveur "
                     "ou réessayez avec une image plus légère (max. 5 Mo).",
                 )
+                if settings.DEBUG:
+                    messages.error(request, f"Détail technique : {exc}")
             else:
                 messages.success(
                     request,

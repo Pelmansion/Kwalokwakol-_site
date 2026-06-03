@@ -173,21 +173,32 @@ _media = configure_media(
     installed_apps=INSTALLED_APPS,
 )
 
-# --- CORRECTION POUR L'AFFICHAGE CLOUDFLARE R2 ---
+# --- CORRECTION FINALE POUR CLOUDFLARE R2 (LECTURE & ÉCRITURE) ---
 if not DEBUG and _media["USE_CLOUD_MEDIA"]:
-    # On force Django à utiliser l'URL publique de développement R2 pour la lecture
+    # 1. On définit le domaine public pour la lecture dans le navigateur
     AWS_S3_CUSTOM_DOMAIN = 'pub-8bba0406ebc941029e3fd22bfb86bd2a.r2.dev'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
     
-    # On met à jour la configuration du stockage par défaut
-    if "STORAGES_DEFAULT" in _media and "OPTIONS" in _media["STORAGES_DEFAULT"]:
+    # 2. On s'assure que le dictionnaire OPTIONS existe dans ton backend de stockage
+    if "STORAGES_DEFAULT" in _media:
+        if "OPTIONS" not in _media["STORAGES_DEFAULT"]:
+            _media["STORAGES_DEFAULT"]["OPTIONS"] = {}
+        
+        # Force le domaine personnalisé pour l'affichage des images
         _media["STORAGES_DEFAULT"]["OPTIONS"]["custom_domain"] = AWS_S3_CUSTOM_DOMAIN
+        
+        #DÉSACTIVE la signature des URL (Indispensable pour éviter l'erreur d'enregistrement sur R2)
+        _media["STORAGES_DEFAULT"]["OPTIONS"]["querystring_auth"] = False
+        
+        # Force l'adresse d'écriture (Vérifie que ton point de terminaison S3 y est bien)
+        _media["STORAGES_DEFAULT"]["OPTIONS"]["endpoint_url"] = 'https://88c8d6eb1b7f795dd10db7450be651ef.r2.cloudflarestorage.com'
 else:
     MEDIA_URL = _media["MEDIA_URL"]
 
 MEDIA_ROOT = _media["MEDIA_ROOT"]
 USE_CLOUD_MEDIA = _media["USE_CLOUD_MEDIA"]
 
+# Injection finale dans Django
 STORAGES = {
     "default": _media["STORAGES_DEFAULT"],
     "staticfiles": {"BACKEND": _staticfiles_backend},

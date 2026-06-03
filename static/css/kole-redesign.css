@@ -978,6 +978,43 @@ h1, h2, h3, .page-title h1, .flash__header h2,
   margin: 0;
   color: var(--muted);
 }
+.orders-table__pagination,
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 12px 0;
+  font-size: 14px;
+}
+.pagination a {
+  color: var(--rust);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+.pagination a:hover {
+  border-color: var(--rust);
+  background: var(--primary-50);
+}
+.pagination .current {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.pagination .disabled {
+  color: var(--muted);
+  padding: 8px 14px;
+}
+.orders-table__page-info {
+  text-align: center;
+  margin: 14px 0 0;
+  font-size: 13px;
+}
 
 .service-requests-table .service-requests-table__head,
 .service-requests-table .service-requests-table__row {

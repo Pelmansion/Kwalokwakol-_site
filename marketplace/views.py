@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Count, DecimalField, F, Max, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -141,18 +142,21 @@ def dashboard(request):
         return gate
 
     products = Product.objects.filter(vendor=vendor, kind=Product.PRODUCT)
-    order_items = (
+    order_items_qs = (
         OrderItem.objects.filter(product__vendor=vendor)
         .select_related("order", "product")
         .order_by("-order__created_at")
     )
+    order_items_page = Paginator(order_items_qs, 10).get_page(
+        request.GET.get("orders_page", 1)
+    )
     service_requests = ServiceRequest.objects.filter(vendor=vendor).select_related(
         "service", "customer"
     )
-    revenue = order_items.aggregate(
+    revenue = order_items_qs.aggregate(
         total=Sum(F("unit_price") * F("quantity"), output_field=DecimalField())
     )["total"] or 0
-    total_orders = order_items.values("order_id").distinct().count()
+    total_orders = order_items_qs.values("order_id").distinct().count()
     total_products = products.count()
     recent_reviews = (
         Review.objects.filter(product__vendor=vendor, is_approved=True)
@@ -186,7 +190,7 @@ def dashboard(request):
             "vendor": vendor,
             "subscription": vendor.subscription,
             "products": products,
-            "order_items": order_items,
+            "order_items_page": order_items_page,
             "revenue": revenue,
             "total_orders": total_orders,
             "total_products": total_products,

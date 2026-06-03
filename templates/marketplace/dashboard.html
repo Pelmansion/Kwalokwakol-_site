@@ -141,7 +141,7 @@
     </div>
   </section>
 
-  <section class="container dash-section">
+  <section class="container dash-section" id="commandes">
     <div class="dash-section__head">
       <h2>Commandes &amp; livraisons</h2>
       <p class="dash-section__subtitle">Gérez le statut et le suivi de vos commandes</p>
@@ -155,7 +155,7 @@
         <div>Montant</div>
         <div>Gestion</div>
       </div>
-      {% for item in order_items %}
+      {% for item in order_items_page %}
         <div class="table-row orders-table__row">
           <div class="orders-table__product">
             <strong>{{ item.product.name }}</strong>
@@ -190,6 +190,28 @@
         <p class="empty orders-table__empty">Aucune commande pour le moment.</p>
       {% endfor %}
     </div>
+    {% if order_items_page.has_other_pages %}
+      <nav class="pagination orders-table__pagination" aria-label="Pagination des commandes">
+        {% if order_items_page.has_previous %}
+          <a href="?orders_page={{ order_items_page.previous_page_number }}#commandes">‹ Préc.</a>
+        {% else %}
+          <span class="disabled">‹ Préc.</span>
+        {% endif %}
+        <span class="current">
+          Page {{ order_items_page.number }} / {{ order_items_page.paginator.num_pages }}
+          · {{ order_items_page.paginator.count }} ligne{{ order_items_page.paginator.count|pluralize }}
+        </span>
+        {% if order_items_page.has_next %}
+          <a href="?orders_page={{ order_items_page.next_page_number }}#commandes">Suiv. ›</a>
+        {% else %}
+          <span class="disabled">Suiv. ›</span>
+        {% endif %}
+      </nav>
+    {% elif order_items_page.paginator.count %}
+      <p class="orders-table__page-info muted">
+        {{ order_items_page.paginator.count }} ligne{{ order_items_page.paginator.count|pluralize }} · 10 par page
+      </p>
+    {% endif %}
   </section>
 
   <section class="container dash-section">

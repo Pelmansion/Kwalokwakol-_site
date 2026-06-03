@@ -665,20 +665,50 @@ h1, h2, h3, .page-title h1, .flash__header h2,
 }
 .culture-cta__card h2 { font-family: var(--font-serif); color: #fff; }
 
-/* ─── Dashboard vendeur ─── */
+/* ─── Dashboard vendeur / prestataire / abonnements ─── */
 .dashboard-hero {
   background: linear-gradient(135deg, #1a1310, #2c1f18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xl);
   color: #fff;
   padding: 28px 32px;
   margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
 }
 .dashboard-hero h1,
 .dashboard-hero h2 {
   font-family: var(--font-serif);
   color: #fff;
 }
-.dashboard-hero__tagline { color: rgba(255, 255, 255, 0.7); }
+.dashboard-hero .section-eyebrow {
+  color: var(--amber-light);
+}
+.dashboard-hero .section-eyebrow::before {
+  background: var(--amber);
+}
+.dashboard-hero__tagline,
+.dashboard-hero__meta,
+.dashboard-hero__meta span,
+.dashboard-hero__meta strong {
+  color: rgba(255, 255, 255, 0.88);
+}
+.dashboard-hero__role {
+  color: var(--amber-light) !important;
+}
+.dashboard-hero__actions .btn--ghost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+.dashboard-hero__actions .btn--ghost:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.65);
+  box-shadow: none;
+}
+.dashboard-hero__actions .btn:not(.btn--ghost) {
+  box-shadow: var(--shadow-primary);
+}
 .dashboard-card,
 .panel-card {
   background: #fff;

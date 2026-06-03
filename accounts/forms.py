@@ -48,6 +48,25 @@ class SignupForm(UserCreationForm):
         return user
 
 
+def _uploaded_image_file(files, field_name):
+    """Fichier image réellement envoyé (ignore le champ vide du navigateur)."""
+    uploaded = files.get(field_name)
+    if uploaded and getattr(uploaded, "size", 0) > 0:
+        return uploaded
+    return None
+
+
+def _validate_profile_image(uploaded, *, label):
+    max_bytes = 5 * 1024 * 1024
+    if uploaded.size > max_bytes:
+        raise forms.ValidationError(
+            f"{label} : fichier trop lourd (max. 5 Mo). Compressez l’image ou choisissez un autre fichier."
+        )
+    content_type = (getattr(uploaded, "content_type", None) or "").lower()
+    if content_type and not content_type.startswith("image/"):
+        raise forms.ValidationError(f"{label} : format non pris en charge (JPG ou PNG recommandé).")
+
+
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
@@ -77,24 +96,35 @@ class ProfileForm(forms.ModelForm):
         }
 
     def clean_avatar(self):
-        if self.data.get("avatar-clear") == "on":
-            return None
-        uploaded = self.files.get("avatar")
+        uploaded = _uploaded_image_file(self.files, "avatar")
         if uploaded:
+            _validate_profile_image(uploaded, label="Photo de profil")
             return uploaded
         if self.instance.pk and self.instance.avatar:
             return self.instance.avatar
         return None
 
     def clean_cover_photo(self):
-        if self.data.get("cover_photo-clear") == "on":
-            return None
-        uploaded = self.files.get("cover_photo")
+        uploaded = _uploaded_image_file(self.files, "cover_photo")
         if uploaded:
+            _validate_profile_image(uploaded, label="Photo de couverture")
             return uploaded
         if self.instance.pk and self.instance.cover_photo:
             return self.instance.cover_photo
         return None
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        avatar = _uploaded_image_file(self.files, "avatar")
+        cover = _uploaded_image_file(self.files, "cover_photo")
+        if avatar:
+            profile.avatar = avatar
+        if cover:
+            profile.cover_photo = cover
+        if commit:
+            profile.save()
+            self.save_m2m()
+        return profile
 
 
 class AddressForm(forms.ModelForm):

@@ -7,33 +7,35 @@
     <p class="muted">Votre photo de profil et votre couverture sont affichées sur tout le site lorsque vous êtes connecté. Formats recommandés : JPG ou PNG, moins de 5&nbsp;Mo.</p>
   </section>
   <section class="container profile-edit-card">
-    {% if user_profile %}
-      {% if user_profile.cover_photo or user_profile.avatar %}
-      <div class="profile-preview{% if user_profile.avatar and not user_profile.cover_photo %} profile-preview--avatar-only{% endif %}">
-        {% if user_profile.cover_photo %}
+    {% with preview=form.instance %}
+      {% if preview.cover_photo or preview.avatar %}
+      <div class="profile-preview{% if preview.avatar and not preview.cover_photo %} profile-preview--avatar-only{% endif %}">
+        {% if preview.cover_photo %}
           <div class="profile-preview__cover">
-            <img src="{{ user_profile.cover_photo|file_url }}" alt="" loading="lazy" {% img_onerror_attr %}>
+            <img src="{{ preview.cover_photo|file_url }}" alt="" loading="lazy" {% img_onerror_attr %}>
           </div>
         {% endif %}
-        {% if user_profile.avatar %}
+        {% if preview.avatar %}
           <div class="profile-preview__avatar">
-            <img src="{{ user_profile.avatar|file_url }}" alt="" {% img_onerror_attr %}>
+            <img src="{{ preview.avatar|file_url }}" alt="" {% img_onerror_attr %}>
           </div>
         {% endif %}
       </div>
       {% endif %}
-    {% endif %}
+    {% endwith %}
 
     <form method="post" enctype="multipart/form-data" class="profile-form-fields culture-form">
       {% csrf_token %}
       {% if form.non_field_errors %}
-        <div class="form-errors">{{ form.non_field_errors }}</div>
+        <div class="form-errors error" role="alert">{{ form.non_field_errors }}</div>
       {% endif %}
       {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}
           {{ field }}
           {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
-          {{ field.errors }}
+          {% if field.errors %}
+            <div class="error" role="alert">{{ field.errors }}</div>
+          {% endif %}
         </label>
       {% endfor %}
       <div class="culture-form__actions" style="margin-top: 1rem;">

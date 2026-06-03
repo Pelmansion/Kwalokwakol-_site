@@ -80,12 +80,32 @@ def profile(request):
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=profile_obj)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Votre profil a bien été mis à jour (dont les photos si vous en avez téléversé des nouvelles).")
-            return redirect("accounts:profile")
+            try:
+                form.save()
+            except Exception:
+                messages.error(
+                    request,
+                    "Impossible d’enregistrer les photos. Vérifiez la configuration R2 sur le serveur "
+                    "ou réessayez avec une image plus légère (max. 5 Mo).",
+                )
+            else:
+                messages.success(
+                    request,
+                    "Votre profil a bien été mis à jour.",
+                )
+                return redirect("accounts:profile")
+        else:
+            messages.error(
+                request,
+                "Le formulaire contient des erreurs. Corrigez les champs signalés ci-dessous.",
+            )
     else:
         form = ProfileForm(instance=profile_obj)
-    return render(request, "accounts/profile.html", {"form": form})
+    return render(
+        request,
+        "accounts/profile.html",
+        {"form": form, "profile_obj": profile_obj},
+    )
 
 
 def _is_client(user):

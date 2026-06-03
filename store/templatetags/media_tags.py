@@ -23,8 +23,17 @@ def file_url(file_field):
     if url.startswith(("http://", "https://")):
         return url
     if url.startswith("/"):
-        return url
-    return f"{settings.MEDIA_URL.rstrip('/')}/{url.lstrip('/')}"
+        base = url
+    else:
+        base = f"{settings.MEDIA_URL.rstrip('/')}/{url.lstrip('/')}"
+    try:
+        name = getattr(file_field, "name", None) or ""
+    except Exception:
+        name = ""
+    if name:
+        sep = "&" if "?" in base else "?"
+        return f"{base}{sep}v={name.split('/')[-1]}"
+    return base
 
 
 def get_product_image_url(product):

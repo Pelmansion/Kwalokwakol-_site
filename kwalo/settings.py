@@ -172,10 +172,20 @@ _media = configure_media(
     debug=DEBUG,
     installed_apps=INSTALLED_APPS,
 )
-MEDIA_URL = _media["MEDIA_URL"]
-MEDIA_ROOT = _media["MEDIA_ROOT"]
 
-# Requis pour le script check_media_config.py
+# --- CORRECTION POUR L'AFFICHAGE CLOUDFLARE R2 ---
+if not DEBUG and _media["USE_CLOUD_MEDIA"]:
+    # On force Django à utiliser l'URL publique de développement R2 pour la lecture
+    AWS_S3_CUSTOM_DOMAIN = 'pub-8bba0406ebc941029e3fd22bfb86bd2a.r2.dev'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    
+    # On met à jour la configuration du stockage par défaut
+    if "STORAGES_DEFAULT" in _media and "OPTIONS" in _media["STORAGES_DEFAULT"]:
+        _media["STORAGES_DEFAULT"]["OPTIONS"]["custom_domain"] = AWS_S3_CUSTOM_DOMAIN
+else:
+    MEDIA_URL = _media["MEDIA_URL"]
+
+MEDIA_ROOT = _media["MEDIA_ROOT"]
 USE_CLOUD_MEDIA = _media["USE_CLOUD_MEDIA"]
 
 STORAGES = {

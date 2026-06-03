@@ -212,7 +212,7 @@ def _react_service_provider_row(provider):
 
 
 def _react_product_row(product):
-    from kwalo.templatetags.media_tags import get_product_image_url
+    from store.templatetags.media_tags import get_product_image_url
 
     image = get_product_image_url(product)
     old = float(product.old_price) if product.old_price is not None else None

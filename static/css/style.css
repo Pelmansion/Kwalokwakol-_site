@@ -4574,10 +4574,38 @@ textarea::placeholder { color: #94a3b8; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  width: 100%;
 }
 .culture-form__datetime .culture-form__date,
 .culture-form__datetime .culture-form__time {
   min-width: 0;
+}
+.culture-form__field-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink, #1b1410);
+  margin-bottom: 2px;
+}
+.culture-form__field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.culture-form--event .culture-form__file-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.culture-form__file-preview--wide img {
+  max-height: 200px;
+  width: 100%;
+  object-fit: contain;
+}
+@media (max-width: 640px) {
+  .culture-form__grid { grid-template-columns: 1fr; }
+  .culture-form__datetime { grid-template-columns: 1fr; }
 }
 .culture-form__checkbox {
   flex-direction: row;

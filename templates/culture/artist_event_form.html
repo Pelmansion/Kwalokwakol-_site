@@ -3,67 +3,129 @@
 
 {% block content %}
 <section class="container culture-page">
-    <header class="page-head">
+  <header class="page-head">
     <div>
       <h1>{% if is_new %}🎫 Nouveau concert{% else %}🎫 Modifier le concert{% endif %}</h1>
-      <p class="muted culture-form-intro">Ajoutez une <strong>affiche</strong> et une <strong>bâche</strong> (images JPG ou PNG, idéalement moins de 5&nbsp;Mo). Pensez à enregistrer avec le bouton en bas après avoir choisi les fichiers — le téléversement doit se faire avant la redirection vers les tarifs billet.</p>
+      <p class="muted culture-form-intro">Renseignez les informations du concert, puis enregistrez. Vous pourrez définir les tarifs des billets à l’étape suivante.</p>
     </div>
     <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">← Mes concerts</a>
   </header>
 
-  <form method="post" enctype="multipart/form-data" class="culture-form">
+  <form method="post" enctype="multipart/form-data" class="culture-form culture-form--event">
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <ul class="culture-form__errors culture-form__full">
+        {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+
     <div class="culture-form__grid">
       <label class="culture-form__full">Titre *
         {{ form.title }}
+        {{ form.title.errors }}
       </label>
+
       <label class="culture-form__full">Description *
         {{ form.description }}
+        {{ form.description.errors }}
       </label>
-      <label>Affiche (poster)
-        {{ form.poster }}
-      </label>
-      <label class="culture-form__full">Bâche numérique (concert)
-        {{ form.digital_billboard }}
-        <small>Visuel large type affiche rue : date, lieu, artistes, tarifs, partenaires. Optionnel mais recommandé pour la promo.</small>
-      </label>
-      <label>Tête d'affiche
+
+      <div class="culture-form__file-block">
+        <span class="culture-form__file-title">Affiche (poster)</span>
+        {% if not is_new and event.poster %}
+          <div class="culture-form__file-preview">
+            <img src="{{ event.poster.url }}" alt="Affiche actuelle" loading="lazy">
+          </div>
+        {% endif %}
+        <p class="culture-form__file-hint">JPG ou PNG, idéalement moins de 5 Mo. Laissez vide pour conserver l’affiche actuelle.</p>
+        <div class="culture-form__file-input">{{ form.poster }}</div>
+        {% if form.poster.errors %}
+          <ul class="errorlist">{% for e in form.poster.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <label>Tête d’affiche
         {{ form.headlining_artist }}
+        {{ form.headlining_artist.errors }}
       </label>
-      <label class="culture-form__full">Artistes invités
+
+      <div class="culture-form__file-block culture-form__full">
+        <span class="culture-form__file-title">Bâche numérique (concert)</span>
+        {% if not is_new and event.digital_billboard %}
+          <div class="culture-form__file-preview culture-form__file-preview--wide">
+            <img src="{{ event.digital_billboard.url }}" alt="Bâche actuelle" loading="lazy">
+          </div>
+        {% endif %}
+        <p class="culture-form__file-hint">Visuel large type affiche rue : date, lieu, artistes, tarifs. Optionnel mais recommandé.</p>
+        {{ form.digital_billboard }}
+        {% if not is_new and event.digital_billboard %}
+          <label class="culture-form__file-clear">
+            <input type="checkbox" name="digital_billboard-clear" id="digital_billboard-clear">
+            Supprimer la bâche actuelle
+          </label>
+        {% endif %}
+        {{ form.digital_billboard.errors }}
+      </div>
+
+      <div class="culture-form__full">
+        <span class="culture-form__field-label">Artistes invités</span>
         {{ form.featured_artists }}
-      </label>
-      <label class="culture-form__datetime-label">Date & heure de début *
+        {{ form.featured_artists.errors }}
+      </div>
+
+      <div class="culture-form__field-group">
+        <span class="culture-form__field-label">Date & heure de début *</span>
         {{ form.starts_at }}
-      </label>
-      <label class="culture-form__datetime-label">Date & heure de fin
+        {{ form.starts_at.errors }}
+      </div>
+
+      <div class="culture-form__field-group">
+        <span class="culture-form__field-label">Date & heure de fin</span>
         {{ form.ends_at }}
-      </label>
+        {{ form.ends_at.errors }}
+      </div>
+
       <label>Lieu / salle *
         {{ form.venue_name }}
+        {{ form.venue_name.errors }}
       </label>
+
       <label>Adresse
         {{ form.address }}
+        {{ form.address.errors }}
       </label>
+
       <label>Ville *
         {{ form.city }}
+        {{ form.city.errors }}
       </label>
+
       <label>Région
         {{ form.region }}
+        <small>Ex. Lagunes, Poro…</small>
+        {{ form.region.errors }}
       </label>
+
       <label class="culture-form__full">Lien Google Maps
         {{ form.map_url }}
+        {{ form.map_url.errors }}
       </label>
+
       <label>Statut
         {{ form.status }}
+        {{ form.status.errors }}
       </label>
+
       <label class="culture-form__checkbox">
         {{ form.is_published }}
-        <span>Publier (visible &amp; billetterie ouverte)</span>
+        <span>Publier (visible & billetterie ouverte)</span>
       </label>
     </div>
+
     <div class="culture-form__actions">
       <button class="btn btn--lg" type="submit">{% if is_new %}Créer le concert{% else %}Enregistrer{% endif %}</button>
+      <a class="btn btn--ghost" href="{% url 'culture:artist_events' %}">Annuler</a>
     </div>
   </form>
 </section>

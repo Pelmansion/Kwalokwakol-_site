@@ -3,11 +3,13 @@
   {% if product.promo_discount_percent %}
     <div class="product-card__price-block">
       <span class="product-card__price-old">{{ product.old_price|floatformat:0 }} FCFA</span>
-      <span class="product-card__price">
-        <span class="product-card__price-value">{{ product.price|floatformat:0 }}</span>
-        <span class="product-card__price-unit">FCFA</span>
-      </span>
-      <span class="product-card__promo">-{{ product.promo_discount_percent }}&nbsp;%</span>
+      <div class="product-card__price-row">
+        <span class="product-card__price">
+          <span class="product-card__price-value">{{ product.price|floatformat:0 }}</span>
+          <span class="product-card__price-unit">FCFA</span>
+        </span>
+        <span class="product-card__promo">-{{ product.promo_discount_percent }}&nbsp;%</span>
+      </div>
     </div>
   {% else %}
     <span class="product-card__price">

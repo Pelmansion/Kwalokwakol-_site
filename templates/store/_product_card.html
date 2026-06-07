@@ -1,15 +1,6 @@
 {% load marketplace_tags %}
 <article class="product-card{% if compact %} product-card--compact{% endif %}">
   <div class="product-card__image">
-    {% if product.category %}
-      <span class="product-card__category">{{ product.category.name }}</span>
-    {% endif %}
-    <a
-      class="product-card__wish favorite-toggle{% if favorites and product.id in favorites %} favorite-toggle--active{% endif %}"
-      href="{% url 'store:toggle_favorite' product.id %}"
-      title="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
-      aria-label="Favori"
-    >{% if favorites and product.id in favorites %}♥{% else %}♡{% endif %}</a>
     <div class="product-card__placeholder" aria-hidden="true">{{ product|product_category_emoji }}</div>
     {% product_image_url product as img_src %}
     {% if img_src %}
@@ -22,6 +13,19 @@
         onerror="this.remove()"
       >
     {% endif %}
+    <div class="product-card__image-top">
+      {% if product.category %}
+        <span class="product-card__category">{{ product.category.name }}</span>
+      {% else %}
+        <span></span>
+      {% endif %}
+      <a
+        class="product-card__wish favorite-toggle{% if favorites and product.id in favorites %} favorite-toggle--active{% endif %}"
+        href="{% url 'store:toggle_favorite' product.id %}"
+        title="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
+        aria-label="Favori"
+      >{% if favorites and product.id in favorites %}♥{% else %}♡{% endif %}</a>
+    </div>
   </div>
   <div class="product-card__body">
     <h3 class="product-card__name">

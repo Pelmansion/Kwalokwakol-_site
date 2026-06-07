@@ -1255,9 +1255,8 @@ p { margin: 0 0 1em; }
   aspect-ratio: 4 / 3;
   background: linear-gradient(135deg, #f0ebe1, #e8e0d5);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template: "stack" 1fr / "stack" 1fr;
   isolation: isolate;
 }
 
@@ -1276,20 +1275,18 @@ p { margin: 0 0 1em; }
 }
 
 .product-card__photo {
-  position: absolute;
-  inset: 0;
+  grid-area: stack;
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
-  z-index: 0;
+  z-index: 1;
 }
 
 .product-card:hover .product-card__photo { transform: scale(1.04); }
 
 .product-card__placeholder {
-  position: absolute;
-  inset: 0;
+  grid-area: stack;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1300,15 +1297,27 @@ p { margin: 0 0 1em; }
   pointer-events: none;
 }
 
-.product-card__category {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+.product-card__image-top {
+  grid-area: stack;
   z-index: 3;
-  max-width: calc(100% - 56px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  pointer-events: none;
+}
+
+.product-card__image-top > * {
+  pointer-events: auto;
+}
+
+.product-card__category {
+  max-width: calc(100% - 42px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 1;
   background: rgba(250, 247, 242, 0.92);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -1323,10 +1332,7 @@ p { margin: 0 0 1em; }
 }
 
 .product-card__wish.favorite-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 3;
+  flex-shrink: 0;
   width: 30px;
   height: 30px;
   min-width: 30px;
@@ -1399,10 +1405,18 @@ p { margin: 0 0 1em; }
 
 .product-card__price-block {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.product-card__price-row {
+  display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 2px 6px;
-  min-width: 0;
+  gap: 4px 6px;
 }
 
 .product-card__price {

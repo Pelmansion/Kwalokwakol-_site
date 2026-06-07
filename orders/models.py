@@ -39,7 +39,7 @@ class Order(models.Model):
         (METHOD_MOBILE, "Mobile Money"),
         (METHOD_PAYPAL, "PayPal"),
         (METHOD_LOCAL, "Autre"),
-        (METHOD_GENIUS, "Paiement en ligne (GeniusPay)"),
+        (METHOD_GENIUS, "Paiement en ligne"),
     ]
 
     DELIVERY_STANDARD = "standard"

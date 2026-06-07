@@ -104,11 +104,7 @@
           <form method="post" action="{% url 'subscriptions:start_payment' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn--primary">
-              {% if genius_payment %}
-                💳 Payer {{ subscription.monthly_amount|floatformat:0 }} FCFA (Wave, Orange, MTN, carte…)
-              {% else %}
-                💳 Payer {{ subscription.monthly_amount|floatformat:0 }} FCFA
-              {% endif %}
+              💳 Payer {{ subscription.monthly_amount|floatformat:0 }} FCFA
             </button>
           </form>
           <a class="btn btn--ghost" href="{% url 'subscriptions:choose_plan' %}">Changer de formule</a>
@@ -116,11 +112,7 @@
           <form method="post" action="{% url 'subscriptions:start_payment' %}" style="display: inline;">
             {% csrf_token %}
             <button type="submit" class="btn btn--ghost">
-              {% if genius_payment %}
-                🔄 Renouveler (paiement sécurisé GeniusPay)
-              {% else %}
-                🔄 Renouveler dès maintenant
-              {% endif %}
+              🔄 Renouveler
             </button>
           </form>
           <a class="btn btn--ghost" href="{% url 'subscriptions:choose_plan' %}">Changer de formule</a>

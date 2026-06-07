@@ -56,7 +56,7 @@
           {% else %}
             {% if user.is_authenticated %}
               {% if genius_payment %}
-                <a class="btn" href="{% url 'culture:song_buy' song.slug %}">💳 Acheter via GeniusPay</a>
+                <a class="btn" href="{% url 'culture:song_buy' song.slug %}">💳 Acheter</a>
               {% else %}
                 <span class="muted" style="font-size:13px;">Paiement en ligne indisponible pour le moment.</span>
               {% endif %}

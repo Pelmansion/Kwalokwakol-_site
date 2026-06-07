@@ -4603,6 +4603,24 @@ textarea::placeholder { color: #94a3b8; }
   width: 100%;
   object-fit: contain;
 }
+.culture-form__file-input {
+  font-weight: normal;
+  font-size: 13px;
+}
+.culture-form__file-input input[type="file"] {
+  margin-top: 4px;
+}
+.culture-form__file-input a {
+  word-break: break-all;
+  color: var(--primary, #c2410c);
+}
+.culture-form__file-input label {
+  font-weight: 500;
+  font-size: 13px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
 @media (max-width: 640px) {
   .culture-form__grid { grid-template-columns: 1fr; }
   .culture-form__datetime { grid-template-columns: 1fr; }

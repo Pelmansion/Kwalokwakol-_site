@@ -5,7 +5,7 @@
     <p>Commande #{{ order.id }}</p>
   </section>
   <section class="container cart">
-    <p>La transaction n'a pas été complétée sur GeniusPay. Aucun débit n'a été effectué si vous avez quitté avant confirmation.</p>
+    <p>La transaction n'a pas été complétée. Aucun débit n'a été effectué si vous avez quitté avant confirmation.</p>
     <p><a class="btn btn--primary-wide" href="{% url 'store:cart_detail' %}">Retour au panier</a></p>
     <p><a href="{% url 'accounts:order_history' %}">Mes commandes</a></p>
   </section>

@@ -209,7 +209,7 @@ class SubscriptionPayment(models.Model):
         (PROVIDER_CARD, "Carte bancaire"),
         (PROVIDER_MOBILE, "Mobile Money"),
         (PROVIDER_MANUAL, "Paiement manuel"),
-        (PROVIDER_GENIUS, "GeniusPay (Wave, Orange, MTN, carte…)"),
+        (PROVIDER_GENIUS, "Paiement en ligne"),
     ]
 
     subscription = models.ForeignKey(

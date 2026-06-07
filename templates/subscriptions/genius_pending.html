@@ -9,7 +9,7 @@
     {% if message %}
       <p class="alert alert--info">{{ message }}</p>
     {% endif %}
-    <p>Si vous avez bien payé sur GeniusPay (Wave, carte…), la confirmation peut prendre quelques secondes.</p>
+    <p>Si vous avez bien effectué le paiement (Wave, carte…), la confirmation peut prendre quelques secondes.</p>
     <p><a class="btn btn--primary-wide" href="{% url 'subscriptions:genius_return' payment_id=payment.id %}">Vérifier à nouveau</a></p>
     <p><a href="{% url 'subscriptions:my_subscription' %}">Retour à mon abonnement</a></p>
   </section>

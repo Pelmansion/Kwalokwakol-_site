@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import io
 import random
+import sys
 from datetime import timedelta
 from decimal import Decimal
 
@@ -112,6 +113,15 @@ class Command(BaseCommand):
                             help="Supprime aussi tous les vendeurs/prestataires orphelins (sans owner).")
 
     def handle(self, *args, **options):
+        if sys.platform == "win32":
+            for stream in (sys.stdout, sys.stderr):
+                reconfigure = getattr(stream, "reconfigure", None)
+                if reconfigure:
+                    try:
+                        reconfigure(encoding="utf-8")
+                    except Exception:
+                        pass
+
         self.password = options["password"]
         random.seed(42)
 

@@ -58,14 +58,10 @@
           </div>
         {% endif %}
         <p class="culture-form__file-hint">Visuel large type affiche rue : date, lieu, artistes, tarifs. Optionnel mais recommandé.</p>
-        {{ form.digital_billboard }}
-        {% if not is_new and event.digital_billboard %}
-          <label class="culture-form__file-clear">
-            <input type="checkbox" name="digital_billboard-clear" id="digital_billboard-clear">
-            Supprimer la bâche actuelle
-          </label>
+        <div class="culture-form__file-input">{{ form.digital_billboard }}</div>
+        {% if form.digital_billboard.errors %}
+          <ul class="errorlist">{% for e in form.digital_billboard.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
-        {{ form.digital_billboard.errors }}
       </div>
 
       <div class="culture-form__full">

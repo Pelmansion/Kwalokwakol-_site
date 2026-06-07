@@ -121,9 +121,9 @@
                     {{ form.payment_method.errors }}
                     <p class="checkout-payment__hint muted">
                       {% if genius_payment %}
-                        Après validation, vous serez redirigé vers GeniusPay pour régler en toute sécurité, ou vous pouvez payer en espèces à la livraison.
+                        Après validation, vous serez redirigé vers une page de paiement sécurisée, ou vous pouvez payer en espèces à la livraison.
                       {% else %}
-                        Pour le moment, seul le paiement en espèces à la livraison est proposé. Le paiement en ligne (GeniusPay) apparaîtra ici une fois activé sur le serveur.
+                        Pour le moment, seul le paiement en espèces à la livraison est proposé. Le paiement en ligne apparaîtra ici une fois activé sur le serveur.
                       {% endif %}
                     </p>
                   </div>
@@ -188,7 +188,7 @@
             <ul class="cart-summary__perks">
               <li>🚚 Livraison sécurisée</li>
               {% if genius_payment %}
-                <li>💳 Paiement en ligne (GeniusPay) ou à la livraison</li>
+                <li>💳 Paiement en ligne ou à la livraison</li>
               {% else %}
                 <li>💳 Paiement à la livraison disponible</li>
               {% endif %}

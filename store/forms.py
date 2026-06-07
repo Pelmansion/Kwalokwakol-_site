@@ -31,7 +31,7 @@ class OrderForm(forms.ModelForm):
             choices = [
                 (
                     Order.METHOD_GENIUS,
-                    "GeniusPay — Wave, Orange Money, MTN MoMo, carte bancaire",
+                    "Paiement en ligne — Wave, Orange Money, MTN MoMo, carte bancaire",
                 ),
                 (Order.METHOD_LOCAL, "Espèces à la livraison"),
             ]

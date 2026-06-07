@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0D0D0D">
+<meta name="description" content="AfroMarket — Marketplace afro-moderne : produits locaux, artisans, culture & billets">
+<link rel="manifest" href="#manifest">
+<title>AfroMarket — Marketplace Afro-Moderne</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== ROOT VARIABLES ===== */
+:root {
+  --bg: #080808;
+  --bg-2: #111111;
+  --bg-3: #1a1a1a;
+  --surface: #1e1e1e;
+  --surface-2: #262626;
+  --border: #2a2a2a;
+  --border-light: #333;
+
+  --gold: #D4A843;
+  --gold-light: #E8C06A;
+  --gold-dim: #8a6c28;
+  --terracotta: #C4603A;
+  --terra-light: #E07850;
+  --kente-green: #2D7A4F;
+  --kente-green-light: #3D9E68;
+  --indigo: #3D4AB5;
+  --purple-afro: #7C3D9E;
+
+  --text: #F0EDE8;
+  --text-2: #A09890;
+  --text-3: #6B6360;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --shadow-gold: 0 0 40px rgba(212,168,67,0.15);
+  --transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 4px; }
+
+/* ===== TYPOGRAPHY ===== */
+.syne { font-family: 'Syne', sans-serif; }
+.mono { font-family: 'Space Mono', monospace; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes kwa-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+@keyframes scan {
+  0% { top: 10%; }
+  100% { top: 85%; }
+}
+@keyframes grain {
+  0%, 100% { transform: translate(0,0); }
+  10% { transform: translate(-2%,-3%); }
+  30% { transform: translate(3%,2%); }
+  50% { transform: translate(-1%,4%); }
+  70% { transform: translate(2%,-2%); }
+  90% { transform: translate(-3%,1%); }
+}
+
+/* ===== NOISE OVERLAY ===== */
+body::before {
+  content: '';
+  position: fixed; inset: -200%;
+  width: 400%; height: 400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.3;
+  animation: grain 8s steps(10) infinite;
+}
+
+/* ===== GEOMETRIC PATTERN BG ===== */
+.geo-pattern {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(45deg, transparent 45%, rgba(212,168,67,0.03) 45%, rgba(212,168,67,0.03) 55%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, rgba(212,168,67,0.03) 45%, rgba(212,168,67,0.03) 55%, transparent 55%);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+/* ===== INSTALL BANNER ===== */
+#pwa-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: linear-gradient(90deg, var(--terracotta), var(--gold));
+  color: #fff; padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 500;
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#pwa-banner.show { transform: translateY(0); }
+#pwa-banner button {
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+  color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 12px;
+  transition: background 0.2s;
+}
+#pwa-banner button:hover { background: rgba(255,255,255,0.35); }
+#pwa-close { background: none !important; border: none !important; padding: 4px 8px !important; opacity: 0.7; font-size: 18px; }
+
+/* ===== TOPBAR ===== */
+.topbar {
+  background: rgba(8,8,8,0.92); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--text-3);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-left { display: flex; gap: 16px; align-items: center; }
+.topbar-right { display: flex; gap: 12px; align-items: center; }
+.topbar a { color: var(--text-3); transition: color 0.2s; }
+.topbar a:hover { color: var(--gold); }
+.topbar .badge {
+  background: var(--terracotta); color: #fff;
+  padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700;
+}
+.lang-switcher {
+  display: flex; gap: 4px;
+}
+.lang-btn {
+  padding: 2px 7px; border-radius: 4px; font-size: 11px;
+  color: var(--text-3); transition: all 0.2s; cursor: pointer;
+}
+.lang-btn.active { background: var(--gold); color: #000; font-weight: 700; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background: rgba(8,8,8,0.96); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 0;
+  position: sticky; top: 37px; z-index: 99;
+  height: 64px;
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px;
+  letter-spacing: -0.5px; margin-right: 40px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; white-space: nowrap;
+}
+.nav-logo span { font-size: 11px; display: block; letter-spacing: 3px; font-weight: 400; opacity: 0.7; margin-top: -4px; }
+.nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
+.nav-link {
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 500; color: var(--text-2);
+  transition: all 0.2s; white-space: nowrap; position: relative;
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-link:hover, .nav-link.active { color: var(--text); background: var(--surface); }
+.nav-link.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 14px; right: 14px;
+  height: 2px; background: var(--gold); border-radius: 2px;
+}
+.nav-icon { font-size: 15px; }
+.nav-pill {
+  background: var(--terracotta); color: #fff;
+  font-size: 9px; font-weight: 700; padding: 1px 5px;
+  border-radius: 8px; line-height: 1.4;
+}
+.nav-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.nav-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 6px 14px;
+  transition: all 0.2s;
+}
+.nav-search:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,67,0.1); }
+.nav-search input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: inherit; font-size: 13px; width: 180px;
+}
+.nav-search input::placeholder { color: var(--text-3); }
+.nav-search span { color: var(--text-3); font-size: 14px; }
+.nav-btn {
+  padding: 8px 18px; border-radius: 24px; font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-ghost {
+  border: 1px solid var(--border); color: var(--text-2);
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  color: #000; font-weight: 700;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(212,168,67,0.3); }
+.cart-btn {
+  position: relative; width: 38px; height: 38px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: all 0.2s; color: var(--text-2);
+}
+.cart-btn:hover { border-color: var(--gold); color: var(--gold); }
+.cart-count {
+  position: absolute; top: -3px; right: -3px;
+  background: var(--terracotta); color: #fff;
+  font-size: 9px; font-weight: 700; width: 16px; height: 16px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg);
+}
+
+/* ===== CATEGORY TABS ===== */
+.cat-tabs {
+  background: var(--bg-2); border-bottom: 1px solid var(--border);
+  padding: 0 24px; display: flex; gap: 0; overflow-x: auto;
+  scrollbar-width: none; position: sticky; top: 101px; z-index: 98;
+}
+.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  padding: 12px 20px; font-size: 13px; font-weight: 500;
+  color: var(--text-3); white-space: nowrap; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  display: flex; align-items: center; gap: 7px;
+}
+.cat-tab:hover { color: var(--text-2); }
+.cat-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.cat-tab-icon { font-size: 16px; }
+
+/* ===== MAIN LAYOUT ===== */
+.main { min-height: 100vh; }
+
+/* ===== HERO SECTION ===== */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: 580px; display: flex; align-items: center;
+  background: radial-gradient(ellipse at 20% 50%, rgba(196,96,58,0.12) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(212,168,67,0.08) 0%, transparent 50%),
+              var(--bg);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  padding: 80px 48px; max-width: 640px;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.25);
+  padding: 5px 14px; border-radius: 20px; font-size: 12px;
+  color: var(--gold); font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-tag::before { content: '●'; font-size: 8px; animation: kwa-bounce 2s infinite; }
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(36px, 5vw, 62px); line-height: 1.05;
+  letter-spacing: -1.5px; margin-bottom: 16px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 60%, var(--purple-afro) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: 16px; color: var(--text-2); line-height: 1.7;
+  margin-bottom: 32px; max-width: 500px;
+}
+.hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+.hero-cta-main {
+  padding: 14px 28px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  color: #000; font-weight: 700; font-size: 14px;
+  transition: all 0.25s; display: flex; align-items: center; gap: 8px;
+}
+.hero-cta-main:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,67,0.35); }
+.hero-cta-sec {
+  padding: 14px 28px; border-radius: 28px;
+  border: 1px solid var(--border-light); color: var(--text-2);
+  font-size: 14px; font-weight: 500; transition: all 0.25s;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-cta-sec:hover { border-color: var(--gold); color: var(--gold); }
+.hero-stats {
+  display: flex; gap: 32px;
+}
+.stat-item {}
+.stat-num {
+  font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-label { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.hero-visual {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 55%; overflow: hidden;
+}
+.hero-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px; padding: 20px; height: 100%;
+  opacity: 0.7;
+}
+.hero-card {
+  border-radius: var(--radius); overflow: hidden;
+  background: var(--surface); position: relative;
+}
+.hero-card:nth-child(1) { grid-column: 1; grid-row: 1 / 3; background: linear-gradient(135deg, #8B4513, #C4603A); }
+.hero-card:nth-child(2) { grid-column: 2; grid-row: 1; background: linear-gradient(135deg, #1a5a3a, #2D7A4F); }
+.hero-card:nth-child(3) { grid-column: 3; grid-row: 1 / 3; background: linear-gradient(135deg, #4a3a1a, #D4A843); }
+.hero-card:nth-child(4) { grid-column: 2; grid-row: 2; background: linear-gradient(135deg, #2a1a4a, #7C3D9E); }
+.hero-card:nth-child(5) { grid-column: 1 / 3; grid-row: 3; background: linear-gradient(135deg, #1a2a4a, #3D4AB5); }
+.hero-card:nth-child(6) { grid-column: 3; grid-row: 3; background: linear-gradient(135deg, #4a1a1a, #C4603A); }
+.hero-card-label {
+  position: absolute; bottom: 8px; left: 8px; right: 8px;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  padding: 4px 8px; border-radius: 6px; font-size: 10px; color: #fff; font-weight: 600;
+  display: flex; align-items: center; gap: 4px;
+}
+.hero-card-emoji { font-size: 24px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%); }
+.hero-mask {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 200px;
+  background: linear-gradient(90deg, var(--bg), transparent);
+  z-index: 1; pointer-events: none;
+}
+
+/* ===== SECTION LAYOUTS ===== */
+.section { padding: 60px 24px; }
+.section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.section-title span {
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.section-sub { color: var(--text-3); font-size: 13px; margin-top: 4px; }
+.see-all {
+  font-size: 13px; color: var(--gold); font-weight: 600;
+  display: flex; align-items: center; gap: 4px; transition: gap 0.2s;
+}
+.see-all:hover { gap: 8px; }
+
+/* ===== FEATURED BANNER ===== */
+.featured-banner {
+  margin: 0 24px 40px;
+  border-radius: var(--radius-xl); overflow: hidden; position: relative;
+  background: linear-gradient(135deg, #1a0e05 0%, #2d1a0a 40%, #0e1a12 100%);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; min-height: 180px;
+  padding: 32px 40px;
+}
+.featured-banner .geo-pattern { opacity: 0.5; }
+.fb-content { position: relative; z-index: 2; flex: 1; }
+.fb-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(45,122,79,0.2); border: 1px solid rgba(45,122,79,0.4);
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; color: var(--kente-green-light);
+  font-weight: 600; letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.fb-title {
+  font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800;
+  margin-bottom: 8px;
+}
+.fb-sub { font-size: 14px; color: var(--text-2); }
+.fb-action {
+  background: var(--kente-green); color: #fff;
+  padding: 10px 22px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  transition: all 0.2s; white-space: nowrap; margin-top: 16px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.fb-action:hover { background: var(--kente-green-light); transform: translateY(-1px); }
+.fb-visual {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  font-size: 80px; opacity: 0.2; animation: float 4s ease-in-out infinite;
+}
+
+/* ===== PRODUCT GRID ===== */
+.products-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.product-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  transition: all 0.3s; cursor: pointer; position: relative;
+  animation: fadeUp 0.5s ease both;
+}
+.product-card:hover {
+  border-color: rgba(212,168,67,0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,67,0.1);
+}
+.product-img {
+  height: 200px; position: relative; overflow: hidden;
+  background: var(--bg-3); display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+}
+.product-img::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4) 100%);
+}
+.product-badge {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;
+}
+.badge-new { background: var(--kente-green); color: #fff; }
+.badge-promo { background: var(--terracotta); color: #fff; }
+.badge-local { background: rgba(212,168,67,0.9); color: #000; }
+.product-fav {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  transition: all 0.2s;
+}
+.product-fav:hover { background: rgba(196,96,58,0.7); }
+.product-info { padding: 14px 16px; }
+.product-shop {
+  font-size: 11px; color: var(--text-3); margin-bottom: 4px;
+  display: flex; align-items: center; gap: 4px;
+}
+.product-shop-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--kente-green); }
+.product-name {
+  font-weight: 600; font-size: 14px; margin-bottom: 6px; line-height: 1.3;
+}
+.product-rating {
+  display: flex; align-items: center; gap: 4px; margin-bottom: 10px;
+}
+.stars { color: var(--gold); font-size: 11px; letter-spacing: 1px; }
+.rating-count { font-size: 11px; color: var(--text-3); }
+.product-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.product-price {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px;
+  color: var(--gold);
+}
+.product-price-old {
+  font-size: 12px; color: var(--text-3); text-decoration: line-through; margin-left: 4px;
+}
+.product-add {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  display: flex; align-items: center; justify-content: center; font-size: 16px; color: #000;
+  transition: all 0.2s; font-weight: 700;
+}
+.product-add:hover { transform: scale(1.1) rotate(90deg); box-shadow: 0 4px 16px rgba(212,168,67,0.4); }
+
+/* ===== ARTISANS SECTION ===== */
+.artisans-scroll {
+  display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;
+  scrollbar-width: none;
+}
+.artisans-scroll::-webkit-scrollbar { display: none; }
+.artisan-card {
+  min-width: 180px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 16px; text-align: center;
+  transition: all 0.3s; cursor: pointer; flex-shrink: 0;
+}
+.artisan-card:hover {
+  border-color: rgba(212,168,67,0.3); transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+.artisan-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+  background: linear-gradient(135deg, var(--terracotta), var(--gold));
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+  position: relative; border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.artisan-avatar::after {
+  content: ''; position: absolute; inset: -2px;
+  border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  z-index: -1;
+}
+.artisan-verified {
+  position: absolute; bottom: 0; right: 0;
+  background: var(--kente-green); color: #fff;
+  width: 20px; height: 20px; border-radius: 50%; font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--surface);
+}
+.artisan-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.artisan-craft { font-size: 12px; color: var(--text-3); margin-bottom: 8px; }
+.artisan-products { font-size: 12px; color: var(--gold); font-weight: 600; }
+
+/* ===== CULTURE SECTION ===== */
+.culture-section {
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(124,61,158,0.06) 50%, var(--bg) 100%);
+}
+.culture-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto; gap: 16px;
+}
+.culture-main {
+  grid-column: 1; grid-row: 1 / 3;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); overflow: hidden; position: relative;
+  min-height: 360px; display: flex; flex-direction: column; justify-content: flex-end;
+  cursor: pointer; transition: all 0.3s;
+}
+.culture-main:hover { border-color: rgba(124,61,158,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.culture-main-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #1a0d2e, #2d1a4a, #4a1a6e);
+  display: flex; align-items: center; justify-content: center; font-size: 100px;
+}
+.culture-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.85) 100%);
+}
+.culture-content { position: relative; z-index: 2; padding: 24px; }
+.culture-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(124,61,158,0.3); border: 1px solid rgba(124,61,158,0.5);
+  padding: 4px 10px; border-radius: 12px; font-size: 11px; color: #c084f5;
+  font-weight: 600; margin-bottom: 10px;
+}
+.culture-card-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.culture-card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 14px; }
+.ticket-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--purple-afro); color: #fff;
+  padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  transition: all 0.2s;
+}
+.ticket-btn:hover { background: #9d4fc0; transform: translateY(-1px); }
+.culture-side {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px; cursor: pointer;
+  transition: all 0.3s; display: flex; align-items: center; gap: 14px;
+}
+.culture-side:hover { border-color: rgba(212,168,67,0.3); transform: translateX(4px); }
+.culture-side-icon {
+  width: 56px; height: 56px; border-radius: var(--radius-sm); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.cs-music { background: linear-gradient(135deg, #1a3a5c, #3D4AB5); }
+.cs-art { background: linear-gradient(135deg, #3a1a1a, #C4603A); }
+.culture-side-info {}
+.culture-side-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.culture-side-meta { font-size: 12px; color: var(--text-3); }
+.culture-side-price { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--gold); margin-top: 4px; }
+
+/* ===== SERVICES SECTION ===== */
+.services-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
+}
+.service-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px; cursor: pointer;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.service-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--terracotta));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s;
+}
+.service-card:hover::before { transform: scaleX(1); }
+.service-card:hover { border-color: rgba(212,168,67,0.2); transform: translateY(-2px); }
+.service-icon { font-size: 28px; margin-bottom: 12px; }
+.service-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.service-count { font-size: 12px; color: var(--text-3); margin-bottom: 12px; }
+.service-tag {
+  display: inline-flex; padding: 3px 8px; border-radius: 6px;
+  font-size: 10px; font-weight: 600; background: rgba(212,168,67,0.1); color: var(--gold);
+}
+
+/* ===== PAYMENT METHODS ===== */
+.payment-section {
+  background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 40px 24px;
+}
+.payment-methods {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
+  margin-top: 24px;
+}
+.payment-badge {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 16px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+  transition: all 0.2s;
+}
+.payment-badge:hover { border-color: var(--gold); color: var(--text); }
+.payment-badge .icon { font-size: 18px; }
+.payment-badge.featured { border-color: var(--gold); color: var(--gold); }
+.payment-badge.cod { border-color: var(--kente-green); color: var(--kente-green-light); }
+
+/* ===== KWA ASSISTANT ===== */
+.kwa-btn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  box-shadow: 0 4px 24px rgba(212,168,67,0.4); transition: all 0.3s;
+  animation: float 3s ease-in-out infinite;
+}
+.kwa-btn:hover { transform: scale(1.1) !important; box-shadow: 0 8px 32px rgba(212,168,67,0.5); }
+.kwa-btn::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(212,168,67,0.3);
+  animation: pulse-ring 2s ease-out infinite;
+}
+.kwa-label {
+  position: absolute; right: 70px; top: 50%; transform: translateY(-50%);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  white-space: nowrap; color: var(--text-2);
+  box-shadow: var(--shadow); pointer-events: none;
+}
+
+/* ===== KWA CHAT PANEL ===== */
+.kwa-panel {
+  position: fixed; bottom: 96px; right: 24px; z-index: 200;
+  width: 360px; max-height: 520px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: scale(0.9) translateY(20px); transform-origin: bottom right;
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kwa-panel.open {
+  transform: scale(1) translateY(0); opacity: 1; pointer-events: all;
+}
+.kwa-header {
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(212,168,67,0.08), rgba(196,96,58,0.08));
+  display: flex; align-items: center; gap: 12px;
+}
+.kwa-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  flex-shrink: 0;
+}
+.kwa-info {}
+.kwa-name { font-weight: 700; font-size: 14px; }
+.kwa-status { font-size: 11px; color: var(--kente-green-light); display: flex; align-items: center; gap: 4px; }
+.kwa-status::before { content: '●'; font-size: 8px; }
+.kwa-close { margin-left: auto; color: var(--text-3); font-size: 18px; padding: 4px; }
+.kwa-close:hover { color: var(--text); }
+.kwa-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.kwa-msg { display: flex; gap: 8px; align-items: flex-start; }
+.kwa-msg.user { flex-direction: row-reverse; }
+.kwa-msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.kwa-msg.bot .kwa-msg-avatar { background: linear-gradient(135deg, var(--gold), var(--terracotta)); }
+.kwa-bubble {
+  max-width: 240px; padding: 10px 13px; border-radius: 14px;
+  font-size: 13px; line-height: 1.5;
+}
+.kwa-msg.bot .kwa-bubble { background: var(--surface); border: 1px solid var(--border); border-radius: 4px 14px 14px 14px; }
+.kwa-msg.user .kwa-bubble { background: linear-gradient(135deg, var(--gold-dim), var(--terracotta)); color: #fff; border-radius: 14px 4px 14px 14px; }
+.kwa-suggestions {
+  display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 12px;
+}
+.kwa-sug {
+  padding: 5px 10px; border-radius: 14px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); color: var(--text-2); background: var(--surface);
+  transition: all 0.2s; cursor: pointer;
+}
+.kwa-sug:hover { border-color: var(--gold); color: var(--gold); }
+.kwa-input-area {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: center;
+}
+.kwa-input {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 8px 14px; font-size: 13px; color: var(--text);
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.kwa-input:focus { border-color: var(--gold); }
+.kwa-input::placeholder { color: var(--text-3); }
+.kwa-send {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  color: #000; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.2s;
+}
+.kwa-send:hover { transform: scale(1.1); }
+
+/* ===== QR MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 32px; width: 380px; max-width: 95vw;
+  transform: translateY(20px); transition: transform 0.3s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+}
+.modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 24px; }
+.qr-container {
+  background: #fff; border-radius: var(--radius); padding: 20px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.qr-mock {
+  width: 180px; height: 180px; position: relative;
+}
+.qr-mock svg { width: 100%; height: 100%; }
+.qr-scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: rgba(212,168,67,0.7); box-shadow: 0 0 8px rgba(212,168,67,0.5);
+  animation: scan 2s linear infinite;
+}
+.modal-ticket-info {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+}
+.mti-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; }
+.mti-label { color: var(--text-3); }
+.mti-val { font-weight: 600; }
+.mti-val.gold { color: var(--gold); }
+.modal-close-btn {
+  width: 100%; padding: 12px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  color: #000; font-weight: 700; font-size: 14px;
+  transition: all 0.2s;
+}
+.modal-close-btn:hover { opacity: 0.9; }
+
+/* ===== SUBSCRIPTION SECTION ===== */
+.subs-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.sub-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 28px; position: relative;
+  transition: all 0.3s; overflow: hidden;
+}
+.sub-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.sub-card.standard::after { background: var(--text-3); }
+.sub-card.pro::after { background: linear-gradient(90deg, var(--gold), var(--terracotta)); }
+.sub-card.premium::after { background: linear-gradient(90deg, var(--purple-afro), var(--indigo)); }
+.sub-card.pro {
+  border-color: rgba(212,168,67,0.3);
+  box-shadow: 0 0 40px rgba(212,168,67,0.08);
+}
+.sub-recommended {
+  position: absolute; top: 16px; right: 16px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  color: #000; padding: 3px 10px; border-radius: 10px; font-size: 10px; font-weight: 700;
+}
+.sub-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.sub-price {
+  font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin: 16px 0 4px;
+}
+.sub-price span { font-size: 14px; font-weight: 400; color: var(--text-3); }
+.sub-period { font-size: 12px; color: var(--text-3); margin-bottom: 20px; }
+.sub-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.sub-features li { font-size: 13px; display: flex; align-items: center; gap: 8px; color: var(--text-2); }
+.sub-features li::before { content: '✓'; color: var(--kente-green-light); font-weight: 700; }
+.sub-btn {
+  width: 100%; padding: 12px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  transition: all 0.2s;
+}
+.sub-btn.standard { border: 1px solid var(--border); color: var(--text-2); }
+.sub-btn.standard:hover { border-color: var(--gold); color: var(--gold); }
+.sub-btn.pro { background: linear-gradient(135deg, var(--gold), var(--terracotta)); color: #000; }
+.sub-btn.pro:hover { opacity: 0.9; transform: translateY(-1px); }
+.sub-btn.premium { background: linear-gradient(135deg, var(--purple-afro), var(--indigo)); color: #fff; }
+.sub-btn.premium:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ===== FOOTER ===== */
+.footer {
+  background: var(--bg-2); border-top: 1px solid var(--border);
+  padding: 60px 24px 24px;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px;
+}
+.footer-brand {}
+.footer-logo {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 12px;
+}
+.footer-desc { font-size: 13px; color: var(--text-3); line-height: 1.7; margin-bottom: 20px; max-width: 280px; }
+.footer-social { display: flex; gap: 8px; }
+.social-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+  transition: all 0.2s; color: var(--text-3);
+}
+.social-btn:hover { border-color: var(--gold); color: var(--gold); }
+.footer-col-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; color: var(--text-2); }
+.footer-links { display: flex; flex-direction: column; gap: 8px; }
+.footer-links a { font-size: 13px; color: var(--text-3); transition: color 0.2s; }
+.footer-links a:hover { color: var(--gold); }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding-top: 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--text-3);
+}
+.footer-bottom-links { display: flex; gap: 16px; }
+.footer-bottom-links a { color: var(--text-3); transition: color 0.2s; }
+.footer-bottom-links a:hover { color: var(--gold); }
+.geo-kente {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 40%;
+  overflow: hidden; pointer-events: none; opacity: 0.04;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--gold) 0px, var(--gold) 8px,
+    transparent 8px, transparent 16px,
+    var(--terracotta) 16px, var(--terracotta) 24px,
+    transparent 24px, transparent 32px,
+    var(--kente-green) 32px, var(--kente-green) 40px,
+    transparent 40px, transparent 48px
+  );
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast-container {
+  position: fixed; top: 80px; right: 24px; z-index: 400;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+  box-shadow: var(--shadow); min-width: 260px;
+  transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast.show { transform: translateX(0); }
+.toast-icon { font-size: 18px; }
+.toast-msg {}
+.toast-msg strong { display: block; font-weight: 700; margin-bottom: 1px; }
+.toast-msg span { color: var(--text-3); font-size: 12px; }
+.toast.success { border-left: 3px solid var(--kente-green); }
+.toast.info { border-left: 3px solid var(--gold); }
+
+/* ===== ACTIVE SECTION TRANSITIONS ===== */
+.section-panel { display: none; }
+.section-panel.active { display: block; animation: fadeUp 0.4s ease both; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .subs-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .hero-visual { display: none; }
+  .hero-content { max-width: 100%; }
+}
+@media (max-width: 768px) {
+  .topbar { display: none; }
+  .navbar { padding: 0 16px; height: 56px; }
+  .nav-links { display: none; }
+  .nav-search input { width: 120px; }
+  .cat-tabs { top: 56px; }
+  .hero-content { padding: 48px 24px; }
+  .hero-stats { gap: 20px; }
+  .section { padding: 40px 16px; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
+  .culture-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  .kwa-panel { width: calc(100vw - 32px); right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PWA INSTALL BANNER ===== -->
+<div id="pwa-banner">
+  <span>📱 Installez <strong>AfroMarket</strong> sur votre téléphone pour une expérience optimale</span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="installPWA()">Installer l'app</button>
+    <button id="pwa-close" onclick="closePWA()">✕</button>
+  </div>
+</div>
+
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span>📍 Abidjan, Côte d'Ivoire</span>
+    <a href="#">Livraison en 24h-72h</a>
+    <a href="#">Aide & Support</a>
+  </div>
+  <div class="topbar-right">
+    <div class="lang-switcher">
+      <div class="lang-btn active">FR</div>
+      <div class="lang-btn">EN</div>
+      <div class="lang-btn">WO</div>
+    </div>
+    <span class="badge">🔥 Promo</span>
+    <a href="#">Vendre sur AfroMarket</a>
+  </div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="nav-logo">
+    AfroMarket
+    <span>MARKETPLACE AFRO-MODERNE</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="nav-link active" onclick="showTab('home',this)">
+      <span class="nav-icon">🏠</span> Accueil
+    </a>
+    <a href="#" class="nav-link" onclick="showTab('shop',this)">
+      <span class="nav-icon">🛍️</span> Boutiques
+    </a>
+    <a href="#" class="nav-link" onclick="showTab('artisans',this)">
+      <span class="nav-icon">🪡</span> Artisans
+    </a>
+    <a href="#" class="nav-link" onclick="showTab('services',this)">
+      <span class="nav-icon">⚡</span> Services
+    </a>
+    <a href="#" class="nav-link" onclick="showTab('culture',this)">
+      <span class="nav-icon">🎵</span> Culture
+      <span class="nav-pill">LIVE</span>
+    </a>
+    <a href="#" class="nav-link" onclick="showTab('subs',this)">
+      <span class="nav-icon">💎</span> Abonnements
+    </a>
+  </div>
+  <div class="nav-actions">
+    <div class="nav-search">
+      <span>🔍</span>
+      <input type="text" placeholder="Chercher produits, artisans...">
+    </div>
+    <button class="nav-btn btn-ghost">Connexion</button>
+    <button class="nav-btn btn-primary">S'inscrire</button>
+    <button class="cart-btn" onclick="showToast('Panier ouvert', '3 articles — 47 500 FCFA', 'info')">
+      🛒
+      <span class="cart-count">3</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== CATEGORY TABS ===== -->
+<div class="cat-tabs">
+  <div class="cat-tab active" onclick="filterCat(this)"><span class="cat-tab-icon">✨</span>Tout</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">🎁</span>Cadeaux locaux</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">👗</span>Mode Afro</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">🍫</span>Alimentation</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">💆</span>Beauté & Soin</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">🏺</span>Art & Déco</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">📿</span>Bijoux</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">🌿</span>Bien-être</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">🎨</span>Artisanat</div>
+  <div class="cat-tab" onclick="filterCat(this)"><span class="cat-tab-icon">📚</span>Livres Afro</div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main" id="main-content">
+
+<!-- ===== HOME TAB ===== -->
+<div id="tab-home" class="section-panel active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="geo-pattern"></div>
+    <div class="geo-kente"></div>
+    <div class="hero-content">
+      <div class="hero-tag">🌍 Marketplace Afro-Moderne</div>
+      <h1>
+        L'Afrique <em>crée.</em><br>
+        Le monde <em>découvre.</em>
+      </h1>
+      <p class="hero-sub">
+        Produits locaux, artisans certifiés, services, culture et billets — 
+        tout l'écosystème africain moderne réuni en une seule plateforme.
+      </p>
+      <div class="hero-ctas">
+        <a href="#" class="hero-cta-main">🛍️ Découvrir le marché</a>
+        <a href="#" class="hero-cta-sec" onclick="openModal()">🎫 Billets & Concerts</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">12K+</div>
+          <div class="stat-label">Produits locaux</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">890</div>
+          <div class="stat-label">Artisans vérifiés</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">34</div>
+          <div class="stat-label">Pays d'Afrique</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-mask"></div>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <span class="hero-card-emoji">🏺</span>
+          <div class="hero-card-label">🏺 Poterie</div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-emoji">🌿</span>
+          <div class="hero-card-label">🌿 Tisanes</div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-emoji">👗</span>
+          <div class="hero-card-label">👗 Mode</div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-emoji">🎵</span>
+          <div class="hero-card-label">🎵 Culture</div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-emoji">🎨</span>
+          <div class="hero-card-label">🎨 Art</div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-card-emoji">💎</span>
+          <div class="hero-card-label">💎 Bijoux</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED BANNER -->
+  <div class="featured-banner">
+    <div class="geo-pattern"></div>
+    <div class="fb-content">
+      <div class="fb-tag">🌿 Spécial Saison</div>
+      <div class="fb-title">Festival du Masque — Édition 2025</div>
+      <div class="fb-sub">Découvrez les œuvres exclusives des sculpteurs de Man — 3 jours, 40 artisans, billets disponibles</div>
+      <a href="#" class="fb-action" onclick="openModal()">🎫 Réserver mes billets</a>
+    </div>
+    <div class="fb-visual">🎭</div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Produits <span>en vedette</span></h2>
+        <div class="section-sub">Sélection curatée par notre équipe afro-moderne</div>
+      </div>
+      <a href="#" class="see-all">Voir tout →</a>
+    </div>
+    <div class="products-grid" id="products-grid">
+      <!-- Products inserted by JS -->
+    </div>
+  </section>
+
+  <!-- ARTISANS -->
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Artisans <span>certifiés</span></h2>
+        <div class="section-sub">Fabricants locaux vérifiés par AfroMarket</div>
+      </div>
+      <a href="#" class="see-all">Voir tout →</a>
+    </div>
+    <div class="artisans-scroll" id="artisans-scroll">
+      <!-- Artisans inserted by JS -->
+    </div>
+  </section>
+
+  <!-- CULTURE -->
+  <section class="section culture-section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Espace <span>Culture</span></h2>
+        <div class="section-sub">Musique, concerts, artistes et billets avec QR</div>
+      </div>
+      <a href="#" class="see-all">Voir tout →</a>
+    </div>
+    <div class="culture-grid">
+      <div class="culture-main" onclick="openModal()">
+        <div class="culture-main-bg">🎭</div>
+        <div class="culture-overlay"></div>
+        <div class="culture-content">
+          <div class="culture-tag">🎤 Concert Live</div>
+          <div class="culture-card-title">AfroBeats Nuit & Lumière</div>
+          <div class="culture-card-sub">Abidjan — Vendredi 28 Juin 2025 • 20h00 → 02h00</div>
+          <button class="ticket-btn" onclick="openModal()">🎫 Obtenir un billet — 15 000 FCFA</button>
+        </div>
+      </div>
+      <div class="culture-side">
+        <div class="culture-side-icon cs-music">🎸</div>
+        <div class="culture-side-info">
+          <div class="culture-side-title">Afro Jazz Lounge</div>
+          <div class="culture-side-meta">Cocody, Abidjan • 15 Juin</div>
+          <div class="culture-side-price">8 000 FCFA</div>
+        </div>
+      </div>
+      <div class="culture-side">
+        <div class="culture-side-icon cs-art">🖼️</div>
+        <div class="culture-side-info">
+          <div class="culture-side-title">Expo — Femmes Créatrices</div>
+          <div class="culture-side-meta">MACA Abidjan • 1-30 Juin</div>
+          <div class="culture-side-price">Entrée libre</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Prestataires <span>de services</span></h2>
+        <div class="section-sub">Professionnels locaux vérifiés</div>
+      </div>
+      <a href="#" class="see-all">Voir tout →</a>
+    </div>
+    <div class="services-grid" id="services-grid">
+      <!-- Services inserted by JS -->
+    </div>
+  </section>
+
+  <!-- PAYMENT METHODS -->
+  <div class="payment-section">
+    <div style="text-align:center; margin-bottom:8px">
+      <h3 class="syne" style="font-size:18px;font-weight:800">Modes de paiement acceptés</h3>
+      <p style="font-size:13px;color:var(--text-3);margin-top:6px">Sécurisé, rapide et local</p>
+    </div>
+    <div class="payment-methods">
+      <div class="payment-badge featured">
+        <span class="icon">💳</span> GeniusPay
+      </div>
+      <div class="payment-badge">
+        <span class="icon">📱</span> Orange Money
+      </div>
+      <div class="payment-badge">
+        <span class="icon">📱</span> MTN MoMo
+      </div>
+      <div class="payment-badge">
+        <span class="icon">📱</span> Wave
+      </div>
+      <div class="payment-badge">
+        <span class="icon">💳</span> Visa / Mastercard
+      </div>
+      <div class="payment-badge">
+        <span class="icon">🏦</span> Virement bancaire
+      </div>
+      <div class="payment-badge cod">
+        <span class="icon">🚚</span> Paiement à la livraison
+      </div>
+    </div>
+  </div>
+
+</div><!-- end tab-home -->
+
+<!-- ===== SHOP TAB ===== -->
+<div id="tab-shop" class="section-panel">
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Boutiques <span>partenaires</span></h2>
+        <div class="section-sub">Découvrez les meilleures boutiques africaines</div>
+      </div>
+    </div>
+    <div class="products-grid">
+      <!-- Same grid, different filter -->
+    </div>
+    <div style="text-align:center;margin-top:32px;color:var(--text-3);font-size:14px">
+      <div style="font-size:48px;margin-bottom:16px">🏪</div>
+      <div style="font-weight:600;margin-bottom:8px">Section boutiques — à intégrer avec Django</div>
+      <div>Connectez ce frontend à votre API Django 6 pour charger les boutiques dynamiquement.</div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== CULTURE TAB ===== -->
+<div id="tab-culture" class="section-panel">
+  <section class="section culture-section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Espace <span>Culture</span></h2>
+        <div class="section-sub">Musique, artistes, concerts et billets QR</div>
+      </div>
+    </div>
+    <div class="culture-grid" style="margin-bottom:32px">
+      <div class="culture-main" onclick="openModal()">
+        <div class="culture-main-bg">🎭</div>
+        <div class="culture-overlay"></div>
+        <div class="culture-content">
+          <div class="culture-tag">🎤 Concert Live</div>
+          <div class="culture-card-title">AfroBeats Nuit & Lumière</div>
+          <div class="culture-card-sub">Abidjan — Vendredi 28 Juin 2025 • 20h00</div>
+          <button class="ticket-btn">🎫 Réserver — 15 000 FCFA</button>
+        </div>
+      </div>
+      <div class="culture-side"><div class="culture-side-icon cs-music">🎶</div><div class="culture-side-info"><div class="culture-side-title">Coupé-Décalé Night</div><div class="culture-side-meta">Plateau • 20 Juin</div><div class="culture-side-price">10 000 FCFA</div></div></div>
+      <div class="culture-side"><div class="culture-side-icon cs-art">🎨</div><div class="culture-side-info"><div class="culture-side-title">Exposition Masques</div><div class="culture-side-meta">Man • 25 Juin</div><div class="culture-side-price">5 000 FCFA</div></div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">🎫</div>
+      <h3 class="syne" style="font-size:20px;font-weight:800;margin-bottom:8px">Billets avec QR Code</h3>
+      <p style="color:var(--text-3);font-size:14px;margin-bottom:20px">Après achat, recevez votre billet numérique avec QR Code unique pour l'entrée</p>
+      <button class="hero-cta-main" style="display:inline-flex" onclick="openModal()">🎫 Voir un exemple de billet</button>
+    </div>
+  </section>
+</div>
+
+<!-- ===== ARTISANS TAB ===== -->
+<div id="tab-artisans" class="section-panel">
+  <section class="section">
+    <div class="section-header">
+      <div><h2 class="section-title">Artisans <span>vérifiés</span></h2><div class="section-sub">890 artisans africains certifiés sur AfroMarket</div></div>
+    </div>
+    <div class="artisans-scroll" style="flex-wrap:wrap" id="artisans-page"></div>
+  </section>
+</div>
+
+<!-- ===== SERVICES TAB ===== -->
+<div id="tab-services" class="section-panel">
+  <section class="section">
+    <div class="section-header">
+      <div><h2 class="section-title">Prestataires <span>de services</span></h2><div class="section-sub">Professionnels vérifiés disponibles près de chez vous</div></div>
+    </div>
+    <div class="services-grid" id="services-page"></div>
+  </section>
+</div>
+
+<!-- ===== ABONNEMENTS TAB ===== -->
+<div id="tab-subs" class="section-panel">
+  <section class="section">
+    <div class="section-header">
+      <div><h2 class="section-title">Abonnements <span>AfroMarket</span></h2><div class="section-sub">Choisissez le plan adapté à vos besoins</div></div>
+    </div>
+    <div class="subs-grid">
+      <div class="sub-card standard">
+        <div class="sub-name">Starter</div>
+        <div style="font-size:13px;color:var(--text-3)">Pour démarrer</div>
+        <div class="sub-price">Gratuit <span></span></div>
+        <div class="sub-period">Pour toujours</div>
+        <ul class="sub-features">
+          <li>Accès boutiques & produits</li>
+          <li>Panier & achats basiques</li>
+          <li>Support standard</li>
+          <li>1 boutique créée</li>
+        </ul>
+        <button class="sub-btn standard">Commencer gratuit</button>
+      </div>
+      <div class="sub-card pro">
+        <div class="sub-recommended">⭐ Recommandé</div>
+        <div class="sub-name">Pro Vendeur</div>
+        <div style="font-size:13px;color:var(--text-3)">Pour les artisans & boutiques</div>
+        <div class="sub-price">9 900 <span>FCFA / mois</span></div>
+        <div class="sub-period">Facturé mensuellement via GeniusPay</div>
+        <ul class="sub-features">
+          <li>Boutique illimitée</li>
+          <li>Dashboard analytics avancé</li>
+          <li>Boost produits & visibilité</li>
+          <li>Paiements GeniusPay prioritaires</li>
+          <li>Support prioritaire Kwa</li>
+          <li>Badge "Certifié AfroMarket"</li>
+        </ul>
+        <button class="sub-btn pro" onclick="showToast('Abonnement Pro', 'Redirection vers GeniusPay...', 'info')">Passer au Pro — 9 900 FCFA</button>
+      </div>
+      <div class="sub-card premium">
+        <div class="sub-name">Premium Culture</div>
+        <div style="font-size:13px;color:var(--text-3)">Pour artistes & organisateurs</div>
+        <div class="sub-price">24 900 <span>FCFA / mois</span></div>
+        <div class="sub-period">Facturé mensuellement</div>
+        <ul class="sub-features">
+          <li>Tout du plan Pro</li>
+          <li>Publication concerts & billets QR</li>
+          <li>Page artiste dédiée</li>
+          <li>Streaming audio/vidéo</li>
+          <li>Analytics billetterie</li>
+          <li>Accès API AfroMarket</li>
+        </ul>
+        <button class="sub-btn premium" onclick="showToast('Premium Culture', 'Redirection vers GeniusPay...', 'info')">Activer Premium</button>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px">
+      <h3 class="syne" style="font-size:18px;font-weight:800;margin-bottom:8px">💳 Paiements sécurisés par GeniusPay</h3>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:20px">
+        Tous les abonnements sont gérés via <strong style="color:var(--gold)">GeniusPay</strong>, la passerelle de paiement africaine intégrée.
+        Accepte Orange Money, MTN MoMo, Wave, Visa/Mastercard et virements bancaires locaux.
+        Annulation à tout moment. Sans engagement.
+      </p>
+      <div class="payment-methods" style="justify-content:flex-start">
+        <div class="payment-badge featured"><span class="icon">💳</span> GeniusPay</div>
+        <div class="payment-badge"><span class="icon">📱</span> Orange Money</div>
+        <div class="payment-badge"><span class="icon">📱</span> MTN MoMo</div>
+        <div class="payment-badge"><span class="icon">📱</span> Wave</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">AfroMarket</div>
+      <p class="footer-desc">La marketplace afro-moderne qui connecte artisans, boutiques, prestataires et artistes africains au monde entier.</p>
+      <div class="footer-social">
+        <a href="#" class="social-btn">🐦</a>
+        <a href="#" class="social-btn">📘</a>
+        <a href="#" class="social-btn">📸</a>
+        <a href="#" class="social-btn">▶️</a>
+        <a href="#" class="social-btn">💼</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Marketplace</div>
+      <div class="footer-links">
+        <a href="#">Produits locaux</a>
+        <a href="#">Boutiques</a>
+        <a href="#">Artisans</a>
+        <a href="#">Services</a>
+        <a href="#">Espace Culture</a>
+        <a href="#">Billets & Concerts</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Vendeurs</div>
+      <div class="footer-links">
+        <a href="#">Créer une boutique</a>
+        <a href="#">Abonnements</a>
+        <a href="#">GeniusPay</a>
+        <a href="#">Programme artisans</a>
+        <a href="#">Ressources</a>
+        <a href="#">Publicité</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Support</div>
+      <div class="footer-links">
+        <a href="#">Assistant Kwa</a>
+        <a href="#">FAQ</a>
+        <a href="#">Livraison</a>
+        <a href="#">Retours</a>
+        <a href="#">Contactez-nous</a>
+        <a href="#">CGU</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 AfroMarket. Conçu avec ❤️ pour l'Afrique.</span>
+    <div class="footer-bottom-links">
+      <a href="#">Confidentialité</a>
+      <a href="#">Conditions</a>
+      <a href="#">Cookies</a>
+      <a href="#">Accessibilité</a>
+    </div>
+    <span class="mono" style="font-size:11px;color:var(--text-3)">v2.5.0 · Django 6 PWA</span>
+  </div>
+</footer>
+
+<!-- ===== KWA ASSISTANT ===== -->
+<button class="kwa-btn" onclick="toggleKwa()" id="kwa-btn" title="Assistant Kwa">
+  🤖
+  <div class="kwa-label" id="kwa-label">Assistant Kwa</div>
+</button>
+
+<div class="kwa-panel" id="kwa-panel">
+  <div class="kwa-header">
+    <div class="kwa-avatar">🤖</div>
+    <div class="kwa-info">
+      <div class="kwa-name">Kwa — Assistant AfroMarket</div>
+      <div class="kwa-status">En ligne · Réponse instantanée</div>
+    </div>
+    <button class="kwa-close" onclick="toggleKwa()">✕</button>
+  </div>
+  <div class="kwa-messages" id="kwa-messages">
+    <div class="kwa-msg bot">
+      <div class="kwa-msg-avatar">🤖</div>
+      <div class="kwa-bubble">Bonjour ! Je suis <strong>Kwa</strong>, votre assistant AfroMarket. Je peux vous aider à trouver des produits, des artisans, répondre à vos questions sur les paiements, la livraison et bien plus ! 🌍</div>
+    </div>
+  </div>
+  <div class="kwa-suggestions">
+    <button class="kwa-sug" onclick="sendKwaMsg('Comment payer avec GeniusPay ?')">💳 GeniusPay</button>
+    <button class="kwa-sug" onclick="sendKwaMsg('Comment acheter un billet concert ?')">🎫 Billets</button>
+    <button class="kwa-sug" onclick="sendKwaMsg('Délais de livraison ?')">🚚 Livraison</button>
+    <button class="kwa-sug" onclick="sendKwaMsg('Devenir artisan certifié ?')">🪡 Artisans</button>
+  </div>
+  <div class="kwa-input-area">
+    <input class="kwa-input" id="kwa-input" type="text" placeholder="Écrivez à Kwa..." onkeypress="if(event.key==='Enter')sendKwaFromInput()">
+    <button class="kwa-send" onclick="sendKwaFromInput()">➤</button>
+  </div>
+</div>
+
+<!-- ===== QR MODAL ===== -->
+<div class="modal-overlay" id="qr-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">🎫 Votre Billet Numérique</div>
+    <div class="modal-sub">Présentez ce QR Code à l'entrée de l'événement</div>
+    <div class="qr-container">
+      <div class="qr-mock">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- QR Code Mock SVG -->
+          <rect width="200" height="200" fill="white"/>
+          <!-- Corner squares -->
+          <rect x="10" y="10" width="60" height="60" fill="black" rx="4"/>
+          <rect x="16" y="16" width="48" height="48" fill="white" rx="2"/>
+          <rect x="22" y="22" width="36" height="36" fill="black" rx="2"/>
+          <rect x="130" y="10" width="60" height="60" fill="black" rx="4"/>
+          <rect x="136" y="16" width="48" height="48" fill="white" rx="2"/>
+          <rect x="142" y="22" width="36" height="36" fill="black" rx="2"/>
+          <rect x="10" y="130" width="60" height="60" fill="black" rx="4"/>
+          <rect x="16" y="136" width="48" height="48" fill="white" rx="2"/>
+          <rect x="22" y="142" width="36" height="36" fill="black" rx="2"/>
+          <!-- Data dots -->
+          <rect x="80" y="10" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="10" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="10" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="25" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="25" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="40" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="55" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="55" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="130" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="155" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="170" y="80" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="95" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="95" width="10" height="10" fill="black" rx="1"/>
+          <rect x="140" y="95" width="10" height="10" fill="black" rx="1"/>
+          <rect x="165" y="95" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="110" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="110" width="10" height="10" fill="black" rx="1"/>
+          <rect x="120" y="110" width="10" height="10" fill="black" rx="1"/>
+          <rect x="145" y="110" width="10" height="10" fill="black" rx="1"/>
+          <rect x="160" y="110" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="130" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="130" width="10" height="10" fill="black" rx="1"/>
+          <rect x="130" y="130" width="10" height="10" fill="black" rx="1"/>
+          <rect x="155" y="130" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="145" width="10" height="10" fill="black" rx="1"/>
+          <rect x="120" y="145" width="10" height="10" fill="black" rx="1"/>
+          <rect x="145" y="145" width="10" height="10" fill="black" rx="1"/>
+          <rect x="170" y="145" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="160" width="10" height="10" fill="black" rx="1"/>
+          <rect x="110" y="160" width="10" height="10" fill="black" rx="1"/>
+          <rect x="135" y="160" width="10" height="10" fill="black" rx="1"/>
+          <rect x="155" y="160" width="10" height="10" fill="black" rx="1"/>
+          <rect x="80" y="175" width="10" height="10" fill="black" rx="1"/>
+          <rect x="95" y="175" width="10" height="10" fill="black" rx="1"/>
+          <rect x="120" y="175" width="10" height="10" fill="black" rx="1"/>
+          <rect x="145" y="175" width="10" height="10" fill="black" rx="1"/>
+          <rect x="170" y="175" width="10" height="10" fill="black" rx="1"/>
+          <!-- AfroMarket center logo -->
+          <rect x="88" y="88" width="24" height="24" fill="#D4A843" rx="4"/>
+          <text x="100" y="104" font-size="12" fill="#000" text-anchor="middle" font-weight="bold">A</text>
+        </svg>
+        <div class="qr-scan-line"></div>
+      </div>
+    </div>
+    <div class="modal-ticket-info">
+      <div class="mti-row">
+        <span class="mti-label">Événement</span>
+        <span class="mti-val">AfroBeats Nuit & Lumière</span>
+      </div>
+      <div class="mti-row">
+        <span class="mti-label">Date</span>
+        <span class="mti-val">Ven. 28 Juin 2025 · 20h00</span>
+      </div>
+      <div class="mti-row">
+        <span class="mti-label">Lieu</span>
+        <span class="mti-val">Sofitel Abidjan</span>
+      </div>
+      <div class="mti-row">
+        <span class="mti-label">Catégorie</span>
+        <span class="mti-val">VIP — Zone Dorée</span>
+      </div>
+      <div class="mti-row">
+        <span class="mti-label">Montant</span>
+        <span class="mti-val gold">15 000 FCFA</span>
+      </div>
+      <div class="mti-row">
+        <span class="mti-label">Ref. billet</span>
+        <span class="mti-val mono" style="font-size:11px">AFM-2025-06-00847</span>
+      </div>
+    </div>
+    <button class="modal-close-btn" onclick="closeModal()">Fermer le billet</button>
+  </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// ===== DATA =====
+const products = [
+  { emoji: '🏺', name: 'Vase en céramique Akan', shop: 'Poteries du Baoulé', price: '12 500', old: null, rating: 4.8, reviews: 127, badge: 'local', cat: 'Art & Déco' },
+  { emoji: '👗', name: 'Robe Kente tissée main', shop: 'Moda Afrique', price: '45 000', old: '58 000', rating: 4.9, reviews: 89, badge: 'promo', cat: 'Mode Afro' },
+  { emoji: '🌿', name: 'Tisane Rooibos Premium 250g', shop: 'Saveurs du Sahel', price: '8 900', old: null, rating: 4.7, reviews: 203, badge: 'new', cat: 'Alimentation' },
+  { emoji: '💄', name: 'Beurre de karité pur 500ml', shop: 'Beauté Naturelle', price: '6 500', old: null, rating: 4.9, reviews: 412, badge: 'local', cat: 'Beauté & Soin' },
+  { emoji: '📿', name: 'Collier perles Krobo', shop: 'Bijoux Afro', price: '22 000', old: '28 000', rating: 4.6, reviews: 64, badge: 'promo', cat: 'Bijoux' },
+  { emoji: '🎨', name: 'Tableau "Danse du Masque"', shop: 'Galerie Côte', price: '85 000', old: null, rating: 5.0, reviews: 18, badge: 'new', cat: 'Art & Déco' },
+  { emoji: '🥁', name: 'Djembé artisanal taille M', shop: 'Instruments d\'Afrique', price: '35 000', old: null, rating: 4.8, reviews: 47, badge: 'local', cat: 'Artisanat' },
+  { emoji: '☕', name: 'Café Arabica Éthiopie 500g', shop: 'Café d\'Afrique', price: '9 900', old: '12 000', rating: 4.9, reviews: 156, badge: 'promo', cat: 'Alimentation' },
+];
+
+const artisans = [
+  { emoji: '🏺', name: 'Konan Yao', craft: 'Potier · Bouaké', products: '47 créations', verified: true },
+  { emoji: '🪡', name: 'Aminata Diallo', craft: 'Tisserande · Dakar', products: '89 créations', verified: true },
+  { emoji: '🪵', name: 'Kwame Asante', craft: 'Sculpteur · Accra', products: '23 créations', verified: true },
+  { emoji: '💍', name: 'Fatoumata Ba', craft: 'Bijoutière · Bamako', products: '61 créations', verified: true },
+  { emoji: '🎨', name: 'Seydou Touré', craft: 'Peintre · Abidjan', products: '34 créations', verified: true },
+  { emoji: '🧶', name: 'Adwoa Mensah', craft: 'Crochet · Kumasi', products: '112 créations', verified: false },
+  { emoji: '🔨', name: 'Ibrahim Coulibaly', craft: 'Forgeron · Ségou', products: '19 créations', verified: true },
+  { emoji: '🌺', name: 'Mariame Kouyaté', craft: 'Fleuriste · Conakry', products: '28 créations', verified: false },
+];
+
+const services = [
+  { emoji: '💇', name: 'Coiffure Afro', count: '234 prestataires', tag: 'À domicile' },
+  { emoji: '🍽️', name: 'Traiteur Africain', count: '67 prestataires', tag: 'Sur commande' },
+  { emoji: '📸', name: 'Photographe', count: '89 prestataires', tag: 'Événementiel' },
+  { emoji: '🎵', name: 'DJ & Musique Live', count: '43 prestataires', tag: 'Concerts' },
+  { emoji: '🏗️', name: 'Artisan Bâtiment', count: '156 prestataires', tag: 'Certifié' },
+  { emoji: '💻', name: 'Dev & Tech', count: '78 prestataires', tag: 'Remote' },
+  { emoji: '🎓', name: 'Cours & Formation', count: '112 prestataires', tag: 'En ligne' },
+  { emoji: '🚚', name: 'Transport & Livraison', count: '201 prestataires', tag: '24h/7j' },
+];
+
+// ===== KWA RESPONSES =====
+const kwaResponses = {
+  'geniuspay': 'Pour payer avec **GeniusPay**, sélectionnez cette option au checkout. GeniusPay supporte Orange Money, MTN MoMo, Wave, Visa/Mastercard. Vos données sont 100% sécurisées 🔒',
+  'billet': 'Après achat d\'un billet, vous recevez un QR Code unique par email et dans votre espace compte. Présentez-le à l\'entrée pour être scanné. Simple et rapide 🎫',
+  'livraison': 'Livraison disponible dans 34 pays d\'Afrique ! Délais : 24h-72h en Côte d\'Ivoire, 3-7 jours pour l\'Afrique de l\'Ouest. Paiement à la livraison disponible 🚚',
+  'artisan': 'Pour devenir artisan certifié AfroMarket : inscrivez-vous, soumettez vos créations, passez notre vérification qualité sous 48h. Badge "Certifié" attribué gratuitement ! 🪡',
+  default: 'Je comprends votre question ! Vous pouvez me demander sur les produits, paiements GeniusPay, billets concerts, livraisons ou comment vendre sur AfroMarket. Comment puis-je vous aider ? 🌍'
+};
+
+// ===== RENDER FUNCTIONS =====
+function renderProducts(container) {
+  const el = document.getElementById(container);
+  if (!el) return;
+  el.innerHTML = products.map((p, i) => `
+    <div class="product-card" style="animation-delay:${i * 0.07}s" onclick="showToast('${p.name}', 'Ajouté à votre liste de souhaits ❤️', 'info')">
+      <div class="product-img">
+        <span style="font-size:64px;z-index:1;position:relative">${p.emoji}</span>
+        <div class="product-badge badge-${p.badge}">${p.badge === 'new' ? 'Nouveau' : p.badge === 'promo' ? 'Promo' : '🌍 Local'}</div>
+        <button class="product-fav">♡</button>
+      </div>
+      <div class="product-info">
+        <div class="product-shop"><span class="product-shop-dot"></span>${p.shop}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-rating">
+          <span class="stars">${'★'.repeat(Math.floor(p.rating))}${p.rating % 1 ? '½' : ''}</span>
+          <span class="rating-count">(${p.reviews})</span>
+        </div>
+        <div class="product-footer">
+          <div>
+            <span class="product-price">${p.price} FCFA</span>
+            ${p.old ? `<span class="product-price-old">${p.old}</span>` : ''}
+          </div>
+          <button class="product-add" onclick="event.stopPropagation();addToCart('${p.name}')">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderArtisans(container) {
+  const el = document.getElementById(container);
+  if (!el) return;
+  el.innerHTML = artisans.map(a => `
+    <div class="artisan-card">
+      <div class="artisan-avatar" style="position:relative">
+        ${a.emoji}
+        ${a.verified ? '<div class="artisan-verified">✓</div>' : ''}
+      </div>
+      <div class="artisan-name">${a.name}</div>
+      <div class="artisan-craft">${a.craft}</div>
+      <div class="artisan-products">${a.products}</div>
+    </div>
+  `).join('');
+}
+
+function renderServices(container) {
+  const el = document.getElementById(container);
+  if (!el) return;
+  el.innerHTML = services.map(s => `
+    <div class="service-card">
+      <div class="service-icon">${s.emoji}</div>
+      <div class="service-name">${s.name}</div>
+      <div class="service-count">${s.count}</div>
+      <span class="service-tag">${s.tag}</span>
+    </div>
+  `).join('');
+}
+
+// ===== NAVIGATION =====
+function showTab(tab, el) {
+  event.preventDefault();
+  // Hide all panels
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  // Show target
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) panel.classList.add('active');
+  if (el) el.classList.add('active');
+  // Render data for tab
+  if (tab === 'artisans') renderArtisans('artisans-page');
+  if (tab === 'services') renderServices('services-page');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterCat(el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== KWA ASSISTANT =====
+let kwaOpen = false;
+function toggleKwa() {
+  kwaOpen = !kwaOpen;
+  document.getElementById('kwa-panel').classList.toggle('open', kwaOpen);
+  document.getElementById('kwa-label').style.display = kwaOpen ? 'none' : 'block';
+  document.getElementById('kwa-btn').style.animationPlayState = kwaOpen ? 'paused' : 'running';
+}
+
+function sendKwaMsg(msg) {
+  const messages = document.getElementById('kwa-messages');
+  // User message
+  messages.innerHTML += `
+    <div class="kwa-msg user">
+      <div class="kwa-msg-avatar">👤</div>
+      <div class="kwa-bubble">${msg}</div>
+    </div>
+  `;
+  // Find response
+  const key = Object.keys(kwaResponses).find(k => msg.toLowerCase().includes(k)) || 'default';
+  const resp = kwaResponses[key];
+  // Bot typing indicator
+  setTimeout(() => {
+    messages.innerHTML += `
+      <div class="kwa-msg bot" id="kwa-typing">
+        <div class="kwa-msg-avatar">🤖</div>
+        <div class="kwa-bubble" style="color:var(--text-3)">⋯ Kwa écrit...</div>
+      </div>
+    `;
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(() => {
+      document.getElementById('kwa-typing').remove();
+      messages.innerHTML += `
+        <div class="kwa-msg bot">
+          <div class="kwa-msg-avatar">🤖</div>
+          <div class="kwa-bubble">${resp}</div>
+        </div>
+      `;
+      messages.scrollTop = messages.scrollHeight;
+    }, 1200);
+  }, 300);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function sendKwaFromInput() {
+  const input = document.getElementById('kwa-input');
+  if (input.value.trim()) {
+    sendKwaMsg(input.value.trim());
+    input.value = '';
+  }
+}
+
+// ===== CART =====
+let cartCount = 3;
+function addToCart(name) {
+  cartCount++;
+  document.querySelector('.cart-count').textContent = cartCount;
+  showToast(name, 'Ajouté au panier 🛒', 'success');
+}
+
+// ===== MODAL =====
+function openModal() {
+  event && event.preventDefault();
+  document.getElementById('qr-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+// ===== TOASTS =====
+function showToast(title, msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const icons = { success: '✅', info: '💛', error: '❌' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><div class="toast-msg"><strong>${title}</strong><span>${msg}</span></div>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 50);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+// ===== PWA =====
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('pwa-banner').classList.add('show');
+});
+function installPWA() {
+  if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+  closePWA();
+  showToast('AfroMarket', 'Installation de l\'app en cours...', 'success');
+}
+function closePWA() {
+  document.getElementById('pwa-banner').classList.remove('show');
+}
+// Show banner after 2s for demo
+setTimeout(() => document.getElementById('pwa-banner').classList.add('show'), 2000);
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderProducts('products-grid');
+  renderArtisans('artisans-scroll');
+  renderServices('services-grid');
+  // Animate product cards on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.style.opacity = '1';
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.product-card').forEach(c => observer.observe(c));
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeModal(); if(kwaOpen) toggleKwa(); }
+});
+</script>
+
+</body>
+</html>

@@ -25,7 +25,7 @@ class GeniusPaymentError(Exception):
 
 
 GENIUS_UNAVAILABLE_USER_MSG = (
-    "Le paiement en ligne (GeniusPay) n'est pas disponible pour le moment. "
+    "Le paiement en ligne n'est pas disponible pour le moment. "
     "Réessayez plus tard ou contactez le support Kolê."
 )
 

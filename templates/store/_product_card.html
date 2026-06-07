@@ -10,6 +10,7 @@
       title="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
       aria-label="Favori"
     >{% if favorites and product.id in favorites %}♥{% else %}♡{% endif %}</a>
+    <div class="product-card__placeholder" aria-hidden="true">{{ product|product_category_emoji }}</div>
     {% product_image_url product as img_src %}
     {% if img_src %}
       <img
@@ -18,10 +19,8 @@
         alt="{{ product.name }}"
         loading="lazy"
         decoding="async"
-        {% img_onerror_attr %}
+        onerror="this.remove()"
       >
-    {% else %}
-      <div class="product-card__placeholder" aria-hidden="true">{{ product|product_category_emoji }}</div>
     {% endif %}
   </div>
   <div class="product-card__body">

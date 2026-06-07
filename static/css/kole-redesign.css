@@ -57,7 +57,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, .page-title h1, .flash__header h2,
+h1, h2, h3:not(.product-card__name), .page-title h1, .flash__header h2,
 .home-categories__intro h2, .category-strip__header h3,
 .services h2, .section-title {
   font-family: var(--font-display);

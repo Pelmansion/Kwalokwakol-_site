@@ -1,0 +1,46 @@
+{% load marketplace_tags %}
+<article class="product-card{% if compact %} product-card--compact{% endif %}">
+  <div class="product-card__image">
+    {% if product.category %}
+      <span class="product-card__category">{{ product.category.name }}</span>
+    {% endif %}
+    <a
+      class="product-card__wish favorite-toggle{% if favorites and product.id in favorites %} favorite-toggle--active{% endif %}"
+      href="{% url 'store:toggle_favorite' product.id %}"
+      title="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
+      aria-label="Favori"
+    >{% if favorites and product.id in favorites %}♥{% else %}♡{% endif %}</a>
+    {% product_image_url product as img_src %}
+    {% if img_src %}
+      <img
+        class="product-card__photo"
+        src="{{ img_src }}"
+        alt="{{ product.name }}"
+        loading="lazy"
+        decoding="async"
+        {% img_onerror_attr %}
+      >
+    {% else %}
+      <div class="product-card__placeholder" aria-hidden="true">{{ product|product_category_emoji }}</div>
+    {% endif %}
+  </div>
+  <div class="product-card__body">
+    <h3 class="product-card__name">
+      {% if product.name|is_demo_product %}
+        <span class="product-card__demo">Démo</span>
+      {% endif %}
+      {{ product.name|product_card_title }}
+    </h3>
+    <div class="product-card__footer">
+      {% include "store/_product_price.html" with product=product variant="card" %}
+      <div class="product-card__actions">
+        <a class="product-card__btn product-card__btn--outline" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+        {% if product.kind == 'service' %}
+          <a class="product-card__btn product-card__btn--filled" href="{% url 'store:product_detail' product.slug %}">Réserver</a>
+        {% elif user|is_client or not user.is_authenticated %}
+          <a class="product-card__btn product-card__btn--filled js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Acheter</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>

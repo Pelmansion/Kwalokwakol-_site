@@ -183,36 +183,11 @@
   <section class="flash container">
     <div class="flash__header">
       <h2>Ventes flash</h2>
-      <span>Chaque jour des promos locales</span>
+      <span>— Offres limitées</span>
     </div>
     <div class="product-grid">
       {% for product in products %}
-        <article class="product-card">
-          <div class="product-card__image">
-            {% include "store/_product_image.html" with product=product %}
-          </div>
-          <div class="product-card__body">
-            <h3>{{ product.name }}</h3>
-            {% include "store/_product_price.html" with product=product %}
-            <div class="product-card__actions">
-              <div class="product-card__actions-left">
-                <a
-                  class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
-                  href="{% url 'store:toggle_favorite' product.id %}"
-                  title="Ajouter aux favoris"
-                >
-                  ♥
-                </a>
-                <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
-                {% if product.kind == 'service' %}
-                  <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
-                {% elif user|is_client %}
-                  <a class="btn btn--small" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </article>
+        {% include "store/_product_card.html" with product=product favorites=favorites %}
       {% empty %}
         <p class="empty">Ajoutez des produits pour remplir cette section.</p>
       {% endfor %}
@@ -228,7 +203,7 @@
   <section class="container home-categories">
     <div class="home-categories__intro">
       <h2>Découvrez nos catégories</h2>
-      <p>Un aperçu rapide de ce que proposent les artisans et boutiques de Kolê.</p>
+      <p>Un aperçu rapide de ce que proposent artisans et boutiques</p>
     </div>
     {% for section in category_sections %}
       <div class="category-strip">
@@ -242,25 +217,7 @@
         </div>
         <div class="category-strip__grid">
           {% for product in section.products %}
-            <article class="product-card product-card--compact">
-              <div class="product-card__image">
-                {% include "store/_product_image.html" with product=product %}
-              </div>
-              <div class="product-card__body">
-                <h3>{{ product.name }}</h3>
-                {% include "store/_product_price.html" with product=product %}
-                <div class="product-card__actions">
-                  <div class="product-card__actions-left">
-                    <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
-                    {% if product.kind == 'service' %}
-                      <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
-                    {% elif user|is_client %}
-                      <a class="btn btn--small" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </article>
+            {% include "store/_product_card.html" with product=product favorites=favorites compact=1 %}
           {% endfor %}
         </div>
       </div>

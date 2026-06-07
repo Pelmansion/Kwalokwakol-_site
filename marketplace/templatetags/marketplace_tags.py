@@ -89,3 +89,63 @@ def show_mobile_back_button(context):
 
     home_path = _norm_request_path(home_url)
     return cur != home_path
+
+
+_CATEGORY_EMOJI = (
+    ("plomb", "🔧"),
+    ("btp", "🛁"),
+    ("bât", "🔨"),
+    ("bat", "🔨"),
+    ("beaut", "💅"),
+    ("coiff", "✂️"),
+    ("hôtel", "🏨"),
+    ("hotel", "🏨"),
+    ("heberg", "🏨"),
+    ("location", "🏠"),
+    ("immobil", "🏠"),
+    ("tourisme", "✈️"),
+    ("voyage", "✈️"),
+    ("restaur", "🍽️"),
+    ("culture", "🎵"),
+    ("électro", "📱"),
+    ("electro", "📱"),
+    ("couture", "👗"),
+    ("miel", "🍯"),
+    ("tech", "💻"),
+    ("auto", "🚗"),
+    ("moto", "🏍️"),
+    ("aliment", "🛒"),
+    ("artisan", "🏺"),
+)
+
+
+@register.filter
+def product_category_emoji(product):
+    """Emoji décoratif pour la zone visuelle de la carte produit."""
+    label = ""
+    category = getattr(product, "category", None)
+    if category and category.name:
+        label = category.name.lower()
+    for key, emoji in _CATEGORY_EMOJI:
+        if key in label:
+            return emoji
+    if getattr(product, "kind", None) == "service":
+        return "🛠️"
+    return "📦"
+
+
+@register.filter
+def product_card_title(name):
+    """Retire le préfixe [DEMO] des titres affichés en carte."""
+    if not name:
+        return ""
+    if name.startswith("[DEMO] "):
+        return name[7:]
+    if name.startswith("[DEMO]"):
+        return name[6:].lstrip()
+    return name
+
+
+@register.filter
+def is_demo_product(name):
+    return bool(name and name.startswith("[DEMO]"))

@@ -1,5 +1,21 @@
-{% comment %}Affichage prix avec promo (ancien prix barré, %). Variable: product, optionnel variant=detail pour la fiche produit.{% endcomment %}
-{% if variant == "detail" %}
+{% comment %}Affichage prix avec promo (ancien prix barré, %). Variable: product, optionnel variant=detail|card.{% endcomment %}
+{% if variant == "card" %}
+  {% if product.promo_discount_percent %}
+    <div class="product-card__price-block">
+      <span class="product-card__price-old">{{ product.old_price|floatformat:0 }} FCFA</span>
+      <span class="product-card__price">
+        <span class="product-card__price-value">{{ product.price|floatformat:0 }}</span>
+        <span class="product-card__price-unit">FCFA</span>
+      </span>
+      <span class="product-card__promo">-{{ product.promo_discount_percent }}&nbsp;%</span>
+    </div>
+  {% else %}
+    <span class="product-card__price">
+      <span class="product-card__price-value">{{ product.price|floatformat:0 }}</span>
+      <span class="product-card__price-unit">FCFA</span>
+    </span>
+  {% endif %}
+{% elif variant == "detail" %}
   {% if product.promo_discount_percent %}
     <span class="muted" style="text-decoration: line-through; font-size: 1.05rem;">{{ product.old_price|floatformat:0 }} FCFA</span>
     <p class="price product-detail__price" style="margin: 0;">{{ product.price|floatformat:0 }} FCFA</p>

@@ -33,27 +33,7 @@
     <h2 style="font-family:var(--font-serif); font-size:1.5rem; margin: 0 0 18px;">Produits de la boutique</h2>
     <div class="product-grid">
       {% for product in products %}
-        <article class="product-card">
-          <div class="product-card__image">
-            {% include "store/_product_image.html" with product=product %}
-          </div>
-          <div class="product-card__body">
-            <h3>{{ product.name }}</h3>
-            {% include "store/_product_price.html" with product=product %}
-            <div class="product-card__actions">
-              <div class="product-card__actions-left">
-                <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
-                   href="{% url 'store:toggle_favorite' product.id %}" title="Ajouter aux favoris">♥</a>
-                <a class="link" href="{% url 'store:product_detail' product.slug %}">Voir</a>
-              </div>
-              {% if product.kind == 'service' %}
-                <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
-              {% elif user|is_client or not user.is_authenticated %}
-                <a class="btn btn--small js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter</a>
-              {% endif %}
-            </div>
-          </div>
-        </article>
+        {% include "store/_product_card.html" with product=product favorites=favorites %}
       {% empty %}
         <div class="empty" style="grid-column:1/-1;">
           <p style="margin:0;">Aucun produit disponible pour ce vendeur.</p>

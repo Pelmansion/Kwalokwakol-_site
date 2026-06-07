@@ -102,35 +102,7 @@
           </div>
         </article>
         {% else %}
-        <article class="product-card">
-          <div class="product-card__image">
-            {% include "store/_product_image.html" with product=product %}
-          </div>
-          <div class="product-card__body">
-            <h3>
-              {{ product.name }}
-              {% if product.kind == 'service' %}
-                <span class="badge badge--info" style="margin-left:4px;">Service</span>
-              {% endif %}
-            </h3>
-            {% include "store/_product_price.html" with product=product %}
-            {% if product.avg_rating %}
-              <p class="muted" style="margin:0 0 8px;">⭐ {{ product.avg_rating|floatformat:1 }}/5</p>
-            {% endif %}
-            <div class="product-card__actions">
-              <div class="product-card__actions-left">
-                <a class="favorite-toggle {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
-                   href="{% url 'store:toggle_favorite' product.id %}" title="Ajouter aux favoris" aria-label="Favori">♥</a>
-                <a class="link" href="{% url 'store:product_detail' product.slug %}">Détails</a>
-              </div>
-              {% if product.kind == 'service' %}
-                <a class="btn btn--small" href="{% url 'store:product_detail' product.slug %}">Service</a>
-              {% elif user|is_client or not user.is_authenticated %}
-                <a class="btn btn--small js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter</a>
-              {% endif %}
-            </div>
-          </div>
-        </article>
+        {% include "store/_product_card.html" with product=product favorites=favorites %}
         {% endif %}
       {% empty %}
         <div class="empty-state" style="grid-column: 1/-1;">

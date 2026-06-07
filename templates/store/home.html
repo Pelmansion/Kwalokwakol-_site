@@ -1,241 +1,202 @@
 {% extends "base.html" %}
 {% load static %}
-{% load vite_tags %}
 {% load marketplace_tags %}
 {% block content %}
-  <section class="hero container">
-    {% if not user.is_authenticated or user|is_client %}
-    <aside class="categories" aria-label="Navigation par catégories">
-      <h3>Catégories</h3>
-      <ul class="categories__list">
-        {% if categories.0 %}
-          {% for category in categories %}
-            {% if category.slug %}
-              <li><a href="{% url 'store:category_detail' category.slug %}">{{ category.name }}</a></li>
-            {% else %}
-              <li><span class="categories__muted">{{ category }}</span></li>
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      </ul>
-    </aside>
-    {% endif %}
-    <div class="hero__banner">
-      <div class="hero-slider" id="hero-slider">
-        <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% static "images/hero-main.jpg" %}');">
-          <div class="hero__content">
-            <p class="hero__eyebrow">Artisans &amp; commerces de proximité</p>
-            <h1>Kolê <em>Group</em></h1>
-            <p>Vivres, artisanat, bâtiment et services : ce que votre quartier propose, au même endroit.</p>
-            <a class="btn" href="{% url 'store:product_list' %}">Découvrir les offres</a>
-            <div class="hero__stats">
-              <div>
-                <strong>+150</strong>
-                <span>Artisans</span>
-              </div>
-              <div>
-                <strong>24h</strong>
-                <span>Livraison locale</span>
-              </div>
-              <div>
-                <strong>100%</strong>
-                <span>Qualité</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-slide hero-slide--flash" style="--hero-bg: url('{% static "images/hero-flash.jpg" %}');">
-          <div class="hero__content">
-            <p class="hero__eyebrow">Offres du moment</p>
-            <h1>Ventes flash du jour</h1>
-            <p>Réductions sur une sélection d’articles locaux — le temps presse, les stocks aussi.</p>
-            <a class="btn" href="#flash">Voir les ventes flash</a>
-            <div class="hero__stats">
-              <div>
-                <strong>-30%</strong>
-                <span>En moyenne</span>
-              </div>
-              <div>
-                <strong>Stock</strong>
-                <span>Limité</span>
-              </div>
-              <div>
-                <strong>Local</strong>
-                <span>Artisans & boutiques</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-slide hero-slide--services" style="--hero-bg: url('{% static "images/hero-services.jpg" %}');">
-          <div class="hero__content">
-            <p class="hero__eyebrow">Prestataires autour de vous</p>
-            <h1>Services artisanaux à portée de main</h1>
-            <p>Coiffure, bâtiment, couture, numérique… le bon profil, sans chercher au hasard.</p>
-            <a class="btn" href="{% url 'store:product_list' %}?type=service">Chercher un service</a>
-            <div class="hero__stats">
-              <div>
-                <strong>10+</strong>
-                <span>Catégories</span>
-              </div>
-              <div>
-                <strong>Rapide</strong>
-                <span>Demande en ligne</span>
-              </div>
-              <div>
-                <strong>Sécurisé</strong>
-                <span>Profils vérifiés</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="hero-slider__dots" id="hero-slider-dots">
-        <button type="button" data-index="0" class="is-active"></button>
-        <button type="button" data-index="1"></button>
-        <button type="button" data-index="2"></button>
-      </div>
-    </div>
-  </section>
+<div class="home-page">
+  <div class="page-wrap">
 
-  <section class="container feature-row">
-    <div class="feature-card">
-      <h3>De vrais artisans</h3>
-      <p>Des professionnels vérifiés et des boutiques locales de confiance.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Services & produits</h3>
-      <p>Du dépannage maison aux achats vivriers, tout au même endroit.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Commande simple</h3>
-      <p>Ajoutez au panier, renseignez l'adresse, nous livrons.</p>
-    </div>
-  </section>
-
-  <section class="container culture-promo">
-    <div class="culture-promo__card">
-      <div class="culture-promo__bg" aria-hidden="true">
-        <span class="culture-promo__blob culture-promo__blob--1"></span>
-        <span class="culture-promo__blob culture-promo__blob--2"></span>
-        <span class="culture-promo__blob culture-promo__blob--3"></span>
-      </div>
-
-      <div class="culture-promo__text">
-        <span class="culture-promo__pill">
-          <span class="culture-promo__pulse"></span>
-          NOUVEAU · Kolê Culture
-        </span>
-        <h2><span class="culture-promo__title-plain">Vibrez au rythme<br>de </span><em class="culture-promo__title-accent">votre région</em></h2>
-        <p>Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
-        <div class="culture-promo__features">
-          {# Liens directs vers les pages Culture (pour tout le monde) #}
-          <a class="culture-promo__feature-link" href="{% url 'culture:song_list' %}">🎵 Streaming &amp; téléchargement</a>
-          <a class="culture-promo__feature-link" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Billetterie &amp; QR (concerts)</a>
-          <a class="culture-promo__feature-link" href="{% url 'culture:artist_list' %}?verifie=1">🎤 Artistes vérifiés</a>
-        </div>
-        {% if user.is_authenticated %}
-        <p class="muted culture-promo__mes-billets" style="margin: 10px 0 0;">
-          <a class="link" href="{% url 'culture:my_tickets' %}">Voir mes billets (QR) →</a>
-        </p>
-        {% else %}
-        <p class="muted culture-promo__mes-billets" style="margin: 10px 0 0;">
-          <a class="link" href="{% url 'accounts:login' %}?next={% url 'culture:my_tickets' %}">Connexion pour afficher vos billets (QR)</a>
-        </p>
-        {% endif %}
-        <div class="culture-promo__actions">
-          <a class="btn culture-promo__cta" href="{% url 'culture:home' %}">
-            Explorer Kolê Culture
-            <span class="culture-promo__arrow">→</span>
-          </a>
-          <a class="btn btn--ghost culture-promo__cta-ghost" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Concerts à venir</a>
-        </div>
-      </div>
-
-      <div class="culture-promo__visual" aria-hidden="true">
-        <div class="culture-promo__disc">
-          <div class="culture-promo__disc-inner">
-            <div class="culture-promo__disc-grooves"></div>
-            <div class="culture-promo__disc-label">🎵</div>
-          </div>
-        </div>
-        <div class="culture-promo__ticket">
-          <div class="culture-promo__ticket-stub">VIP</div>
-          <div class="culture-promo__ticket-info">
-            <small>Kolê Culture</small>
-            <strong>LIVE 2026</strong>
-            <span>● ● ● ● ● ● ●</span>
-          </div>
-        </div>
-        <div class="culture-promo__mic">🎤</div>
-        <div class="culture-promo__note culture-promo__note--1">♪</div>
-        <div class="culture-promo__note culture-promo__note--2">♫</div>
-        <div class="culture-promo__note culture-promo__note--3">♪</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="container">
-    {{ react_data|json_script:"react-data" }}
-    <div id="react-root"></div>
-    {% vite_asset "src/main.jsx" %}
-  </section>
-
-  <section class="flash container">
-    <div class="flash__header">
-      <h2>Ventes flash</h2>
-      <span>— Offres limitées</span>
-    </div>
-    <div class="product-grid">
-      {% for product in products %}
-        {% include "store/_product_card.html" with product=product favorites=favorites %}
-      {% empty %}
-        <p class="empty">Ajoutez des produits pour remplir cette section.</p>
-      {% endfor %}
-    </div>
-    {% if products %}
-      <div class="flash__more">
-        <a class="btn btn--ghost voir-plus" href="{% url 'store:product_list' %}">Voir plus...</a>
-      </div>
-    {% endif %}
-  </section>
-
-  {% if category_sections %}
-  <section class="container home-categories">
-    <div class="home-categories__intro">
-      <h2>Découvrez nos catégories</h2>
-      <p>Un aperçu rapide de ce que proposent artisans et boutiques</p>
-    </div>
-    {% for section in category_sections %}
-      <div class="category-strip">
-        <div class="category-strip__header">
-          <h3>{{ section.category.name }}</h3>
-          {% if section.category.slug %}
-            <a class="category-strip__link" href="{% url 'store:category_detail' section.category.slug %}">
-              Voir tout
-            </a>
+    {# ── Hero + catégories (maquette kole-group-redesign) ── #}
+    <section class="hero-section">
+      {% if not user.is_authenticated or user|is_client %}
+      <aside class="categories-sidebar" aria-label="Navigation par catégories">
+        <div class="cat-title">Catégories</div>
+        <nav class="categories-sidebar__nav">
+          {% if categories.0 %}
+            {% for category in categories %}
+              {% if category.slug %}
+                <a href="{% url 'store:category_detail' category.slug %}" class="cat-item">
+                  <span class="cat-icon">{{ category.name|category_name_emoji }}</span>
+                  {{ category.name }}
+                </a>
+              {% else %}
+                <span class="cat-item cat-item--muted">
+                  <span class="cat-icon">{{ category|category_name_emoji }}</span>
+                  {{ category }}
+                </span>
+              {% endif %}
+            {% endfor %}
           {% endif %}
+        </nav>
+      </aside>
+      {% endif %}
+
+      <div class="hero__banner">
+        <div class="hero-slider" id="hero-slider">
+          <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% static "images/hero-main.jpg" %}');">
+            <div class="hero-bg-pattern" aria-hidden="true"></div>
+            <div class="hero__content">
+              <p class="hero__eyebrow">Artisans &amp; commerces de proximité</p>
+              <h1><em>Kolê</em> Group</h1>
+              <p>Vivres, artisanat, bâtiment et services — ce que votre quartier propose, au même endroit.</p>
+              <a class="btn hero-cta" href="{% url 'store:product_list' %}">
+                Découvrir les offres
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <div class="hero__stats">
+                <div class="stat-item">
+                  <strong>+150</strong>
+                  <span>Artisans</span>
+                </div>
+                <div class="stat-item">
+                  <strong>24h</strong>
+                  <span>Livraison locale</span>
+                </div>
+                <div class="stat-item">
+                  <strong>100%</strong>
+                  <span>Qualité vérifiée</span>
+                </div>
+              </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-cart-mockup">🛒</div>
+            </div>
+          </div>
+
+          <div class="hero-slide hero-slide--flash" style="--hero-bg: url('{% static "images/hero-flash.jpg" %}');">
+            <div class="hero-bg-pattern" aria-hidden="true"></div>
+            <div class="hero__content">
+              <p class="hero__eyebrow">Offres du moment</p>
+              <h1>Ventes flash du jour</h1>
+              <p>Réductions sur une sélection d'articles locaux — le temps presse, les stocks aussi.</p>
+              <a class="btn hero-cta" href="#flash">
+                Voir les ventes flash
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <div class="hero__stats">
+                <div class="stat-item">
+                  <strong>-30%</strong>
+                  <span>En moyenne</span>
+                </div>
+                <div class="stat-item">
+                  <strong>Stock</strong>
+                  <span>Limité</span>
+                </div>
+                <div class="stat-item">
+                  <strong>Local</strong>
+                  <span>Artisans &amp; boutiques</span>
+                </div>
+              </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-cart-mockup">🔥</div>
+            </div>
+          </div>
+
+          <div class="hero-slide hero-slide--services" style="--hero-bg: url('{% static "images/hero-services.jpg" %}');">
+            <div class="hero-bg-pattern" aria-hidden="true"></div>
+            <div class="hero__content">
+              <p class="hero__eyebrow">Prestataires autour de vous</p>
+              <h1>Services artisanaux à portée de main</h1>
+              <p>Coiffure, bâtiment, couture, numérique… le bon profil, sans chercher au hasard.</p>
+              <a class="btn hero-cta" href="{% url 'store:product_list' %}?type=service">
+                Chercher un service
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <div class="hero__stats">
+                <div class="stat-item">
+                  <strong>10+</strong>
+                  <span>Catégories</span>
+                </div>
+                <div class="stat-item">
+                  <strong>Rapide</strong>
+                  <span>Demande en ligne</span>
+                </div>
+                <div class="stat-item">
+                  <strong>Sécurisé</strong>
+                  <span>Profils vérifiés</span>
+                </div>
+              </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-cart-mockup">🛠️</div>
+            </div>
+          </div>
         </div>
-        <div class="category-strip__grid">
-          {% for product in section.products %}
-            {% include "store/_product_card.html" with product=product favorites=favorites compact=1 %}
-          {% endfor %}
+        <div class="hero-slider__dots slide-dots" id="hero-slider-dots">
+          <button type="button" data-index="0" class="is-active" aria-label="Slide 1"></button>
+          <button type="button" data-index="1" aria-label="Slide 2"></button>
+          <button type="button" data-index="2" aria-label="Slide 3"></button>
         </div>
       </div>
-    {% endfor %}
-  </section>
-  {% endif %}
+    </section>
 
-  <section class="services container">
-    <h2>Services artisanaux populaires</h2>
-    <div class="service-grid">
-      {% for svc in popular_services %}
-        <a class="service-card" href="{{ svc.url }}">
-          <span class="service-card__icon" aria-hidden="true">{{ svc.icon }}</span>
-          <span class="service-card__label">{{ svc.label }}</span>
+    {# ── Bannière Culture ── #}
+    <section class="culture-banner">
+      <div class="culture-banner__text">
+        <div class="culture-label">✦ Kolê Culture — Votre scène locale</div>
+        <h2 class="culture-title">Vibrez au rythme<br>de <em>votre région</em></h2>
+        <p class="culture-sub">Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
+        <div class="culture-tags">
+          <a class="culture-tag" href="{% url 'culture:song_list' %}">🎵 Streaming &amp; téléchargement</a>
+          <a class="culture-tag" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Billetterie &amp; QR</a>
+          <a class="culture-tag" href="{% url 'culture:artist_list' %}?verifie=1">🎤 Artistes vérifiés</a>
+        </div>
+      </div>
+      <div class="culture-cta-group">
+        <div class="vip-badge">✦ LIVE 2026</div>
+        <a class="culture-btn" href="{% url 'culture:home' %}">
+          Explorer Kolê Culture
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
-      {% endfor %}
-    </div>
-  </section>
+        <a class="culture-btn culture-btn--ghost" href="{% url 'culture:event_list' %}?when=upcoming">
+          Concerts à venir
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    {# ── Ventes flash ── #}
+    <section class="home-section flash" id="flash">
+      <div class="section-header flash__header">
+        <h2 class="section-title">
+          <span class="fire" aria-hidden="true">🔥</span> Ventes flash
+          <span class="section-title__meta">— Offres limitées</span>
+        </h2>
+        <a class="section-link" href="{% url 'store:product_list' %}">
+          Voir tout
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="product-grid cards-grid">
+        {% for product in products %}
+          {% include "store/_product_card.html" with product=product favorites=favorites %}
+        {% empty %}
+          <p class="empty">Ajoutez des produits pour remplir cette section.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    {# ── Grille catégories ── #}
+    {% if category_cards %}
+    <section class="home-section home-section--tight">
+      <div class="section-header">
+        <h2 class="section-title">Découvrez nos catégories</h2>
+        <span class="section-header__sub">Un aperçu rapide de ce que proposent artisans et boutiques</span>
+      </div>
+      <div class="cat-grid">
+        {% for item in category_cards %}
+          <a class="cat-card" href="{% url 'store:category_detail' item.category.slug %}">
+            <div class="cat-card-icon">{{ item.category.name|category_name_emoji }}</div>
+            <div class="cat-card-name">{{ item.category.name }}</div>
+            <div class="cat-card-count">{{ item.count }} offre{{ item.count|pluralize }}</div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -259,8 +220,7 @@
     }
 
     function next() {
-      var nextIndex = (current + 1) % slides.length;
-      goTo(nextIndex);
+      goTo((current + 1) % slides.length);
     }
 
     function startAuto() {
@@ -284,7 +244,6 @@
 
     slider.addEventListener("mouseenter", stopAuto);
     slider.addEventListener("mouseleave", startAuto);
-
     startAuto();
   })();
 </script>

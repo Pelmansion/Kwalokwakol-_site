@@ -109,14 +109,36 @@ _CATEGORY_EMOJI = (
     ("culture", "🎵"),
     ("électro", "📱"),
     ("electro", "📱"),
+    ("électrom", "📱"),
     ("couture", "👗"),
+    ("boutique", "👗"),
     ("miel", "🍯"),
     ("tech", "💻"),
+    ("numéri", "💻"),
+    ("outil", "💻"),
     ("auto", "🚗"),
     ("moto", "🏍️"),
     ("aliment", "🛒"),
+    ("vivrier", "🌾"),
     ("artisan", "🏺"),
+    ("service", "🛠️"),
+    ("production", "🏭"),
+    ("métiers", "🔨"),
 )
+
+
+def _emoji_for_label(label):
+    label = (label or "").lower()
+    for key, emoji in _CATEGORY_EMOJI:
+        if key in label:
+            return emoji
+    return "📦"
+
+
+@register.filter
+def category_name_emoji(name):
+    """Emoji pour une catégorie (sidebar, grille accueil)."""
+    return _emoji_for_label(name)
 
 
 @register.filter
@@ -126,9 +148,9 @@ def product_category_emoji(product):
     category = getattr(product, "category", None)
     if category and category.name:
         label = category.name.lower()
-    for key, emoji in _CATEGORY_EMOJI:
-        if key in label:
-            return emoji
+    emoji = _emoji_for_label(label)
+    if emoji != "📦":
+        return emoji
     if getattr(product, "kind", None) == "service":
         return "🛠️"
     return "📦"

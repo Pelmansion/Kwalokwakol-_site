@@ -283,6 +283,13 @@ def home(request):
             )
     if not categories.exists():
         categories = DEFAULT_CATEGORIES
+
+    category_cards = []
+    if hasattr(categories, "exists") and categories.exists():
+        for category in categories:
+            count = base_products.filter(category=category).count()
+            category_cards.append({"category": category, "count": count})
+
     react_products = [_react_product_row(p) for p in products[:4]]
     react_base_discover = base_products.order_by("-created_at")
     react_discover_products = [
@@ -328,6 +335,7 @@ def home(request):
         "store/home.html",
         {
             "categories": categories,
+            "category_cards": category_cards,
             "products": products,
             "category_sections": category_sections,
             "react_data": react_data,

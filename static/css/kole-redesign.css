@@ -476,9 +476,19 @@ a { transition: color var(--transition); }
   box-shadow: 0 6px 24px rgba(212, 168, 67, 0.35);
 }
 .culture-promo__cta-ghost {
-  border: 1px solid var(--border-light);
-  color: var(--ink-soft);
-  background: #fff;
+  border: 1.5px solid var(--border-light) !important;
+  color: var(--ink) !important;
+  background: #fff !important;
+  font-weight: 700;
+}
+.culture-promo__cta-ghost:hover {
+  color: var(--primary-dark) !important;
+  background: var(--primary-50) !important;
+  border-color: var(--primary) !important;
+}
+.culture-promo__mes-billets .link {
+  color: var(--primary);
+  font-weight: 600;
 }
 .culture-promo__feature-link {
   background: #fff;

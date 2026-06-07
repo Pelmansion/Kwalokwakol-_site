@@ -5050,11 +5050,12 @@ textarea::placeholder { color: #94a3b8; }
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(ellipse 70% 55% at 92% 8%, rgba(212, 162, 76, 0.22), transparent 50%),
-    radial-gradient(ellipse 55% 45% at 8% 88%, rgba(194, 65, 12, 0.28), transparent 48%),
-    radial-gradient(ellipse 50% 40% at 70% 95%, rgba(31, 107, 74, 0.18), transparent 45%),
-    linear-gradient(152deg, #1a1512 0%, #2d1a14 38%, #4a2618 72%, #6b2e12 100%);
-  color: #fff;
+    radial-gradient(ellipse 70% 55% at 92% 8%, rgba(212, 162, 76, 0.14), transparent 50%),
+    radial-gradient(ellipse 55% 45% at 8% 88%, rgba(194, 65, 12, 0.1), transparent 48%),
+    radial-gradient(ellipse 50% 40% at 70% 95%, rgba(31, 107, 74, 0.1), transparent 45%),
+    linear-gradient(152deg, #FFF7ED 0%, #FFFCF8 42%, #F0FDF4 100%);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
   border-radius: 22px;
   padding: 56px 60px;
   display: grid;
@@ -5062,10 +5063,7 @@ textarea::placeholder { color: #94a3b8; }
   gap: 40px;
   align-items: center;
   overflow: hidden;
-  box-shadow:
-    0 24px 56px -16px rgba(45, 26, 20, 0.45),
-    0 6px 18px -6px rgba(27, 20, 16, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-lg);
   min-height: 380px;
 }
 
@@ -5144,16 +5142,15 @@ textarea::placeholder { color: #94a3b8; }
   align-items: center;
   gap: 8px;
   padding: 7px 14px 7px 10px;
-  background: rgba(255, 255, 255, .12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, .2);
+  background: var(--primary-50);
+  border: 1px solid var(--primary-100);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .8px;
   text-transform: uppercase;
   margin-bottom: 22px;
+  color: var(--primary-dark);
 }
 .culture-promo__pulse {
   display: inline-block;
@@ -5175,13 +5172,12 @@ textarea::placeholder { color: #94a3b8; }
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -.5px;
-  color: #fff;
+  color: var(--ink);
 }
 
-/* Partie fixe du titre — blanc lisible sur le fond */
 .culture-promo__title-plain {
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 20px rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  text-shadow: none;
 }
 
 .culture-promo__text h2 em,
@@ -5196,7 +5192,7 @@ textarea::placeholder { color: #94a3b8; }
 .culture-promo__text p {
   margin: 0 0 22px;
   font-size: 16px;
-  opacity: .88;
+  color: var(--ink-soft);
   max-width: 480px;
   line-height: 1.65;
 }
@@ -5213,19 +5209,21 @@ textarea::placeholder { color: #94a3b8; }
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(255, 255, 255, .08);
-  border: 1px solid rgba(255, 255, 255, .15);
+  background: #fff;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .culture-promo__feature-link {
   text-decoration: none;
-  color: rgba(255, 250, 245, 0.95);
-  transition: background .2s ease, transform .15s ease;
+  color: var(--ink-soft);
+  transition: background .2s ease, transform .15s ease, border-color .2s ease;
 }
 .culture-promo__feature-link:hover {
-  background: rgba(255, 255, 255, .16);
+  background: var(--primary-50);
+  border-color: var(--primary-100);
+  color: var(--primary-dark);
   transform: translateY(-1px);
 }
 
@@ -5236,22 +5234,23 @@ textarea::placeholder { color: #94a3b8; }
 }
 
 .culture-promo__cta {
-  background: #fff !important;
-  color: #2c1810 !important;
+  background: linear-gradient(135deg, var(--accent), var(--primary)) !important;
+  color: #1B1410 !important;
   border: none;
   padding: 14px 26px;
   font-weight: 700;
   font-size: 15px;
-  border-radius: 12px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 12px 28px -6px rgba(255, 255, 255, .35);
+  box-shadow: var(--shadow-primary);
   transition: all .25s ease;
 }
 .culture-promo__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 36px -6px rgba(255, 255, 255, .45);
+  box-shadow: 0 14px 32px rgba(194, 65, 12, 0.28);
+  color: #1B1410 !important;
 }
 .culture-promo__cta:hover .culture-promo__arrow {
   transform: translateX(4px);
@@ -5263,19 +5262,21 @@ textarea::placeholder { color: #94a3b8; }
 }
 
 .culture-promo__cta-ghost {
-  background: rgba(255, 255, 255, .08) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, .35) !important;
-  border-radius: 12px;
+  background: #fff !important;
+  color: var(--ink) !important;
+  border: 1.5px solid var(--line-strong) !important;
+  border-radius: 999px;
   padding: 14px 24px;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  font-weight: 700;
   transition: all .25s ease;
+  box-shadow: var(--shadow-xs);
 }
 .culture-promo__cta-ghost:hover {
-  background: rgba(255, 255, 255, .18) !important;
+  background: var(--primary-50) !important;
+  color: var(--primary-dark) !important;
+  border-color: var(--primary) !important;
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* VISUAL — collage stylisé (vinyle + ticket + micro + notes) */

@@ -13,11 +13,12 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from marketplace.models import ServiceProvider, Vendor
+from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from orders.models import Order
 from .email_utils import get_user_from_token, send_verification_email
 from .forms import ProfileForm, SignupForm
 from .models import UserProfile
+from .reservation_utils import can_client_delete_reservation, reservation_delete_deadline
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +148,59 @@ def order_history(request):
         .order_by("-created_at")
     )
     return render(request, "accounts/orders.html", {"orders": orders})
+
+
+@login_required
+def service_reservations(request):
+    """Réservations / demandes de services du client (location, hôtel, prestations)."""
+    if not _is_client(request.user):
+        return redirect("accounts:profile")
+    reservations = (
+        ServiceRequest.objects.filter(customer=request.user)
+        .select_related(
+            "service",
+            "service__category",
+            "vendor",
+            "service_provider",
+        )
+        .order_by("-created_at")
+    )
+    reservation_rows = [
+        {
+            "item": item,
+            "can_delete": can_client_delete_reservation(item),
+            "delete_deadline": reservation_delete_deadline(item.created_at),
+        }
+        for item in reservations
+    ]
+    return render(
+        request,
+        "accounts/reservations.html",
+        {"reservation_rows": reservation_rows},
+    )
+
+
+@login_required
+def cancel_service_reservation(request, pk):
+    if request.method != "POST":
+        return redirect("accounts:service_reservations")
+    if not _is_client(request.user):
+        return redirect("accounts:profile")
+    service_request = get_object_or_404(
+        ServiceRequest,
+        pk=pk,
+        customer=request.user,
+    )
+    if not can_client_delete_reservation(service_request):
+        messages.error(
+            request,
+            "Cette réservation ne peut plus être annulée (délai dépassé ou statut non modifiable).",
+        )
+        return redirect("accounts:service_reservations")
+    label = service_request.service.name if service_request.service else "Réservation"
+    service_request.delete()
+    messages.success(request, f"La demande « {label} » a été annulée.")
+    return redirect("accounts:service_reservations")
 
 
 def _ensure_admin(request, super_only=False):

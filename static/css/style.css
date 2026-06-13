@@ -252,8 +252,11 @@ h1, h2, h3, h4, h5 {
 p { margin: 0 0 1em; }
 
 .container {
-  width: min(1240px, 92%);
+  width: min(1240px, 100%);
   margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  box-sizing: border-box;
 }
 
 /* ====================== TOPBAR (Header) ====================== */
@@ -1783,7 +1786,7 @@ a.service-card {
 .filters__form input[name="q"] { flex: 1; min-width: 160px; }
 .filters__form input[name="min_price"],
 .filters__form input[name="max_price"] { width: 110px; }
-.filters__form input[name="localisation"] { min-width: 150px; flex: 0 1 170px; }
+.filters__form input[name="localisation"] { width: 170px; min-width: 150px; flex: 0 0 auto; }
 .filters__form select { min-width: 150px; cursor: pointer; }
 .filters__form .btn { height: 44px; flex-shrink: 0; white-space: nowrap; }
 
@@ -3431,6 +3434,87 @@ textarea::placeholder { color: #94a3b8; }
   .topbar,
   .notice { display: none !important; }
 
+  .container {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+
+  .filters__form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters__form input,
+  .filters__form select,
+  .filters__form .btn {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+    height: 44px;
+    box-sizing: border-box;
+  }
+  .filters__form input[name="min_price"],
+  .filters__form input[name="max_price"] {
+    width: 100%;
+  }
+
+  .culture-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .culture-filters input,
+  .culture-filters select,
+  .culture-filters .btn {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+    height: 44px;
+    box-sizing: border-box;
+  }
+  .culture-filters input[type=search] {
+    flex: none;
+    width: 100%;
+  }
+
+  .toast-container {
+    top: calc(12px + 48px + env(safe-area-inset-top, 0px));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    max-width: none;
+  }
+
+  .newsletter {
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .footer {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+  .footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .product-detail__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .product-detail__actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .search-shop-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-card {
+    -webkit-overflow-scrolling: touch;
+  }
+
   .mobile-app-bar {
     display: flex;
     align-items: center;
@@ -3669,7 +3753,7 @@ textarea::placeholder { color: #94a3b8; }
   .flash { padding: 22px 18px; }
   .footer__grid { grid-template-columns: 1fr; gap: 28px; }
   .auth-card { padding: 28px 20px; }
-  .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .product-card__body { padding: 12px 14px; }
   .product-card__footer {
     flex-direction: column;
@@ -3682,8 +3766,16 @@ textarea::placeholder { color: #94a3b8; }
   }
   .product-card__btn {
     flex: 1;
+    min-height: 40px;
   }
   .cart__item { grid-template-columns: 1fr; align-items: flex-start; }
+  .cart-panel,
+  .cart-summary {
+    padding: 16px;
+  }
+  .page-title {
+    padding-top: 8px;
+  }
 }
 
 /* =====================================================================
@@ -5703,20 +5795,22 @@ textarea::placeholder { color: #94a3b8; }
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #1f1147 0%, #C2410C 100%);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(145deg, #1a1310 0%, #c8461a 52%, #d4891a 100%);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 12px 30px rgba(31, 17, 71, .35), 0 4px 8px rgba(0,0,0,.15);
+  box-shadow:
+    0 10px 28px rgba(200, 70, 26, 0.38),
+    0 4px 12px rgba(26, 19, 16, 0.18);
   z-index: var(--kwa-z);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform .25s ease, box-shadow .25s ease;
-  animation: kwaBubbleIn .6s ease .8s backwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  animation: kwaBubbleIn 0.6s ease 0.8s backwards;
 }
 @keyframes kwaBubbleIn {
   from { transform: scale(0) rotate(-180deg); opacity: 0; }
@@ -5724,31 +5818,44 @@ textarea::placeholder { color: #94a3b8; }
 }
 .kwa-bubble:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 18px 40px rgba(31, 17, 71, .45);
+  border-color: rgba(255, 255, 255, 0.38);
+  box-shadow:
+    0 16px 36px rgba(200, 70, 26, 0.45),
+    0 6px 16px rgba(26, 19, 16, 0.2);
 }
 .kwa-bubble__icon {
-  font-size: 26px;
   line-height: 1;
   position: absolute;
-  transition: opacity .25s ease, transform .25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
-.kwa-bubble__icon--close { opacity: 0; transform: rotate(-90deg) scale(.5); }
-.kwa-bubble.is-active .kwa-bubble__icon { opacity: 0; transform: rotate(90deg) scale(.5); }
+.kwa-bubble__svg {
+  display: block;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+.kwa-bubble__icon--close { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+.kwa-bubble.is-active .kwa-bubble__icon { opacity: 0; transform: rotate(90deg) scale(0.5); }
 .kwa-bubble.is-active .kwa-bubble__icon--close { opacity: 1; transform: rotate(0) scale(1); }
 .kwa-bubble__badge {
   position: absolute;
-  top: 0; right: 0;
-  min-width: 22px;
-  height: 22px;
-  background: #fbbf24;
-  color: #1f1147;
+  top: -2px;
+  right: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: linear-gradient(135deg, #f5c96a, #d4891a);
+  color: #1a1310;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(26, 19, 16, 0.2);
   animation: kwaPulse 1.6s ease-in-out infinite;
 }
 @keyframes kwaPulse {

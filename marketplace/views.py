@@ -3,11 +3,11 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Count, DecimalField, F, Max, Sum
+from django.db.models import Count, DecimalField, F, Max, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
 from catalog.models import Category, CategoryShowcaseImage, Product
-from orders.models import OrderItem
+from orders.models import Order, OrderItem
 from payments.models import Payment
 from reviews.models import Review, ReviewReply
 from notifications.models import Notification
@@ -147,6 +147,37 @@ def dashboard(request):
         .select_related("order", "product")
         .order_by("-order__created_at")
     )
+
+    order_status_filter = request.GET.get("order_status", "").strip()
+    payment_status_filter = request.GET.get("payment_status", "").strip()
+    orders_q = request.GET.get("orders_q", "").strip()
+
+    valid_statuses = {c[0] for c in Order.STATUS_CHOICES}
+    valid_payments = {c[0] for c in Order.PAYMENT_CHOICES}
+    if order_status_filter in valid_statuses:
+        order_items_qs = order_items_qs.filter(order__status=order_status_filter)
+    else:
+        order_status_filter = ""
+    if payment_status_filter in valid_payments:
+        order_items_qs = order_items_qs.filter(order__payment_status=payment_status_filter)
+    else:
+        payment_status_filter = ""
+
+    if orders_q:
+        if orders_q.isdigit():
+            order_items_qs = order_items_qs.filter(order_id=int(orders_q))
+        else:
+            order_items_qs = order_items_qs.filter(
+                Q(product__name__icontains=orders_q)
+                | Q(order__full_name__icontains=orders_q)
+                | Q(order__city__icontains=orders_q)
+                | Q(order__tracking_code__icontains=orders_q)
+            )
+
+    orders_query_params = request.GET.copy()
+    orders_query_params.pop("orders_page", None)
+    orders_query_base = orders_query_params.urlencode()
+
     order_items_page = Paginator(order_items_qs, 10).get_page(
         request.GET.get("orders_page", 1)
     )
@@ -191,6 +222,15 @@ def dashboard(request):
             "subscription": vendor.subscription,
             "products": products,
             "order_items_page": order_items_page,
+            "order_status_filter": order_status_filter,
+            "payment_status_filter": payment_status_filter,
+            "orders_q": orders_q,
+            "orders_query_base": orders_query_base,
+            "order_status_choices": Order.STATUS_CHOICES,
+            "payment_status_choices": Order.PAYMENT_CHOICES,
+            "orders_filters_active": bool(
+                order_status_filter or payment_status_filter or orders_q
+            ),
             "revenue": revenue,
             "total_orders": total_orders,
             "total_products": total_products,

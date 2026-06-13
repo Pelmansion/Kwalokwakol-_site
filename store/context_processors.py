@@ -1,4 +1,10 @@
 from catalog.models import Category
+from kwalo.contact_info import (
+    KOLE_CONTACT_EMAIL,
+    KOLE_CONTACT_PHONE,
+    KOLE_CONTACT_PHONE_INTL,
+    KOLE_WHATSAPP_WA_ME,
+)
 
 
 def category_nav(request):
@@ -29,4 +35,8 @@ def category_nav(request):
         "cart_count": cart_count,
         "favorites_count": favorites_count,
         "genius_payment": genius_is_configured(),
+        "kole_contact_email": KOLE_CONTACT_EMAIL,
+        "kole_contact_phone": KOLE_CONTACT_PHONE,
+        "kole_contact_phone_intl": KOLE_CONTACT_PHONE_INTL,
+        "kole_whatsapp_wa_me": KOLE_WHATSAPP_WA_ME,
     }

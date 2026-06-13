@@ -146,6 +146,45 @@
       <h2>Commandes &amp; livraisons</h2>
       <p class="dash-section__subtitle">Gérez le statut et le suivi de vos commandes</p>
     </div>
+
+    <form class="orders-filter" method="get" action="{% url 'marketplace:dashboard' %}#commandes">
+      <div class="orders-filter__field orders-filter__field--search">
+        <label class="orders-filter__label" for="orders-q">Rechercher</label>
+        <input
+          id="orders-q"
+          type="search"
+          name="orders_q"
+          value="{{ orders_q }}"
+          placeholder="N° commande, client, produit, code suivi…"
+          autocomplete="off"
+        >
+      </div>
+      <div class="orders-filter__field">
+        <label class="orders-filter__label" for="order-status">Statut commande</label>
+        <select id="order-status" name="order_status" aria-label="Filtrer par statut de commande">
+          <option value="">Tous les statuts</option>
+          {% for value, label in order_status_choices %}
+            <option value="{{ value }}" {% if order_status_filter == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="orders-filter__field">
+        <label class="orders-filter__label" for="payment-status">Paiement</label>
+        <select id="payment-status" name="payment_status" aria-label="Filtrer par statut de paiement">
+          <option value="">Tous les paiements</option>
+          {% for value, label in payment_status_choices %}
+            <option value="{{ value }}" {% if payment_status_filter == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="orders-filter__actions">
+        <button class="btn btn--small btn--primary" type="submit">Filtrer</button>
+        {% if orders_filters_active %}
+          <a class="btn btn--small btn--ghost orders-filter__reset" href="{% url 'marketplace:dashboard' %}#commandes">Réinitialiser</a>
+        {% endif %}
+      </div>
+    </form>
+
     <div class="table-card orders-table">
       <div class="table-row table-row--head orders-table__head">
         <div>Produit</div>
@@ -187,13 +226,19 @@
           </div>
         </div>
       {% empty %}
-        <p class="empty orders-table__empty">Aucune commande pour le moment.</p>
+        <p class="empty orders-table__empty">
+          {% if orders_filters_active %}
+            Aucune commande ne correspond à vos filtres.
+          {% else %}
+            Aucune commande pour le moment.
+          {% endif %}
+        </p>
       {% endfor %}
     </div>
     {% if order_items_page.has_other_pages %}
       <nav class="pagination orders-table__pagination" aria-label="Pagination des commandes">
         {% if order_items_page.has_previous %}
-          <a href="?orders_page={{ order_items_page.previous_page_number }}#commandes">‹ Préc.</a>
+          <a href="?{% if orders_query_base %}{{ orders_query_base }}&{% endif %}orders_page={{ order_items_page.previous_page_number }}#commandes">‹ Préc.</a>
         {% else %}
           <span class="disabled">‹ Préc.</span>
         {% endif %}
@@ -202,7 +247,7 @@
           · {{ order_items_page.paginator.count }} ligne{{ order_items_page.paginator.count|pluralize }}
         </span>
         {% if order_items_page.has_next %}
-          <a href="?orders_page={{ order_items_page.next_page_number }}#commandes">Suiv. ›</a>
+          <a href="?{% if orders_query_base %}{{ orders_query_base }}&{% endif %}orders_page={{ order_items_page.next_page_number }}#commandes">Suiv. ›</a>
         {% else %}
           <span class="disabled">Suiv. ›</span>
         {% endif %}

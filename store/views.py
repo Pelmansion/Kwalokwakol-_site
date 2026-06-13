@@ -42,6 +42,9 @@ DEFAULT_CATEGORIES = [
     "Outils numériques",
 ]
 
+# Nombre max de catégories dans la colonne accueil (hauteur = hero)
+SIDEBAR_CATEGORIES_LIMIT = 7
+
 # Cartes « Services artisanaux populaires » (accueil) → catégorie ou recherche filtrée
 POPULAR_ARTISAN_SERVICES = [
     {
@@ -245,12 +248,12 @@ def home(request):
         if _is_app_admin(request.user):
             return redirect("accounts:admin_dashboard")
 
-    categories = Category.objects.filter(
+    categories_qs = Category.objects.filter(
         is_active=True,
         parent__isnull=True,
         vendor__isnull=True,
         service_provider__isnull=True,
-    )
+    ).order_by("-id")
     vendor = _get_vendor(request.user)
     service_provider = _get_service_provider(request.user)
     favorites = _get_favorites(request.session)
@@ -269,7 +272,7 @@ def home(request):
 
     # Quelques produits par catégorie pour la page d'accueil
     category_sections = []
-    for category in categories:
+    for category in categories_qs:
         cat_products = (
             base_products.filter(category=category)
             .select_related("category")[:8]
@@ -281,8 +284,15 @@ def home(request):
                     "products": list(cat_products),
                 }
             )
-    if not categories.exists():
+
+    if categories_qs.exists():
+        categories = categories_qs
+        sidebar_categories = list(categories_qs[:SIDEBAR_CATEGORIES_LIMIT])
+        has_more_categories = categories_qs.count() > SIDEBAR_CATEGORIES_LIMIT
+    else:
         categories = DEFAULT_CATEGORIES
+        sidebar_categories = DEFAULT_CATEGORIES[:SIDEBAR_CATEGORIES_LIMIT]
+        has_more_categories = len(DEFAULT_CATEGORIES) > SIDEBAR_CATEGORIES_LIMIT
 
     category_cards = []
     if hasattr(categories, "exists") and categories.exists():
@@ -335,6 +345,8 @@ def home(request):
         "store/home.html",
         {
             "categories": categories,
+            "sidebar_categories": sidebar_categories,
+            "has_more_categories": has_more_categories,
             "category_cards": category_cards,
             "products": products,
             "category_sections": category_sections,
@@ -554,6 +566,16 @@ def request_service(request, product_id):
         messages.error(request, "Aucun prestataire associé à ce service.")
         return redirect("store:product_detail", slug=product.slug)
 
+    existing = ServiceRequest.objects.filter(
+        service=product, customer=request.user
+    ).first()
+    if existing:
+        messages.info(
+            request,
+            "Vous avez déjà une demande pour ce service. Consultez « Mes réservations ».",
+        )
+        return redirect("accounts:service_reservations")
+
     if request.method != "POST":
         form = ServiceRequestForm()
         return render(
@@ -570,23 +592,15 @@ def request_service(request, product_id):
             {"product": product, "form": form},
         )
 
-    service_request, created = ServiceRequest.objects.get_or_create(
+    ServiceRequest.objects.create(
         service=product,
         customer=request.user,
-        defaults={
-            "comment": form.cleaned_data["comment"],
-            "is_interested": form.cleaned_data["is_interested"],
-            "vendor": vendor,
-            "service_provider": provider,
-        },
+        comment=form.cleaned_data["comment"],
+        is_interested=form.cleaned_data["is_interested"],
+        vendor=vendor,
+        service_provider=provider,
+        status=ServiceRequest.STATUS_PENDING,
     )
-    if not created:
-        service_request.comment = form.cleaned_data["comment"]
-        service_request.is_interested = form.cleaned_data["is_interested"]
-        service_request.status = ServiceRequest.STATUS_PENDING
-        service_request.vendor = vendor
-        service_request.service_provider = provider
-        service_request.save()
 
     target_user = None
     if provider and provider.owner:
@@ -601,8 +615,11 @@ def request_service(request, product_id):
             kind=Notification.INFO,
         )
 
-    messages.success(request, "Votre demande a été envoyée.")
-    return redirect("store:product_detail", slug=product.slug)
+    messages.success(
+        request,
+        'Votre demande a été envoyée. Suivez-la dans « Mes réservations ».',
+    )
+    return redirect("accounts:service_reservations")
 
 
 def cart_detail(request):

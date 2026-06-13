@@ -4,6 +4,12 @@ from django.utils import timezone
 
 from catalog.models import Category, Product, ProductMedia
 from content.models import StaticPage
+from kwalo.contact_info import contact_page_content
+from kwalo.static_pages import (
+    conditions_generales_content,
+    confidentialite_content,
+    faq_page_content,
+)
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
 from orders.models import Order, OrderItem, OrderStatusHistory
@@ -282,26 +288,36 @@ class Command(BaseCommand):
             )
         )
 
-        StaticPage.objects.get_or_create(
-            title="FAQ",
-            defaults={"content": "Questions fréquentes et réponses principales."},
+        StaticPage.objects.update_or_create(
+            slug="faq",
+            defaults={
+                "title": "FAQ",
+                "content": faq_page_content(),
+                "is_active": True,
+            },
         )
-        StaticPage.objects.get_or_create(
-            title="Conditions générales",
-            defaults={"content": "Conditions d'utilisation du site."},
+        StaticPage.objects.update_or_create(
+            slug="conditions-generales",
+            defaults={
+                "title": "Conditions générales",
+                "content": conditions_generales_content(),
+                "is_active": True,
+            },
         )
-        StaticPage.objects.get_or_create(
-            title="Confidentialité",
-            defaults={"content": "Politique de confidentialité des données."},
+        StaticPage.objects.update_or_create(
+            slug="confidentialite",
+            defaults={
+                "title": "Confidentialité",
+                "content": confidentialite_content(),
+                "is_active": True,
+            },
         )
-        StaticPage.objects.get_or_create(
+        StaticPage.objects.update_or_create(
             slug="contact",
             defaults={
                 "title": "Contact",
-                "content": (
-                    "Besoin d'aide ou d'informations ? Écrivez-nous à "
-                    "contact@kwalok-wakole.ci ou appelez le +225 00 00 00 00."
-                ),
+                "content": contact_page_content(),
+                "is_active": True,
             },
         )
 

@@ -12,6 +12,8 @@
 
   const urls = JSON.parse(root.dataset.urls || "{}");
   const isAuthenticated = root.dataset.authenticated === "1";
+  const contactEmail = root.dataset.contactEmail || "kwakolegroup@gmail.com";
+  const contactPhone = root.dataset.contactPhone || "0799633113";
 
   // ----- Helpers de normalisation (accents, ponctuation) -----
   function normalize(text) {
@@ -242,13 +244,13 @@
     {
       id: "human",
       patterns: ["humain", "vrai personne", "agent", "operateur", "parler a quelqu un", "support humain", "appeler"],
-      response: "👤 Tu peux **contacter l'équipe Kolê** via la page Contact, par email ou WhatsApp. Pour une commande spécifique, utilise la messagerie de la commande pour parler directement au vendeur.",
+      response: `👤 Tu peux **contacter l'équipe Kolê** :\n• Email : **${contactEmail}**\n• Téléphone / WhatsApp : **${contactPhone}**\n\nPour une commande spécifique, utilise la messagerie de la commande pour parler directement au vendeur.`,
       quickReplies: ["contact"],
     },
     {
       id: "contact",
       patterns: ["contact", "joindre", "email", "telephone", "numero", "whatsapp", "adresse"],
-      response: "📞 Retrouve toutes nos coordonnées sur la **page Contact** : email, téléphone, WhatsApp, et nos horaires de support.",
+      response: `📞 **Nos coordonnées :**\n• Email : **${contactEmail}**\n• Téléphone / WhatsApp : **${contactPhone}**\n\nRetrouve aussi nos horaires sur la **page Contact**.`,
       quickReplies: ["contact", "faq"],
     },
     {

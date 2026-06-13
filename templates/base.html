@@ -6,7 +6,7 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script>
       (function () {
         try {
@@ -40,8 +40,8 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=48">
-    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=17">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=51">
+    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=22">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
@@ -120,6 +120,7 @@
                 <a href="{% url 'accounts:profile' %}">Mon profil</a>
                 {% if user|is_client %}
                   <a href="{% url 'accounts:order_history' %}">Mes commandes</a>
+                  <a href="{% url 'accounts:service_reservations' %}">Mes réservations</a>
                   <a href="{% url 'store:favorites' %}">Mes favoris</a>
                   <a href="{% url 'culture:my_tickets' %}">🎫 Mes billets</a>
                   <a href="{% url 'culture:my_purchases' %}">🎵 Mes achats musique</a>
@@ -263,6 +264,11 @@
           <div class="footer__brand">
             <h3>Kolê Group</h3>
             <p>La plateforme qui rassemble les artisans, boutiques, producteurs et prestataires d'Afrique. Commandez, réservez et recevez — en toute confiance.</p>
+            <p class="footer__contact">
+              <a href="mailto:{{ kole_contact_email }}">{{ kole_contact_email }}</a>
+              ·
+              <a href="tel:{{ kole_contact_phone_intl }}">{{ kole_contact_phone }}</a>
+            </p>
             <form class="newsletter" onsubmit="event.preventDefault(); alert('Merci pour votre inscription !');">
               <input type="email" placeholder="Votre email" required>
               <button type="submit">S'inscrire</button>
@@ -270,7 +276,7 @@
             <div class="footer__social" aria-label="Réseaux sociaux">
               <a href="#" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 22V12h3l1-4h-4V5.5c0-1.1.5-2 2-2h2V0c-.3 0-1.6-.2-3-.2C10.8-.2 9 2 9 5v3H6v4h3v10h4z"/></svg></a>
               <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
-              <a href="#" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg></a>
+              <a href="https://wa.me/{{ kole_whatsapp_wa_me }}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg></a>
               <a href="#" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 5.4c-.9-.9-1.4-2.1-1.4-3.4h-3.7v14.4c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6.1.9.2v-3.8c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5V9.2c1.3.9 2.9 1.5 4.7 1.5V7c-1.2 0-2.3-.5-3.4-1.6z"/></svg></a>
             </div>
           </div>
@@ -329,7 +335,7 @@
         else if (path.indexOf('/panier') !== -1) active = 'cart';
         else if (path.indexOf('/favoris') !== -1) active = 'favoris';
         else if (path.indexOf('/produits') !== -1 || path.indexOf('/categorie') !== -1 || path.indexOf('/vendeur') !== -1 || path.indexOf('/prestataire') !== -1 || path.indexOf('/produit/') !== -1) active = 'categories';
-        else if (path.indexOf('/profil') !== -1 || path.indexOf('/connexion') !== -1 || path.indexOf('/inscription') !== -1 || path.indexOf('/commandes') !== -1) active = 'account';
+        else if (path.indexOf('/profil') !== -1 || path.indexOf('/connexion') !== -1 || path.indexOf('/inscription') !== -1 || path.indexOf('/commandes') !== -1 || path.indexOf('/reservations') !== -1) active = 'account';
         document.querySelectorAll('.bottom-nav__item').forEach(function(item) {
           if (item.getAttribute('data-nav') === active) item.setAttribute('data-active', 'true');
           else item.removeAttribute('data-active');
@@ -437,6 +443,8 @@
     {# ===================== Chatbot Kwa ===================== #}
     <div id="kwalo-chatbot"
          data-authenticated="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+         data-contact-email="{{ kole_contact_email }}"
+         data-contact-phone="{{ kole_contact_phone }}"
          data-urls='{
            "home": "{% url "store:home" %}",
            "products": "{% url "store:product_list" %}",
@@ -460,8 +468,17 @@
          }'>
 
       <button type="button" id="kwalo-chatbot-bubble" class="kwa-bubble" aria-label="Ouvrir l'assistant Kwa">
-        <span class="kwa-bubble__icon" aria-hidden="true">💬</span>
-        <span class="kwa-bubble__icon kwa-bubble__icon--close" aria-hidden="true">✕</span>
+        <span class="kwa-bubble__icon" aria-hidden="true">
+          <svg class="kwa-bubble__svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M5.5 20.5c.6-3.2 3.2-5.5 6.5-5.5s6 2.3 6.5 5.5"/>
+          </svg>
+        </span>
+        <span class="kwa-bubble__icon kwa-bubble__icon--close" aria-hidden="true">
+          <svg class="kwa-bubble__svg kwa-bubble__svg--close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18"/>
+          </svg>
+        </span>
         <span id="kwalo-chatbot-badge" class="kwa-bubble__badge" hidden>1</span>
       </button>
 
@@ -619,6 +636,6 @@
     </script>
 
     {# ===================== Chatbot Kwa script ===================== #}
-    <script src="{% static 'js/chatbot.js' %}?v=6" defer></script>
+    <script src="{% static 'js/chatbot.js' %}?v=7" defer></script>
   </body>
 </html>

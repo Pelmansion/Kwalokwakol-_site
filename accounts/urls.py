@@ -26,6 +26,12 @@ urlpatterns = [
     path("deconnexion/", auth_views.LogoutView.as_view(), name="logout"),
     path("profil/", views.profile, name="profile"),
     path("commandes/", views.order_history, name="order_history"),
+    path("reservations/", views.service_reservations, name="service_reservations"),
+    path(
+        "reservations/<int:pk>/annuler/",
+        views.cancel_service_reservation,
+        name="cancel_service_reservation",
+    ),
     path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-panel/users/<int:user_id>/role/", views.set_user_role, name="set_user_role"),
     path(

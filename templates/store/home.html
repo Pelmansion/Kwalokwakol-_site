@@ -11,8 +11,8 @@
       <aside class="categories-sidebar" aria-label="Navigation par catégories">
         <div class="cat-title">Catégories</div>
         <nav class="categories-sidebar__nav">
-          {% if categories.0 %}
-            {% for category in categories %}
+          {% if sidebar_categories.0 %}
+            {% for category in sidebar_categories %}
               {% if category.slug %}
                 <a href="{% url 'store:category_detail' category.slug %}" class="cat-item">
                   <span class="cat-icon">{{ category.name|category_name_emoji }}</span>
@@ -27,6 +27,9 @@
             {% endfor %}
           {% endif %}
         </nav>
+        {% if has_more_categories %}
+          <a class="categories-sidebar__more" href="#categories">Voir toutes les catégories →</a>
+        {% endif %}
       </aside>
       {% endif %}
 
@@ -178,7 +181,7 @@
 
     {# ── Grille catégories ── #}
     {% if category_cards %}
-    <section class="home-section home-section--tight">
+    <section class="home-section home-section--tight" id="categories">
       <div class="section-header">
         <h2 class="section-title">Découvrez nos catégories</h2>
         <span class="section-header__sub">Un aperçu rapide de ce que proposent artisans et boutiques</span>

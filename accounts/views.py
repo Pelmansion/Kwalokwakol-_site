@@ -18,6 +18,7 @@ from orders.models import Order
 from .email_utils import get_user_from_token, send_verification_email
 from .forms import ProfileForm, SignupForm
 from .models import UserProfile
+from .shopping_access import user_can_shop_as_customer
 from .reservation_utils import can_client_delete_reservation, reservation_delete_deadline
 
 logger = logging.getLogger(__name__)
@@ -122,19 +123,8 @@ def profile(request):
 
 
 def _is_client(user):
-    """True si l'utilisateur est un client (ni admin, ni vendeur, ni prestataire)."""
-    if not user or not user.is_authenticated:
-        return False
-    if Vendor.objects.filter(owner=user).exists():
-        return False
-    if ServiceProvider.objects.filter(owner=user).exists():
-        return False
-    profile, _ = UserProfile.objects.get_or_create(user=user)
-    if profile.role in (UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN):
-        return False
-    if getattr(user, "is_superuser", False):
-        return False
-    return True
+    """True si l'utilisateur peut consulter commandes et réservations en tant qu'acheteur."""
+    return user_can_shop_as_customer(user)
 
 
 @login_required

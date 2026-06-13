@@ -190,6 +190,28 @@ def _is_app_admin(user):
     return profile.role in (UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN)
 
 
+def _user_owns_product(user, product):
+    if not user or not user.is_authenticated or not product:
+        return False
+    vendor = _get_vendor(user)
+    if vendor and product.vendor_id == vendor.pk:
+        return True
+    provider = _get_service_provider(user)
+    if provider and product.service_provider_id == provider.pk:
+        return True
+    return False
+
+
+def _can_purchase_product(user, product):
+    if not product or product.kind == Product.SERVICE:
+        return False
+    if user.is_authenticated and _is_app_admin(user):
+        return False
+    if user.is_authenticated and _user_owns_product(user, product):
+        return False
+    return True
+
+
 def _react_profile_image_url(entity):
     photo = getattr(entity, "profile_photo", None)
     if photo:
@@ -237,16 +259,8 @@ def _react_product_row(product):
 
 
 def home(request):
-    # Admin, vendeur et prestataire n'ont pas d'accueil boutique : redirection vers leur espace
-    if request.user.is_authenticated:
-        vendor = _get_vendor(request.user)
-        service_provider = _get_service_provider(request.user)
-        if vendor:
-            return redirect("marketplace:dashboard")
-        if service_provider:
-            return redirect("marketplace:service_provider_dashboard")
-        if _is_app_admin(request.user):
-            return redirect("accounts:admin_dashboard")
+    if request.user.is_authenticated and _is_app_admin(request.user):
+        return redirect("accounts:admin_dashboard")
 
     categories_qs = Category.objects.filter(
         is_active=True,
@@ -254,18 +268,12 @@ def home(request):
         vendor__isnull=True,
         service_provider__isnull=True,
     ).order_by("-id")
-    vendor = _get_vendor(request.user)
-    service_provider = _get_service_provider(request.user)
     favorites = _get_favorites(request.session)
     base_products = (
         Product.objects.filter(is_active=True)
         .filter(active_product_filter())
         .prefetch_related("media")
     )
-    if vendor:
-        base_products = base_products.filter(vendor=vendor)
-    elif service_provider:
-        base_products = base_products.filter(service_provider=service_provider)
 
     # Produits mis en avant (utilisés pour la section \"Ventes flash\")
     products = base_products[:12]
@@ -372,8 +380,6 @@ def product_list(request):
     sort = request.GET.get("tri", "").strip()
 
     favorites = _get_favorites(request.session)
-    vendor = _get_vendor(request.user)
-    service_provider = _get_service_provider(request.user)
     products = (
         Product.objects.filter(is_active=True)
         .filter(active_product_filter())
@@ -381,10 +387,6 @@ def product_list(request):
     )
     matched_vendor = None
     matched_provider = None
-    if vendor:
-        products = products.filter(vendor=vendor)
-    elif service_provider:
-        products = products.filter(service_provider=service_provider)
     if vendor_slug:
         matched_vendor = Vendor.objects.filter(
             slug=vendor_slug, is_active=True
@@ -480,22 +482,29 @@ def product_list(request):
 
 def product_detail(request, slug):
     favorites = _get_favorites(request.session)
-    vendor = _get_vendor(request.user)
-    service_provider = _get_service_provider(request.user)
-    if vendor:
-        product = get_object_or_404(Product, slug=slug, is_active=True, vendor=vendor)
-    elif service_provider:
-        product = get_object_or_404(
-            Product, slug=slug, is_active=True, service_provider=service_provider
-        )
-    else:
-        product = get_object_or_404(Product, slug=slug, is_active=True)
+    product = get_object_or_404(Product, slug=slug, is_active=True)
     service_request = None
     if request.user.is_authenticated and product.kind == Product.SERVICE:
         service_request = ServiceRequest.objects.filter(
             service=product, customer=request.user
         ).first()
     reviews = Review.objects.filter(product=product, is_approved=True).select_related("user")
+    owns_product = (
+        request.user.is_authenticated and _user_owns_product(request.user, product)
+    )
+    can_purchase = (
+        product.kind != Product.SERVICE
+        and (
+            not request.user.is_authenticated
+            or _can_purchase_product(request.user, product)
+        )
+    )
+    can_request_service = (
+        product.kind == Product.SERVICE
+        and request.user.is_authenticated
+        and not _is_app_admin(request.user)
+        and not owns_product
+    )
     return render(
         request,
         "store/product_detail.html",
@@ -504,6 +513,9 @@ def product_detail(request, slug):
             "reviews": reviews,
             "service_request": service_request,
             "favorites": favorites,
+            "owns_product": owns_product,
+            "can_purchase": can_purchase,
+            "can_request_service": can_request_service,
         },
     )
 
@@ -511,31 +523,20 @@ def product_detail(request, slug):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
     favorites = _get_favorites(request.session)
-    vendor = _get_vendor(request.user)
-    service_provider = _get_service_provider(request.user)
     tree_ids = _category_tree_ids(category)
     subcategories = list(
         Category.objects.filter(parent=category, is_active=True).order_by("name")
     )
-    base_qs = Product.objects.filter(category_id__in=tree_ids, is_active=True)
-    if vendor:
-        products = base_qs.filter(vendor=vendor)
-    elif service_provider:
-        products = base_qs.filter(service_provider=service_provider)
-    else:
-        products = base_qs.filter(active_product_filter())
-    products = products.select_related("category", "vendor", "service_provider").prefetch_related(
-        "media"
+    products = (
+        Product.objects.filter(category_id__in=tree_ids, is_active=True)
+        .filter(active_product_filter())
+        .select_related("category", "vendor", "service_provider")
+        .prefetch_related("media")
     )
     showcase_qs = CategoryShowcaseImage.objects.filter(category_id__in=tree_ids).select_related(
         "vendor", "service_provider"
     ).order_by("vendor_id", "service_provider_id", "category_id", "position", "id")
-    if vendor:
-        showcase_images = showcase_qs.filter(vendor=vendor)
-    elif service_provider:
-        showcase_images = showcase_qs.filter(service_provider=service_provider)
-    else:
-        showcase_images = showcase_qs
+    showcase_images = showcase_qs
     parent_category = category.parent if category.parent_id else None
     return render(
         request,
@@ -557,8 +558,11 @@ def request_service(request, product_id):
     if product.kind != Product.SERVICE:
         messages.error(request, "Ce produit n'est pas un service.")
         return redirect("store:product_detail", slug=product.slug)
-    if _get_vendor(request.user) or _get_service_provider(request.user):
-        messages.error(request, "Vous ne pouvez pas demander un service avec un profil pro.")
+    if _is_app_admin(request.user):
+        messages.error(request, "Les comptes administration ne peuvent pas demander de service.")
+        return redirect("store:product_detail", slug=product.slug)
+    if _user_owns_product(request.user, product):
+        messages.error(request, "Vous ne pouvez pas demander votre propre service.")
         return redirect("store:product_detail", slug=product.slug)
     provider = product.service_provider
     vendor = product.vendor
@@ -623,14 +627,8 @@ def request_service(request, product_id):
 
 
 def cart_detail(request):
-    # Panier réservé aux clients : admin, vendeur et prestataire sont redirigés vers leur espace
-    if request.user.is_authenticated:
-        if _get_vendor(request.user):
-            return redirect("marketplace:dashboard")
-        if _get_service_provider(request.user):
-            return redirect("marketplace:service_provider_dashboard")
-        if _is_app_admin(request.user):
-            return redirect("accounts:admin_dashboard")
+    if request.user.is_authenticated and _is_app_admin(request.user):
+        return redirect("accounts:admin_dashboard")
 
     cart = _get_cart(request.session)
     product_ids = list(cart.keys())
@@ -699,24 +697,18 @@ def add_to_cart(request, product_id):
             status=400,
         )
     if request.user.is_authenticated:
-        if _get_vendor(request.user):
-            msg = "Les vendeurs ne peuvent pas acheter de produits."
-            if is_ajax:
-                return JsonResponse({"ok": False, "message": msg}, status=403)
-            messages.error(request, msg)
-            return redirect("store:product_list")
-        if _get_service_provider(request.user):
-            msg = "Les prestataires ne peuvent pas acheter de produits."
-            if is_ajax:
-                return JsonResponse({"ok": False, "message": msg}, status=403)
-            messages.error(request, msg)
-            return redirect("store:product_list")
         if _is_app_admin(request.user):
             msg = "Les comptes administration ne peuvent pas acheter de produits."
             if is_ajax:
                 return JsonResponse({"ok": False, "message": msg}, status=403)
             messages.error(request, msg)
             return redirect("store:product_list")
+        if _user_owns_product(request.user, product):
+            msg = "Vous ne pouvez pas commander vos propres produits."
+            if is_ajax:
+                return JsonResponse({"ok": False, "message": msg}, status=403)
+            messages.error(request, msg)
+            return redirect("store:product_detail", slug=product.slug)
 
     cart = _get_cart(request.session)
     cart[str(product.id)] = cart.get(str(product.id), 0) + 1
@@ -924,15 +916,10 @@ def vendor_detail(request, slug):
 
 def favorites_list(request):
     """
-    Liste des produits ajoutés en favoris (session). Réservé aux clients.
+    Liste des produits ajoutés en favoris (session).
     """
-    if request.user.is_authenticated:
-        if _get_vendor(request.user):
-            return redirect("marketplace:dashboard")
-        if _get_service_provider(request.user):
-            return redirect("marketplace:service_provider_dashboard")
-        if _is_app_admin(request.user):
-            return redirect("accounts:admin_dashboard")
+    if request.user.is_authenticated and _is_app_admin(request.user):
+        return redirect("accounts:admin_dashboard")
 
     favorites = _get_favorites(request.session)
     products = (
@@ -955,8 +942,8 @@ def toggle_favorite(request, product_id):
     """
     Ajoute ou retire un produit des favoris (session). Réservé aux clients.
     """
-    if _get_vendor(request.user) or _get_service_provider(request.user) or _is_app_admin(request.user):
-        messages.info(request, "Les favoris sont réservés aux comptes clients.")
+    if _is_app_admin(request.user):
+        messages.info(request, "Les favoris sont réservés aux comptes acheteurs.")
         next_url = request.META.get("HTTP_REFERER") or reverse("store:product_list")
         return redirect(next_url)
     product = get_object_or_404(Product, id=product_id, is_active=True)
@@ -977,19 +964,22 @@ def toggle_favorite(request, product_id):
 @login_required
 def checkout(request):
     cart = _get_cart(request.session)
-    vendor = _get_vendor(request.user)
-    service_provider = _get_service_provider(request.user)
-    if vendor:
-        messages.error(request, "Les vendeurs ne peuvent pas passer de commande.")
-        return redirect("store:cart_detail")
-    if service_provider:
-        messages.error(request, "Les prestataires ne peuvent pas passer de commande.")
-        return redirect("store:cart_detail")
     if _is_app_admin(request.user):
         messages.error(request, "Les comptes administration ne peuvent pas passer de commande.")
         return redirect("store:cart_detail")
     product_ids = list(cart.keys())
     products = Product.objects.filter(id__in=product_ids).select_related("vendor", "service_provider")
+    own_products = [
+        p.name for p in products if _user_owns_product(request.user, p)
+    ]
+    if own_products:
+        messages.error(
+            request,
+            "Retirez vos propres produits du panier avant de commander : "
+            + ", ".join(own_products[:3])
+            + ("…" if len(own_products) > 3 else ""),
+        )
+        return redirect("store:cart_detail")
     if products.filter(kind=Product.SERVICE).exists():
         messages.error(request, "Les services ne peuvent pas être commandés. Utilisez 'Demander un service' pour réserver.")
         return redirect("store:cart_detail")

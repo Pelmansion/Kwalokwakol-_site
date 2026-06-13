@@ -126,6 +126,7 @@
                   <a href="{% url 'culture:my_purchases' %}">🎵 Mes achats musique</a>
                 {% endif %}
                 {% if user|is_vendor %}
+                  <a href="{% url 'store:home' %}">Boutique</a>
                   <a href="{% url 'marketplace:dashboard' %}">Espace vendeur</a>
                 {% else %}
                   {% if not user|is_app_admin and not user|is_service_provider %}
@@ -133,6 +134,7 @@
                   {% endif %}
                 {% endif %}
                 {% if user|is_service_provider %}
+                  <a href="{% url 'store:home' %}">Boutique</a>
                   <a href="{% url 'marketplace:service_provider_dashboard' %}">Espace prestataire</a>
                 {% else %}
                   {% if not user|is_app_admin and not user|is_vendor %}

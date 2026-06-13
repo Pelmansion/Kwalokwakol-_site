@@ -1,5 +1,6 @@
 from django import template
 
+from accounts.shopping_access import user_can_shop_as_customer
 from marketplace.models import ServiceProvider, Vendor
 from accounts.models import UserProfile
 from store.templatetags.media_tags import register as _media_register
@@ -43,14 +44,10 @@ def is_app_admin(user):
 @register.filter
 def is_client(user):
     """
-    Retourne True si l'utilisateur est un client (ni admin, ni vendeur, ni prestataire).
-    Seuls les clients peuvent passer des commandes et voir l'accueil boutique.
+    True si l'utilisateur peut acheter sur la boutique (panier, commandes, favoris).
+    Vendeurs et prestataires inclus ; seuls les admins sont exclus.
     """
-    if not user or not user.is_authenticated:
-        return False
-    if is_vendor(user) or is_service_provider(user) or is_app_admin(user):
-        return False
-    return True
+    return user_can_shop_as_customer(user)
 
 
 def _norm_request_path(path):

@@ -149,9 +149,9 @@
       <div class="product-detail__actions">
         {% if product.kind == 'service' %}
           {% if user.is_authenticated %}
-            {% if user|is_vendor or user|is_service_provider %}
-              <span class="muted">Les profils pro ne peuvent pas demander un service.</span>
-            {% else %}
+            {% if owns_product %}
+              <span class="muted">C'est votre service — gérez-le depuis votre espace pro.</span>
+            {% elif can_request_service %}
               {% if service_request and service_request.status == 'approved' %}
                 <span class="badge badge--success">Demande approuvée</span>
               {% elif service_request and service_request.status == 'pending' %}
@@ -162,16 +162,22 @@
                 {% endif %}
                 <a class="btn btn--primary" href="{% url 'store:request_service' product.id %}">Demander ce service</a>
               {% endif %}
+            {% elif user|is_app_admin %}
+              <span class="muted">Les comptes administration ne peuvent pas demander de service.</span>
             {% endif %}
           {% else %}
             <a class="btn btn--primary" href="{% url 'accounts:login' %}?next={% url 'store:product_detail' product.slug %}">Demander ce service</a>
           {% endif %}
-        {% elif user|is_client or not user.is_authenticated %}
+        {% elif can_purchase or not user.is_authenticated %}
           <a class="btn btn--primary js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">🛒 Ajouter au panier</a>
           <a class="btn btn--ghost favorite-toggle favorite-toggle--inline {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
              href="{% url 'store:toggle_favorite' product.id %}">
             ♥ <span>{% if favorites and product.id in favorites %}Retirer{% else %}Ajouter aux favoris{% endif %}</span>
           </a>
+        {% elif owns_product %}
+          <span class="muted">C'est votre produit — gérez-le depuis votre espace vendeur.</span>
+        {% elif user|is_app_admin %}
+          <span class="muted">Les comptes administration ne peuvent pas passer de commande.</span>
         {% endif %}
         <a class="btn btn--ghost" href="{% url 'store:product_list' %}">← Retour</a>
       </div>

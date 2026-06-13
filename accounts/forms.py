@@ -22,7 +22,8 @@ class LoginFormWithInactiveMessage(AuthenticationForm):
                     self._errors.pop("__all__", None)
                     self.add_error(
                         None,
-                        "Ce compte n'est pas encore activé. Consultez votre boîte mail et cliquez sur le lien de confirmation.",
+                        "Ce compte n'est pas encore activé. Consultez votre boîte mail et cliquez sur le lien de confirmation. "
+                        "Si vous ne le voyez pas, vérifiez aussi votre dossier Spam ou Courrier indésirable.",
                     )
         return self.cleaned_data
 

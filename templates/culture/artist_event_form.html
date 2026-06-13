@@ -13,6 +13,7 @@
 
   <form method="post" enctype="multipart/form-data" class="culture-form culture-form--event">
     {% csrf_token %}
+    <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
 
     {% if form.non_field_errors %}
       <ul class="culture-form__errors culture-form__full">
@@ -21,12 +22,12 @@
     {% endif %}
 
     <div class="culture-form__grid">
-      <label class="culture-form__full">Titre *
+      <label class="culture-form__full">Titre <span class="required">*</span>
         {{ form.title }}
         {{ form.title.errors }}
       </label>
 
-      <label class="culture-form__full">Description *
+      <label class="culture-form__full">Description <span class="required">*</span>
         {{ form.description }}
         {{ form.description.errors }}
       </label>
@@ -71,7 +72,7 @@
       </div>
 
       <div class="culture-form__field-group">
-        <span class="culture-form__field-label">Date & heure de début *</span>
+        <span class="culture-form__field-label">Date & heure de début <span class="required">*</span></span>
         {{ form.starts_at }}
         {{ form.starts_at.errors }}
       </div>
@@ -82,7 +83,7 @@
         {{ form.ends_at.errors }}
       </div>
 
-      <label>Lieu / salle *
+      <label>Lieu / salle <span class="required">*</span>
         {{ form.venue_name }}
         {{ form.venue_name.errors }}
       </label>
@@ -92,7 +93,7 @@
         {{ form.address.errors }}
       </label>
 
-      <label>Ville *
+      <label>Ville <span class="required">*</span>
         {{ form.city }}
         {{ form.city.errors }}
       </label>

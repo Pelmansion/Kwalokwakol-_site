@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n form_tags %}
 {% block content %}
   <section class="container auth-page">
     <div class="auth-card auth-card--centered">
@@ -18,6 +18,8 @@
         </div>
       {% endif %}
 
+      <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
+
       <form method="post" action="{% url 'socialaccount_signup' %}" class="auth-form">
         {% csrf_token %}
         {% if redirect_field_value %}
@@ -25,7 +27,7 @@
         {% endif %}
         {% for field in form %}
           <div class="form-group{% if field.errors %} form-group--error{% endif %}">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% required_star field %}</label>
             {{ field }}
             {% if field.errors %}
               <ul class="form-errors">

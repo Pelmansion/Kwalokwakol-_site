@@ -40,7 +40,8 @@
     <h2 style="margin-top: 2rem; font-size: 1.1rem;">Ajouter une photo</h2>
     <form method="post" enctype="multipart/form-data" class="culture-form" style="max-width: 480px;">
       {% csrf_token %}
-      <label>Photo *
+      <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
+      <label>Photo <span class="required">*</span>
         {{ form.image }}
         {{ form.image.errors }}
       </label>

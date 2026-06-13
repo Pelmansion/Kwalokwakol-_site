@@ -6,6 +6,7 @@
   <section class="container auth-card">
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
+      <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
       {{ form.as_p }}
       <button class="btn" type="submit">Enregistrer</button>
     </form>

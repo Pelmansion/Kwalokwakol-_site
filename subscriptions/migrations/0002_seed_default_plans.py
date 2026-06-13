@@ -7,7 +7,7 @@ DEFAULT_PLANS = [
     {
         "name": "Starter",
         "slug": "starter",
-        "monthly_amount": Decimal("5000.00"),
+        "monthly_amount": Decimal("2000.00"),
         "target": "both",
         "tagline": "Pour démarrer et tester la plateforme",
         "description": "Idéal pour les petits vendeurs et prestataires qui démarrent.",
@@ -23,7 +23,7 @@ DEFAULT_PLANS = [
     {
         "name": "Pro",
         "slug": "pro",
-        "monthly_amount": Decimal("15000.00"),
+        "monthly_amount": Decimal("5000.00"),
         "target": "both",
         "tagline": "Le choix des vendeurs réguliers",
         "description": "Pour les commerçants qui veulent vendre sérieusement.",
@@ -40,7 +40,7 @@ DEFAULT_PLANS = [
     {
         "name": "Premium",
         "slug": "premium",
-        "monthly_amount": Decimal("30000.00"),
+        "monthly_amount": Decimal("10000.00"),
         "target": "both",
         "tagline": "Pour les professionnels exigeants",
         "description": "Visibilité maximale et fonctionnalités avancées.",

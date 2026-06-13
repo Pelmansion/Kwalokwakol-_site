@@ -12,8 +12,9 @@
 
   <form method="post" enctype="multipart/form-data" class="culture-form">
     {% csrf_token %}
+    <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
     <div class="culture-form__grid">
-      <label>Nom de scène *
+      <label>Nom de scène <span class="required">*</span>
         {{ form.stage_name }}
         {{ form.stage_name.errors }}
       </label>

@@ -39,7 +39,9 @@ def signup(request):
                     request,
                     "L'email de vérification n'a pas pu être envoyé. Vérifiez le fichier .env (EMAIL_HOST_USER, EMAIL_HOST_PASSWORD) et la console du serveur pour les détails.",
                 )
+                request.session["pending_verification_email"] = user.email
                 return redirect("accounts:signup_email_sent")
+            request.session["pending_verification_email"] = user.email
             return redirect("accounts:signup_email_sent")
         messages.error(
             request,
@@ -52,7 +54,8 @@ def signup(request):
 
 def signup_email_sent(request):
     """Page affichée après inscription : indique de vérifier sa boîte mail."""
-    return render(request, "accounts/signup_email_sent.html")
+    email = request.session.pop("pending_verification_email", None)
+    return render(request, "accounts/signup_email_sent.html", {"email": email})
 
 
 def verify_email(request):

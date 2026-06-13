@@ -13,6 +13,7 @@
 
   <form method="post" enctype="multipart/form-data" class="culture-form culture-form--song">
     {% csrf_token %}
+    <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
 
     {% if form.non_field_errors %}
       <ul class="culture-form__errors culture-form__full">
@@ -21,7 +22,7 @@
     {% endif %}
 
     <div class="culture-form__grid">
-      <label class="culture-form__full">Titre *
+      <label class="culture-form__full">Titre <span class="required">*</span>
         {{ form.title }}
         {{ form.title.errors }}
       </label>
@@ -56,7 +57,7 @@
       </div>
 
       <div class="culture-form__file-block culture-form__full">
-        <span class="culture-form__file-title">Fichier audio (MP3 / WAV) {% if is_new %}*{% endif %}</span>
+        <span class="culture-form__file-title">Fichier audio (MP3 / WAV) {% if is_new %}<span class="required">*</span>{% endif %}</span>
         {% if not is_new and song.audio_file %}
           <p class="culture-form__file-current">Fichier actuel : <strong>{{ song.audio_file.name }}</strong></p>
           <audio class="culture-form__audio-preview" controls preload="metadata" src="{{ song.audio_file.url }}"></audio>

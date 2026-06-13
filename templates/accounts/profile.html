@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load media_tags %}
+{% load media_tags form_tags %}
 {% block title %}Mon profil — Kolê Group{% endblock %}
 {% block content %}
   <section class="container page-title">
@@ -26,11 +26,12 @@
 
     <form method="post" enctype="multipart/form-data" class="profile-form-fields culture-form">
       {% csrf_token %}
+      <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
       {% if form.non_field_errors %}
         <div class="form-errors error" role="alert">{{ form.non_field_errors }}</div>
       {% endif %}
       {% for field in form %}
-        <label for="{{ field.id_for_label }}">{{ field.label }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% required_star field %}
           {{ field }}
           {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
           {% if field.errors %}

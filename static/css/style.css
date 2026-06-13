@@ -2148,6 +2148,30 @@ a.service-card {
   margin-left: 2px;
 }
 
+.form-required-legend {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+/* Astérisque rouge automatique sur les champs HTML required */
+.form-group:has(> input[required]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])),
+.form-group:has(> select[required]),
+.form-group:has(> textarea[required]) > label:first-child:not(.label--optional):not(.request-form__check):not(:has(.required))::after,
+.form-field:has(> input[required]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])),
+.form-field:has(> select[required]),
+.form-field:has(> textarea[required]) > label:not(.label--optional):not(:has(.required))::after,
+.culture-form label:has(> input[required]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])):not(.culture-form__checkbox):not(:has(.required))::after,
+.culture-form label:has(> select[required]):not(.culture-form__checkbox):not(:has(.required))::after,
+.culture-form label:has(> textarea[required]):not(.culture-form__checkbox):not(:has(.required))::after,
+.culture-form__field-group:has(input[required], select[required], textarea[required]) .culture-form__field-label:not(:has(.required))::after,
+.form-section__body--signup p:has(input[required]:not([type="checkbox"]):not([type="radio"]), select[required], textarea[required]) > label:not(:has(.required))::after,
+.auth-card form p:has(input[required]:not([type="checkbox"]):not([type="radio"]), select[required], textarea[required]) > label:not(:has(.required))::after {
+  content: " *";
+  color: #dc2626;
+  font-weight: 700;
+}
+
 .form-actions {
   display: flex;
   flex-direction: column;
@@ -3792,41 +3816,75 @@ textarea::placeholder { color: #94a3b8; }
   cursor: pointer;
   display: block;
 }
-.plan-card input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  margin: 0;
-}
 .plan-card__inner {
   position: relative;
   background: #fff;
   border: 2px solid var(--line);
   border-radius: 18px;
   padding: 28px 24px;
-  transition: all .2s ease;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 2px 8px rgba(15,23,42,0.03);
 }
-.plan-card:hover .plan-card__inner {
+.plan-card__check {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all .2s ease;
+  z-index: 2;
+}
+.plan-card__check svg {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.plan-card.plan-card--selected .plan-card__inner {
   border-color: var(--primary);
+  border-width: 3px;
+  background: linear-gradient(180deg, #fff7f2 0%, #ffffff 48%);
+  box-shadow: 0 0 0 4px rgba(194,65,12,0.16), 0 20px 48px rgba(194,65,12,0.18);
   transform: translateY(-4px);
-  box-shadow: 0 18px 44px rgba(194,65,12,0.14);
 }
-.plan-card input[type="radio"]:checked ~ .plan-card__inner {
+.plan-card.plan-card--selected .plan-card__check {
+  background: var(--primary);
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(194,65,12,0.14), 0 18px 44px rgba(194,65,12,0.18);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(194,65,12,0.35);
 }
-.plan-card--featured .plan-card__inner {
-  border-color: var(--primary);
+.plan-card.plan-card--selected .plan-card__check svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.plan-card:hover:not(.plan-card--selected) .plan-card__inner {
+  border-color: rgba(194,65,12,0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(194,65,12,0.1);
+}
+.plan-card--featured:not(.plan-card--selected) .plan-card__inner {
+  border-color: rgba(194,65,12,0.35);
   background: linear-gradient(180deg, #fffaf6 0%, #ffffff 55%);
+}
+.plan-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  margin: 0;
 }
 .plan-card__badge {
   position: absolute;
@@ -3908,11 +3966,67 @@ textarea::placeholder { color: #94a3b8; }
   padding-top: 16px;
   text-align: center;
   font-weight: 700;
-  color: var(--primary);
   letter-spacing: 0.2px;
 }
-.plan-card input[type="radio"]:checked ~ .plan-card__inner .plan-card__cta::before {
-  content: "✓ ";
+.plan-card__cta-idle {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.plan-card__cta-active {
+  display: none;
+  color: var(--primary);
+  font-size: 0.95rem;
+}
+.plan-card.plan-card--selected .plan-card__cta-idle {
+  display: none;
+}
+.plan-card.plan-card--selected .plan-card__cta-active {
+  display: block;
+}
+
+.plan-selection-summary {
+  margin-top: 28px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #fff7f2 0%, #ffffff 100%);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  box-shadow: 0 8px 28px rgba(194,65,12,0.1);
+}
+.plan-selection-summary__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.plan-selection-summary__content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  font-size: 1.05rem;
+}
+.plan-selection-summary__content strong {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+.plan-selection-summary__price {
+  color: var(--primary);
+  font-weight: 700;
+}
+.choose-plan-form__actions {
+  margin-top: 20px;
+  justify-content: center;
+}
+.choose-plan-form__actions .btn--lg {
+  padding: 14px 32px;
+  font-size: 1.05rem;
 }
 
 .info-box {
@@ -4849,6 +4963,7 @@ textarea::placeholder { color: #94a3b8; }
 /* ---- Forms culture ---- */
 .culture-form { background: #fff; padding: 30px; border-radius: 18px; border: 1px solid var(--line, #f0e4d8); }
 .culture-form__grid { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+.culture-form .form-required-legend { grid-column: 1 / -1; margin-bottom: 0; }
 .culture-form__full { grid-column: 1 / -1; }
 .culture-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
 .culture-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),

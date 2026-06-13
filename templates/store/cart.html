@@ -79,6 +79,7 @@
               </div>
               <form class="checkout-form" method="post" action="{% url 'store:checkout' %}">
                 {% csrf_token %}
+                <p class="form-required-legend"><span class="required">*</span> Champ obligatoire</p>
                 <div class="form-grid">
                   <div class="form-field">
                     <label>Nom complet</label>

@@ -1,18 +1,45 @@
 {% extends "base.html" %}
+
+{% block title %}Vérifiez votre email — Kolê Group{% endblock %}
+
 {% block content %}
-  <section class="container page-title">
-    <h1>Vérifiez votre boîte mail</h1>
-  </section>
-  <section class="container auth-card">
-    <p>
-      Un email de confirmation vous a été envoyé à l'adresse indiquée lors de l'inscription.
-    </p>
-    <p>
-      Cliquez sur le lien dans l'email pour activer votre compte. Le lien est valide 48 heures.
-    </p>
-    <p>
-      Si vous ne recevez pas l'email, vérifiez vos spams ou
-      <a href="{% url 'accounts:login' %}">retournez à la page de connexion</a>.
-    </p>
+  <section class="container auth-page">
+    <div class="auth-card auth-card--centered">
+      <div class="auth-icon">
+        <span>📧</span>
+      </div>
+      <h1 class="auth-title">Vérifiez votre boîte mail</h1>
+      <p class="auth-subtitle">
+        {% if email %}
+          Un email de confirmation vient d'être envoyé à <strong>{{ email }}</strong>.
+        {% else %}
+          Un email de confirmation vient d'être envoyé à l'adresse indiquée lors de l'inscription.
+        {% endif %}
+      </p>
+
+      <div class="alert alert--info" role="status">
+        <strong>Étape suivante</strong>
+        <p class="alert__message">
+          Ouvrez l'email et cliquez sur le lien de confirmation pour activer votre compte.
+          Le lien est valide <strong>48 heures</strong>.
+        </p>
+      </div>
+
+      <div class="alert alert--warning" role="note">
+        <strong>Vous ne voyez pas l'email ?</strong>
+        <p class="alert__message">
+          Regardez aussi dans votre dossier <strong>Spam</strong>, <strong>Courrier indésirable</strong>
+          ou <strong>Promotions</strong> (Gmail). Parfois le message s'y retrouve automatiquement.
+        </p>
+        <p class="alert__message" style="margin-top: 8px;">
+          Vous pouvez aussi ajouter <strong>{{ kole_contact_email }}</strong> à vos contacts pour faciliter la réception des prochains messages.
+        </p>
+      </div>
+
+      <p class="auth-alt">
+        Une fois le lien cliqué,
+        <a href="{% url 'accounts:login' %}">connectez-vous à votre compte</a>.
+      </p>
+    </div>
   </section>
 {% endblock %}

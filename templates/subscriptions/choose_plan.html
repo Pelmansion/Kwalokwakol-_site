@@ -16,13 +16,25 @@
   </section>
 
   <section class="container">
-    <form method="post">
+    <form method="post" id="choose-plan-form" class="choose-plan-form">
       {% csrf_token %}
-      <div class="plans-grid">
+      <div class="plans-grid" id="plans-grid">
         {% for plan in plans %}
-          <label class="plan-card {% if plan.is_featured %}plan-card--featured{% endif %}">
-            <input type="radio" name="plan" value="{{ plan.id }}" {% if forloop.first %}checked{% endif %}>
+          <label
+            class="plan-card {% if plan.is_featured %}plan-card--featured{% endif %}"
+            data-plan-name="{{ plan.name }}"
+            data-plan-price="{{ plan.monthly_amount|floatformat:0 }}"
+          >
+            <input
+              type="radio"
+              name="plan"
+              value="{{ plan.id }}"
+              {% if forloop.first %}checked{% endif %}
+            >
             <div class="plan-card__inner">
+              <span class="plan-card__check" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
               {% if plan.is_featured %}
                 <span class="plan-card__badge">★ Recommandé</span>
               {% endif %}
@@ -39,7 +51,10 @@
                   <li>✓ {{ feat }}</li>
                 {% endfor %}
               </ul>
-              <span class="plan-card__cta">Sélectionner cette formule</span>
+              <span class="plan-card__cta">
+                <span class="plan-card__cta-idle">Sélectionner cette formule</span>
+                <span class="plan-card__cta-active">✓ Formule sélectionnée</span>
+              </span>
             </div>
           </label>
         {% empty %}
@@ -50,9 +65,19 @@
       </div>
 
       {% if plans %}
-        <div class="form-actions" style="margin-top: 30px; justify-content: center;">
-          <button type="submit" class="btn btn--primary" style="padding: 14px 32px; font-size: 1.05rem;">
-            Continuer →
+        <div class="plan-selection-summary" id="plan-selection-summary" role="status" aria-live="polite">
+          <span class="plan-selection-summary__label">Votre choix</span>
+          <div class="plan-selection-summary__content">
+            <strong id="plan-selection-name">—</strong>
+            <span class="plan-selection-summary__price">
+              <span id="plan-selection-price">—</span> FCFA / mois
+            </span>
+          </div>
+        </div>
+
+        <div class="form-actions choose-plan-form__actions">
+          <button type="submit" class="btn btn--primary btn--lg" id="choose-plan-submit">
+            Continuer avec <span id="plan-submit-name">—</span> →
           </button>
         </div>
       {% endif %}
@@ -62,4 +87,46 @@
       <p><strong>💡 Besoin d'un tarif personnalisé ?</strong> L'administrateur peut vous proposer un montant mensuel sur mesure en fonction de votre profil. Contactez le support.</p>
     </div>
   </section>
+
+  <script>
+    (function () {
+      var grid = document.getElementById("plans-grid");
+      if (!grid) return;
+
+      var cards = grid.querySelectorAll(".plan-card");
+      var nameEl = document.getElementById("plan-selection-name");
+      var priceEl = document.getElementById("plan-selection-price");
+      var submitNameEl = document.getElementById("plan-submit-name");
+
+      function syncSelection() {
+        var selected = grid.querySelector('input[type="radio"]:checked');
+        cards.forEach(function (card) {
+          var input = card.querySelector('input[type="radio"]');
+          var isSelected = input && input.checked;
+          card.classList.toggle("plan-card--selected", isSelected);
+          if (isSelected && nameEl && priceEl) {
+            nameEl.textContent = card.dataset.planName || "—";
+            priceEl.textContent = card.dataset.planPrice || "—";
+            if (submitNameEl) {
+              submitNameEl.textContent = card.dataset.planName || "—";
+            }
+          }
+        });
+      }
+
+      cards.forEach(function (card) {
+        var input = card.querySelector('input[type="radio"]');
+        if (!input) return;
+        input.addEventListener("change", syncSelection);
+        card.addEventListener("click", function (e) {
+          if (e.target.tagName !== "INPUT") {
+            input.checked = true;
+            syncSelection();
+          }
+        });
+      });
+
+      syncSelection();
+    })();
+  </script>
 {% endblock %}

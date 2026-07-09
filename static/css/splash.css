@@ -1,0 +1,452 @@
+/* =============================================================
+   Kolê Group — Splash Screen
+   Layout : hero (logo + anneau) séparé du bloc texte
+   ============================================================= */
+
+html.kole-splash-pending {
+  overflow: hidden;
+}
+
+html.kole-splash-pending body {
+  overflow: hidden;
+}
+
+.kole-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #0a0705;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+html.kole-splash-pending .kole-splash {
+  display: flex;
+}
+
+.kole-splash.is-unlocking .kole-splash__hero {
+  animation: koleHeroPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.kole-splash.is-unlocking .kole-splash__logo {
+  animation: koleLogoUnlock 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+}
+
+.kole-splash.is-unlocking .kole-splash__burst span {
+  animation: koleBurstRing 0.9s ease-out forwards;
+}
+
+.kole-splash.is-exiting {
+  pointer-events: none;
+  animation: koleSplashFadeOut 1s cubic-bezier(0.55, 0, 0.15, 1) forwards;
+}
+
+/* ── Canvas particules ── */
+.kole-splash__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Fond ── */
+.kole-splash__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.kole-splash__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0;
+  animation: koleOrbIn 1.1s ease-out forwards;
+}
+
+.kole-splash__orb--1 {
+  width: 50vmax;
+  height: 50vmax;
+  top: -18%;
+  left: -12%;
+  background: radial-gradient(circle, rgba(194, 65, 12, 0.42) 0%, transparent 70%);
+}
+
+.kole-splash__orb--2 {
+  width: 42vmax;
+  height: 42vmax;
+  bottom: -22%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(212, 162, 76, 0.32) 0%, transparent 70%);
+  animation-delay: 0.1s;
+}
+
+.kole-splash__orb--3 {
+  width: 28vmax;
+  height: 28vmax;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(31, 107, 74, 0.18) 0%, transparent 70%);
+  animation-delay: 0.2s;
+}
+
+.kole-splash__kente {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: koleKenteIn 1s ease-out 0.1s forwards;
+}
+
+.kole-splash__kente line {
+  stroke: rgba(212, 162, 76, 0.08);
+  stroke-width: 0.5;
+}
+
+.kole-splash__kente rect.kole-splash__diamond {
+  fill: rgba(194, 65, 12, 0.04);
+  stroke: rgba(212, 162, 76, 0.1);
+  stroke-width: 0.4;
+}
+
+/* ── Scène principale ── */
+.kole-splash__stage {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: min(100%, 340px);
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* ── Zone logo (anneau centré sur le logo uniquement) ── */
+.kole-splash__hero {
+  position: relative;
+  width: 156px;
+  height: 156px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.88);
+  animation: koleHeroIn 0.75s cubic-bezier(0.34, 1.35, 0.64, 1) 0.35s forwards;
+}
+
+.kole-splash__ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.kole-splash__ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.kole-splash__ring-path {
+  fill: none;
+  stroke: url(#koleRingGrad);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 340;
+  stroke-dashoffset: 340;
+  animation: koleRingDraw 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.55s forwards;
+  opacity: 0.85;
+}
+
+.kole-splash__burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.kole-splash__burst span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  margin: -50% 0 0 -50%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(212, 162, 76, 0.45);
+  opacity: 0;
+  transform: scale(0.35);
+}
+
+.kole-splash__burst span:nth-child(2) { animation-delay: 0.1s; }
+.kole-splash__burst span:nth-child(3) { animation-delay: 0.2s; }
+
+.kole-splash__logo-shell {
+  position: relative;
+  z-index: 2;
+  width: 108px;
+  height: 108px;
+  border-radius: 26px;
+  background: linear-gradient(160deg, #fffdf9 0%, #f5ebe0 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 14px 40px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.kole-splash__logo-glow {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 162, 76, 0.35) 0%, transparent 65%);
+  opacity: 0;
+  animation: koleGlowPulse 1.4s ease-out 0.75s forwards;
+  pointer-events: none;
+}
+
+.kole-splash__logo {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  display: block;
+}
+
+.kole-splash__logo-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%) skewX(-8deg);
+  animation: koleShimmer 0.6s ease-out 1.4s forwards;
+  pointer-events: none;
+}
+
+/* ── Bloc texte (sous le logo, jamais sous l'anneau) ── */
+.kole-splash__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.kole-splash__brand,
+.kole-splash__motto,
+.kole-splash__url {
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.kole-splash__brand {
+  font-family: var(--font-serif, "Fraunces", Georgia, serif);
+  font-size: clamp(1.65rem, 5.5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #fff8f1;
+  animation: koleCopyIn 0.55s ease-out 1.05s forwards;
+}
+
+.kole-splash__motto {
+  font-family: var(--font-sans, "Source Sans 3", system-ui, sans-serif);
+  font-size: clamp(0.72rem, 2.6vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d4a24c;
+  animation: koleCopyIn 0.55s ease-out 1.22s forwards;
+}
+
+.kole-splash__url {
+  margin-top: 0.15rem;
+  font-family: var(--font-sans, "Source Sans 3", system-ui, sans-serif);
+  font-size: clamp(0.78rem, 2.8vw, 0.88rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 248, 241, 0.42);
+  animation: koleCopyIn 0.55s ease-out 1.38s forwards;
+}
+
+/* ── Progression + hint ── */
+.kole-splash__progress {
+  position: absolute;
+  bottom: max(52px, calc(env(safe-area-inset-bottom) + 36px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(120px, 32vw);
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 248, 241, 0.1);
+  overflow: hidden;
+  opacity: 0;
+  animation: koleFadeIn 0.35s ease-out 0.4s forwards;
+}
+
+.kole-splash__progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d4a24c, #c2410c);
+  animation: koleProgressFill 4s linear 0.15s forwards;
+}
+
+.kole-splash__skip-hint {
+  position: absolute;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 248, 241, 0.28);
+  white-space: nowrap;
+  opacity: 0;
+  animation: koleFadeIn 0.4s ease-out 2s forwards;
+}
+
+/* ── Keyframes ── */
+@keyframes koleOrbIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.kole-splash__orb--3 {
+  animation-name: koleOrbInCenter;
+}
+
+@keyframes koleOrbInCenter {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes koleKenteIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes koleHeroIn {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes koleHeroPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes koleRingDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes koleBurstRing {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes koleGlowPulse {
+  0% { opacity: 0; transform: scale(0.5); }
+  40% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+@keyframes koleLogoUnlock {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes koleShimmer {
+  to { transform: translateX(130%) skewX(-8deg); }
+}
+
+@keyframes koleCopyIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes koleFadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes koleProgressFill {
+  to { width: 100%; }
+}
+
+@keyframes koleSplashFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kole-splash__orb,
+  .kole-splash__kente,
+  .kole-splash__hero,
+  .kole-splash__ring-path,
+  .kole-splash__burst span,
+  .kole-splash__logo-glow,
+  .kole-splash__logo-shimmer,
+  .kole-splash__brand,
+  .kole-splash__motto,
+  .kole-splash__url,
+  .kole-splash__progress,
+  .kole-splash__progress span,
+  .kole-splash__skip-hint,
+  .kole-splash.is-unlocking .kole-splash__hero,
+  .kole-splash.is-unlocking .kole-splash__logo,
+  .kole-splash.is-unlocking .kole-splash__burst span,
+  .kole-splash.is-exiting {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .kole-splash.is-exiting {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+}

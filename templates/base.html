@@ -11,14 +11,35 @@
       (function () {
         try {
           var p = window.location.pathname || "";
-          if (p.indexOf("/admin") === 0) return;
-          if (new URLSearchParams(window.location.search).get("no_intro")) return;
-          if (!localStorage.getItem("kolokwakole_intro_v1")) {
-            document.documentElement.classList.add("show-first-intro");
+          if (p !== "/" && p !== "") return;
+          var qs = new URLSearchParams(window.location.search);
+          if (qs.get("no_splash") || qs.get("no_onboarding")) return;
+          if (!localStorage.getItem("kole_onboarding_v2")) {
+            document.documentElement.classList.add("kole-onboarding-pending");
+          } else {
+            document.documentElement.classList.add("kole-splash-pending");
           }
         } catch (e) {}
       })();
     </script>
+    <style>
+      html.kole-onboarding-pending,
+      html.kole-splash-pending { overflow: hidden; }
+      html.kole-onboarding-pending body,
+      html.kole-splash-pending body { overflow: hidden; }
+      .kole-guide {
+        position: fixed; inset: 0; z-index: 1000000;
+        display: none; flex-direction: column;
+        background: #faf6f0;
+      }
+      html.kole-onboarding-pending .kole-guide { display: flex; }
+      .kole-splash {
+        position: fixed; inset: 0; z-index: 999999;
+        display: none; align-items: center; justify-content: center;
+        background: #0d0a08;
+      }
+      html.kole-splash-pending .kole-splash { display: flex; }
+    </style>
     <meta name="theme-color" content="#1A1310">
     <meta name="description" content="Kolê Group — Marketplace Afro-moderne. Alimentation, artisans, bâtiment, services et boutiques locales réunis en un seul endroit.">
     <title>{% block title %}Kolê Group — Marketplace locale et artisans d'Afrique{% endblock %}</title>
@@ -40,23 +61,79 @@
     <meta name="msapplication-config" content="{% url 'pwa-browserconfig' %}">
     <meta name="format-detection" content="telephone=no">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=53">
-    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=22">
+    <link rel="preload" href="{% static 'images/logo-kwalokwakole.png' %}" as="image">
+    <link rel="preload" href="{% static 'images/onboarding/guide-vue-ensemble.jpeg' %}" as="image">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=54">
+    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=23">
+    <link rel="stylesheet" href="{% static 'css/onboarding.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/splash.css' %}?v=4">
     {% block extra_head %}{% endblock %}
   </head>
   <body>
     {# Cookie csrftoken sur toutes les pages (invités inclus) — requis pour fetch / panier / AJAX #}
     <form class="csrf-bootstrap" aria-hidden="true">{% csrf_token %}</form>
 
-    <div class="first-visit-splash" id="first-visit-splash" role="dialog" aria-modal="true" aria-labelledby="first-visit-brand" aria-describedby="first-visit-desc">
-      <div class="first-visit-splash__logo-wrap first-visit-splash__anim first-visit-splash__anim--1">
-        <img class="first-visit-splash__logo" src="{% static 'images/icons/LOGO KWALOKWAKOLÈ GROUP.png' %}" width="320" height="96" alt="Kolê Group" loading="eager" decoding="async">
+    {% include "partials/onboarding_guide.html" %}
+    <script src="{% static 'js/onboarding.js' %}?v=2"></script>
+
+    <div class="kole-splash" id="kole-splash" role="img" aria-label="Kolê Group — Marketplace Afro-moderne">
+      <canvas class="kole-splash__canvas" id="kole-splash-canvas" aria-hidden="true"></canvas>
+
+      <div class="kole-splash__bg" aria-hidden="true">
+        <div class="kole-splash__orb kole-splash__orb--1"></div>
+        <div class="kole-splash__orb kole-splash__orb--2"></div>
+        <div class="kole-splash__orb kole-splash__orb--3"></div>
+        <svg class="kole-splash__kente" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="kenteGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="40" y2="0"/>
+              <line x1="0" y1="0" x2="0" y2="40"/>
+            </pattern>
+          </defs>
+          <rect width="400" height="400" fill="url(#kenteGrid)"/>
+          <rect class="kole-splash__diamond" x="80" y="60" width="28" height="28" transform="rotate(45 94 74)"/>
+          <rect class="kole-splash__diamond" x="280" y="100" width="22" height="22" transform="rotate(45 291 111)" style="animation-delay: 0.3s"/>
+          <rect class="kole-splash__diamond" x="160" y="280" width="26" height="26" transform="rotate(45 173 293)" style="animation-delay: 0.6s"/>
+          <rect class="kole-splash__diamond" x="320" y="260" width="18" height="18" transform="rotate(45 329 269)" style="animation-delay: 0.9s"/>
+          <rect class="kole-splash__diamond" x="40" y="220" width="20" height="20" transform="rotate(45 50 230)" style="animation-delay: 1.2s"/>
+        </svg>
       </div>
-      <p class="first-visit-splash__eyebrow first-visit-splash__anim first-visit-splash__anim--2">Kolê Group</p>
-      <h1 class="first-visit-splash__brand first-visit-splash__anim first-visit-splash__anim--3" id="first-visit-brand">Kolê Group</h1>
-      <p class="first-visit-splash__tag first-visit-splash__anim first-visit-splash__anim--4" id="first-visit-desc">Marketplace locale : vivres, artisans, services et boutiques réunis.</p>
-      <button type="button" class="btn first-visit-splash__btn first-visit-splash__anim first-visit-splash__anim--5" id="first-visit-splash-close">Continuer</button>
+
+      <div class="kole-splash__stage">
+        <div class="kole-splash__hero">
+          <div class="kole-splash__burst" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="kole-splash__ring" aria-hidden="true">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="koleRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#D4A24C"/>
+                  <stop offset="50%" stop-color="#C2410C"/>
+                  <stop offset="100%" stop-color="#1F6B4A"/>
+                </linearGradient>
+              </defs>
+              <circle class="kole-splash__ring-path" cx="60" cy="60" r="54"/>
+            </svg>
+          </div>
+          <div class="kole-splash__logo-shell">
+            <div class="kole-splash__logo-glow" aria-hidden="true"></div>
+            <img class="kole-splash__logo" src="{% static 'images/logo-kwalokwakole.png' %}" width="80" height="80" alt="Kolê Group" loading="eager" decoding="sync">
+            <div class="kole-splash__logo-shimmer" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="kole-splash__copy">
+          <h1 class="kole-splash__brand">Kolê Group</h1>
+          <p class="kole-splash__motto">Acheter · Réserver · Célébrer</p>
+          <p class="kole-splash__url">kolêgroup.com</p>
+        </div>
+      </div>
+
+      <div class="kole-splash__progress" aria-hidden="true"><span></span></div>
+      <p class="kole-splash__skip-hint">Toucher pour entrer</p>
     </div>
+    <script src="{% static 'js/splash.js' %}?v=5"></script>
 
     {% if not user.is_authenticated or user|is_client %}
     <div class="notice">
@@ -610,32 +687,6 @@
       })();
     </script>
 
-    <script>
-      (function () {
-        var root = document.documentElement;
-        if (!root.classList.contains("show-first-intro")) return;
-        var btn = document.getElementById("first-visit-splash-close");
-        var autoTimer = null;
-        function closeIntro() {
-          if (autoTimer !== null) {
-            clearTimeout(autoTimer);
-            autoTimer = null;
-          }
-          try {
-            localStorage.setItem("kolokwakole_intro_v1", "1");
-          } catch (e) {}
-          root.classList.remove("show-first-intro");
-        }
-        if (btn) btn.addEventListener("click", closeIntro);
-        autoTimer = setTimeout(closeIntro, 4000);
-        document.addEventListener("keydown", function onEsc(e) {
-          if (e.key === "Escape") {
-            closeIntro();
-            document.removeEventListener("keydown", onEsc);
-          }
-        });
-      })();
-    </script>
 
     {# ===================== Chatbot Kwa script ===================== #}
     <script src="{% static 'js/chatbot.js' %}?v=7" defer></script>

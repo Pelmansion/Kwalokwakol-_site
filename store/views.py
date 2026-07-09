@@ -11,6 +11,12 @@ from django.http import JsonResponse
 from .forms import OrderForm, ServiceRequestForm
 from accounts.models import UserProfile
 from catalog.models import Category, CategoryShowcaseImage, Product
+from catalog.category_utils import (
+    count_products_for_platform_category,
+    grouped_category_ids,
+    platform_categories_queryset,
+    products_for_platform_category,
+)
 from content.models import HomepageBackground
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from notifications.models import Notification
@@ -262,12 +268,7 @@ def home(request):
     if request.user.is_authenticated and _is_app_admin(request.user):
         return redirect("accounts:admin_dashboard")
 
-    categories_qs = Category.objects.filter(
-        is_active=True,
-        parent__isnull=True,
-        vendor__isnull=True,
-        service_provider__isnull=True,
-    ).order_by("-id")
+    categories_qs = platform_categories_queryset().order_by("-id")
     favorites = _get_favorites(request.session)
     base_products = (
         Product.objects.filter(is_active=True)
@@ -281,10 +282,9 @@ def home(request):
     # Quelques produits par catégorie pour la page d'accueil
     category_sections = []
     for category in categories_qs:
-        cat_products = (
-            base_products.filter(category=category)
-            .select_related("category")[:8]
-        )
+        cat_products = products_for_platform_category(base_products, category).select_related(
+            "category"
+        )[:8]
         if cat_products:
             category_sections.append(
                 {
@@ -305,8 +305,9 @@ def home(request):
     category_cards = []
     if hasattr(categories, "exists") and categories.exists():
         for category in categories:
-            count = base_products.filter(category=category).count()
-            category_cards.append({"category": category, "count": count})
+            count = count_products_for_platform_category(base_products, category)
+            if count:
+                category_cards.append({"category": category, "count": count})
 
     react_products = [_react_product_row(p) for p in products[:4]]
     react_base_discover = base_products.order_by("-created_at")
@@ -523,16 +524,21 @@ def product_detail(request, slug):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
     favorites = _get_favorites(request.session)
-    tree_ids = _category_tree_ids(category)
     subcategories = list(
         Category.objects.filter(parent=category, is_active=True).order_by("name")
     )
-    products = (
-        Product.objects.filter(category_id__in=tree_ids, is_active=True)
+    base_qs = (
+        Product.objects.filter(is_active=True)
         .filter(active_product_filter())
         .select_related("category", "vendor", "service_provider")
         .prefetch_related("media")
     )
+    if category.vendor_id is None and category.service_provider_id is None:
+        products = products_for_platform_category(base_qs, category)
+        tree_ids = grouped_category_ids(category)
+    else:
+        tree_ids = _category_tree_ids(category)
+        products = base_qs.filter(category_id__in=tree_ids)
     showcase_qs = CategoryShowcaseImage.objects.filter(category_id__in=tree_ids).select_related(
         "vendor", "service_provider"
     ).order_by("vendor_id", "service_provider_id", "category_id", "position", "id")

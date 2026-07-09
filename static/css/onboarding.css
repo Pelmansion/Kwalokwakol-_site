@@ -1,0 +1,480 @@
+/* =============================================================
+   Kolê Group — Guide visuel (onboarding illustré)
+   ============================================================= */
+
+html.kole-onboarding-pending {
+  overflow: hidden;
+}
+
+html.kole-onboarding-pending body {
+  overflow: hidden;
+}
+
+.kole-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  display: none;
+  flex-direction: column;
+  background: #faf6f0;
+  color: #1b1410;
+  touch-action: pan-y;
+}
+
+html.kole-onboarding-pending .kole-guide {
+  display: flex;
+}
+
+.kole-guide.is-exiting {
+  pointer-events: none;
+  animation: koleGuideOut 0.7s ease forwards;
+}
+
+/* ── Barre de progression (stories) ── */
+.kole-guide__progress {
+  display: flex;
+  gap: 5px;
+  padding: max(10px, env(safe-area-inset-top)) 14px 0;
+  flex-shrink: 0;
+}
+
+.kole-guide__progress span {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(27, 20, 16, 0.12);
+  overflow: hidden;
+}
+
+.kole-guide__progress span i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #c2410c, #d4a24c);
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.kole-guide__progress span.is-done i {
+  width: 100%;
+}
+
+.kole-guide__progress span.is-active i {
+  width: 100%;
+  animation: koleGuideBar 6s linear forwards;
+}
+
+/* ── En-tête ── */
+.kole-guide__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 6px;
+  flex-shrink: 0;
+}
+
+.kole-guide__top img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.kole-guide__skip {
+  border: 0;
+  background: rgba(27, 20, 16, 0.06);
+  color: #6b5f54;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* ── Carrousel ── */
+.kole-guide__track {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow: hidden;
+}
+
+.kole-guide__slide {
+  grid-row: 1;
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.4s;
+}
+
+.kole-guide__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.kole-guide__slide.is-leaving {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+/* ── Zone illustration ── */
+.kole-guide__visual {
+  flex: 1;
+  min-height: 0;
+  margin: 8px 14px 0;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(27, 20, 16, 0.08);
+  box-shadow: 0 8px 32px rgba(27, 20, 16, 0.08);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.kole-guide__visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  border-radius: 12px;
+}
+
+.kole-guide__visual--profiles {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212, 162, 76, 0.15), transparent),
+    linear-gradient(180deg, #fffdf9, #f5ebe0);
+  padding: 16px;
+}
+
+.kole-guide__profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.kole-guide__profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 18px 10px 14px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1.5px solid rgba(27, 20, 16, 0.08);
+  box-shadow: 0 4px 16px rgba(27, 20, 16, 0.06);
+  animation: koleGuidePop 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.kole-guide__profile:nth-child(1) { animation-delay: 0.05s; }
+.kole-guide__profile:nth-child(2) { animation-delay: 0.12s; }
+.kole-guide__profile:nth-child(3) { animation-delay: 0.19s; }
+.kole-guide__profile:nth-child(4) { animation-delay: 0.26s; }
+
+.kole-guide__profile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kole-guide__profile-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.kole-guide__profile strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.kole-guide__profile small {
+  font-size: 0.72rem;
+  color: #6b5f54;
+  line-height: 1.3;
+}
+
+.kole-guide__profile--client .kole-guide__profile-icon { background: #fff7ed; color: #c2410c; }
+.kole-guide__profile--vendor .kole-guide__profile-icon { background: #fef3c7; color: #b45309; }
+.kole-guide__profile--provider .kole-guide__profile-icon { background: #ede6dc; color: #443a33; }
+.kole-guide__profile--artist .kole-guide__profile-icon { background: #fce8e8; color: #9a3412; }
+
+/* ── Slide finale ── */
+.kole-guide__visual--finish {
+  position: relative;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 20%, rgba(212, 162, 76, 0.28), transparent 60%),
+    linear-gradient(165deg, #fff8f1 0%, #f5ebe0 55%, #ede6dc 100%);
+  border: 1px solid rgba(27, 20, 16, 0.08);
+}
+
+.kole-guide__finish-badge {
+  position: relative;
+  z-index: 2;
+  width: 132px;
+  height: 132px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(27, 20, 16, 0.06),
+    0 16px 40px rgba(194, 65, 12, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: koleGuideLogoIn 0.7s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+
+.kole-guide__finish-logo {
+  position: relative;
+  z-index: 2;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block;
+}
+
+.kole-guide__finish-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kole-guide__finish-rings span {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(194, 65, 12, 0.2);
+  animation: koleGuideRing 2.4s ease-out infinite;
+}
+
+.kole-guide__finish-rings span:nth-child(1) { width: 120px; height: 120px; }
+.kole-guide__finish-rings span:nth-child(2) { width: 160px; height: 160px; animation-delay: 0.6s; }
+
+/* ── Texte ── */
+.kole-guide__copy {
+  flex-shrink: 0;
+  padding: 16px 20px 8px;
+}
+
+.kole-guide__tag {
+  margin: 0 0 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c2410c;
+}
+
+.kole-guide__title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif, "Fraunces", Georgia, serif);
+  font-size: clamp(1.2rem, 4.8vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.kole-guide__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #443a33;
+}
+
+.kole-guide__help {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: #6b5f54;
+  line-height: 1.45;
+}
+
+.kole-guide__bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kole-guide__bullets li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #443a33;
+}
+
+.kole-guide__bullets li span {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.kole-guide__duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.kole-guide__duo-card {
+  padding: 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(27, 20, 16, 0.1);
+}
+
+.kole-guide__duo-card strong {
+  display: block;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.kole-guide__duo-card p {
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #6b5f54;
+}
+
+.kole-guide__duo-card a {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c2410c;
+  text-decoration: none;
+}
+
+.kole-guide__inline-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c2410c;
+  text-decoration: none;
+}
+
+/* ── Pied ── */
+.kole-guide__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px max(16px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.kole-guide__nav {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(27, 20, 16, 0.12);
+  background: #fff;
+  color: #443a33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.kole-guide__next {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(194, 65, 12, 0.28) !important;
+}
+
+.kole-guide__next svg {
+  transition: transform 0.2s;
+}
+
+.kole-guide__next:hover svg {
+  transform: translateX(3px);
+}
+
+/* ── Animations ── */
+@keyframes koleGuideBar {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes koleGuidePop {
+  from { opacity: 0; transform: scale(0.85) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes koleGuideLogoIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes koleGuideRing {
+  0% { opacity: 0.6; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(1.15); }
+}
+
+@keyframes koleGuideOut {
+  to { opacity: 0; transform: scale(1.02); }
+}
+
+@media (max-width: 380px) {
+  .kole-guide__duo {
+    grid-template-columns: 1fr;
+  }
+  .kole-guide__profile {
+    padding: 14px 8px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kole-guide__slide,
+  .kole-guide.is-exiting,
+  .kole-guide__profile,
+  .kole-guide__finish-logo,
+  .kole-guide__finish-rings span,
+  .kole-guide__progress span.is-active i {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .kole-guide__progress span.is-active i,
+  .kole-guide__progress span.is-done i {
+    width: 100%;
+  }
+}

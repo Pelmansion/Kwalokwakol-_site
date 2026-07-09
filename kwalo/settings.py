@@ -148,12 +148,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
+#         conn_max_age=600,
+#         ssl_require=True,
+#     )
+# }
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # --- STATICS & MEDIA ---
@@ -175,23 +182,17 @@ _media = configure_media(
 
 # --- CORRECTION FINALE POUR CLOUDFLARE R2 (LECTURE & ÉCRITURE) ---
 if not DEBUG and _media["USE_CLOUD_MEDIA"]:
-    # 1. On définit le domaine public pour la lecture dans le navigateur
-    AWS_S3_CUSTOM_DOMAIN = 'pub-8bba0406ebc941029e3fd22bfb86bd2a.r2.dev'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-    
-    # 2. On s'assure que le dictionnaire OPTIONS existe dans ton backend de stockage
+    AWS_S3_CUSTOM_DOMAIN = "pub-8bba0406ebc941029e3fd22bfb86bd2a.r2.dev"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
     if "STORAGES_DEFAULT" in _media:
         if "OPTIONS" not in _media["STORAGES_DEFAULT"]:
             _media["STORAGES_DEFAULT"]["OPTIONS"] = {}
-        
-        # Force le domaine personnalisé pour l'affichage des images
         _media["STORAGES_DEFAULT"]["OPTIONS"]["custom_domain"] = AWS_S3_CUSTOM_DOMAIN
-        
-        #DÉSACTIVE la signature des URL (Indispensable pour éviter l'erreur d'enregistrement sur R2)
         _media["STORAGES_DEFAULT"]["OPTIONS"]["querystring_auth"] = False
-        
-        # Force l'adresse d'écriture (Vérifie que ton point de terminaison S3 y est bien)
-        _media["STORAGES_DEFAULT"]["OPTIONS"]["endpoint_url"] = 'https://88c8d6eb1b7f795dd10db7450be651ef.r2.cloudflarestorage.com'
+        _media["STORAGES_DEFAULT"]["OPTIONS"]["endpoint_url"] = (
+            "https://88c8d6eb1b7f795dd10db7450be651ef.r2.cloudflarestorage.com"
+        )
 else:
     MEDIA_URL = _media["MEDIA_URL"]
 
@@ -250,8 +251,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "kadersoro18@gmail.com"
-EMAIL_HOST_PASSWORD = "zkdjhevmnwkemqed"
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="kwakolegroup@gmail.com").strip()
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="").strip()
 DEFAULT_FROM_EMAIL = f"Kolê Group <{EMAIL_HOST_USER}>"
 
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600

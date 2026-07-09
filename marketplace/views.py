@@ -7,6 +7,7 @@ from django.db.models import Count, DecimalField, F, Max, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
 from catalog.models import Category, CategoryShowcaseImage, Product
+from catalog.category_utils import resolve_product_category
 from orders.models import Order, OrderItem
 from payments.models import Payment
 from reviews.models import Review, ReviewReply
@@ -29,12 +30,7 @@ from accounts.forms import SignupForm
 def _assign_vendor_product_category(product, form, vendor):
     new_name = (form.cleaned_data.get("new_category") or "").strip()
     if new_name:
-        cat, _ = Category.objects.get_or_create(
-            vendor=vendor,
-            name=new_name[:120],
-            defaults={"is_active": True},
-        )
-        product.category = cat
+        product.category = resolve_product_category(new_name, vendor=vendor)
     else:
         product.category = form.cleaned_data["category"]
 
@@ -42,12 +38,9 @@ def _assign_vendor_product_category(product, form, vendor):
 def _assign_provider_product_category(product, form, service_provider):
     new_name = (form.cleaned_data.get("new_category") or "").strip()
     if new_name:
-        cat, _ = Category.objects.get_or_create(
-            service_provider=service_provider,
-            name=new_name[:120],
-            defaults={"is_active": True},
+        product.category = resolve_product_category(
+            new_name, service_provider=service_provider
         )
-        product.category = cat
     else:
         product.category = form.cleaned_data["category"]
 

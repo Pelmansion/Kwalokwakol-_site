@@ -92,8 +92,8 @@ class ProductForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Ex. : Épices artisanales, Accessoires…"}
         ),
-        help_text="Optionnel : laissez vide si vous choisissez une catégorie ci-dessus. "
-        "Sinon ce nom crée une catégorie réservée à votre boutique.",
+        help_text="Optionnel : si le nom correspond à une catégorie du site (ex. « Epices » → Épices), "
+        "le produit sera classé dans la catégorie commune. Sinon, catégorie propre à votre boutique.",
     )
     category = forms.ModelChoiceField(
         queryset=Category.objects.none(),
@@ -422,7 +422,8 @@ class ServiceProductForm(forms.ModelForm):
         max_length=120,
         label="Ou créer une catégorie",
         widget=forms.TextInput(attrs={"placeholder": "Ex. : Réparation, Coiffure à domicile…"}),
-        help_text="Optionnel : créez une rubrique réservée à vos services. Sinon choisissez une catégorie ci-dessus.",
+        help_text="Optionnel : si le nom correspond à une catégorie du site, le service sera classé "
+        "dans la catégorie commune. Sinon, rubrique propre à votre activité.",
     )
     category = forms.ModelChoiceField(
         queryset=Category.objects.none(),

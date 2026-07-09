@@ -148,20 +148,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=config('DATABASE_URL', default="postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"),
-#         conn_max_age=600,
-#         ssl_require=True,
-#     )
-# }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Production : DATABASE_URL (Render / PostgreSQL). Local : SQLite si non défini.
+_database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
+if _database_url:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # --- STATICS & MEDIA ---
 STATIC_URL = '/static/'

@@ -37,7 +37,9 @@ ALLOWED_HOSTS = [
     'www.xn--kolgroup-m1a.com',
     'kolêgroup.com',
     'www.kolêgroup.com',
-    '*', 
+    'kolegroup.com',
+    'www.kolegroup.com',
+    '*',
 ]
 _render_host = (os.environ.get('RENDER_EXTERNAL_HOSTNAME') or '').strip()
 if _render_host:
@@ -148,8 +150,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kwalo.wsgi.application'
 
 # --- DATABASE ---
-# Production : DATABASE_URL (Render / PostgreSQL). Local : SQLite si non défini.
+# Production (Render) : PostgreSQL via DATABASE_URL.
+# Local : SQLite si aucune URL n'est fournie.
+_IS_RENDER = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
+_RENDER_PG_URL = (
+    "postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa"
+    "@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"
+)
+
 _database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
+if not _database_url and _IS_RENDER:
+    _database_url = _RENDER_PG_URL
+
 if _database_url:
     DATABASES = {
         "default": dj_database_url.config(

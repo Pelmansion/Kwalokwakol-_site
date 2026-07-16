@@ -134,7 +134,7 @@ class Command(BaseCommand):
                 "is_active": True,
                 "verification_status": ServiceProvider.STATUS_VERIFIED,
                 "verified_at": timezone.now(),
-                "phone": "+2250102030405",
+                "phone": "0799633113",
                 "email": "prestataire_test@example.local",
                 "id_number": "SPTEST-0001",
                 "id_document_front": "kyc/service_provider/id_front/default.png",
@@ -325,7 +325,7 @@ class Command(BaseCommand):
         if product_items:
             order, created_order = Order.objects.get_or_create(
                 full_name="Client Test",
-                phone="+2250700000000",
+                phone="0799633113",
                 email="client@test.local",
                 address="Cocody, Rue des Jardins",
                 city="Abidjan",
@@ -363,7 +363,7 @@ class Command(BaseCommand):
 
             order2, created_order2 = Order.objects.get_or_create(
                 full_name="Client Test",
-                phone="+2250700000000",
+                phone="0799633113",
                 email="client@test.local",
                 address="Cocody, Rue des Jardins",
                 city="Abidjan",

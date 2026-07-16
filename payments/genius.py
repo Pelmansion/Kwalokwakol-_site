@@ -70,6 +70,18 @@ def _amount_xof(amount: Decimal | float | str) -> int:
     return v
 
 
+def _kole_payment_phone(customer_phone: str = "") -> str:
+    """
+    Numéro officiel Kolê Group pour GeniusPay.
+    Toujours 0799633113 (compte marchand) pour l'affichage paiement.
+    """
+    from kwalo.contact_info import KOLE_CONTACT_PHONE
+
+    phone = (customer_phone or "").strip()
+    # Le compte GeniusPay marchand est lié à ce numéro : on l'impose systématiquement.
+    return KOLE_CONTACT_PHONE or phone or "0799633113"
+
+
 def create_checkout_payment(
     *,
     amount: Decimal | float,
@@ -96,7 +108,7 @@ def create_checkout_payment(
         "customer": {
             "name": (customer_name or "Client")[:200],
             "email": customer_email or "",
-            "phone": customer_phone or "",
+            "phone": _kole_payment_phone(customer_phone),
             "country": country,
         },
         "metadata": metadata,

@@ -256,25 +256,25 @@ class Command(BaseCommand):
             "admin",
             first="Admin", last="Kolê",
             role=UserProfile.ROLE_ADMIN,
-            phone="+225 07 00 00 00 01",
+            phone="0799633113",
         )
         super_admin, c2 = self._make_user(
             "superadmin",
             first="Super", last="Admin",
             role=UserProfile.ROLE_SUPER_ADMIN,
             is_staff=True, is_superuser=True,
-            phone="+225 07 00 00 00 02",
+            phone="0799633113",
         )
         for u, c in [(admin, c1), (super_admin, c2)]:
             self.stdout.write(f"  {'+' if c else '·'} {u.username} ({u.userprofile.get_role_display()})")
 
     def create_clients(self):
         seed = [
-            ("client.aya",       "aya@demo.kwalo.local",      "Aya",    "N'Guessan",  "+225 07 11 11 11 11", "Abidjan"),
-            ("client.kouame",    "kouame@demo.kwalo.local",   "Kouamé", "Bahi",       "+225 07 11 11 11 12", "Bouaké"),
-            ("client.fatou",     "fatou@demo.kwalo.local",    "Fatou",  "Diabaté",    "+225 07 11 11 11 13", "Korhogo"),
-            ("client.adjoa",     "adjoa@demo.kwalo.local",    "Adjoa",  "Konan",      "+225 07 11 11 11 14", "Yamoussoukro"),
-            ("client.ousmane",   "ousmane@demo.kwalo.local",  "Ousmane","Cissé",      "+225 07 11 11 11 15", "San Pedro"),
+            ("client.aya",       "aya@demo.kwalo.local",      "Aya",    "N'Guessan",  "0799633113", "Abidjan"),
+            ("client.kouame",    "kouame@demo.kwalo.local",   "Kouamé", "Bahi",       "0799633113", "Bouaké"),
+            ("client.fatou",     "fatou@demo.kwalo.local",    "Fatou",  "Diabaté",    "0799633113", "Korhogo"),
+            ("client.adjoa",     "adjoa@demo.kwalo.local",    "Adjoa",  "Konan",      "0799633113", "Yamoussoukro"),
+            ("client.ousmane",   "ousmane@demo.kwalo.local",  "Ousmane","Cissé",      "0799633113", "San Pedro"),
         ]
         clients = []
         for username, email, first, last, phone, city in seed:
@@ -361,7 +361,7 @@ class Command(BaseCommand):
                 s["username"],
                 first=s["first"], last=s["last"],
                 role=UserProfile.ROLE_CUSTOMER,
-                phone=f"+225 07 22 22 22 {len(vendors)+10}",
+                phone="0799633113",
                 city=s["city"],
             )
             vendor, vendor_created = self._safe_get_or_create(
@@ -423,7 +423,7 @@ class Command(BaseCommand):
             user, _ = self._make_user(
                 s["username"],
                 first=s["first"], last=s["last"],
-                phone=f"+225 07 33 33 33 {i+10}",
+                phone="0799633113",
                 city=s["city"],
             )
             provider, created = self._safe_get_or_create(
@@ -477,7 +477,7 @@ class Command(BaseCommand):
             user, _ = self._make_user(
                 s["username"],
                 first=s["first"], last=s["last"],
-                phone=f"+225 07 44 44 44 {i+10}",
+                phone="0799633113",
                 city=s["city"],
             )
             provider, created = self._safe_get_or_create(
@@ -867,7 +867,7 @@ class Command(BaseCommand):
                 order = Order.objects.create(
                     user=client,
                     full_name=f"[DEMO] {client.first_name} {client.last_name}",
-                    phone=client.userprofile.phone or "+225 07 00 00 00 00",
+                    phone=client.userprofile.phone or "0799633113",
                     email=client.email,
                     address=f"Rue {random.randint(10, 99)}, quartier {random.choice(['Cocody', 'Yopougon', 'Plateau', 'Treichville'])}",
                     city=client.userprofile.city or "Abidjan",
@@ -1130,7 +1130,7 @@ class Command(BaseCommand):
                 buyer=client,
                 buyer_name=f"{client.first_name} {client.last_name}",
                 buyer_email=client.email,
-                buyer_phone=client.userprofile.phone or "+225 07 00 00 00 00",
+                buyer_phone=client.userprofile.phone or "0799633113",
                 amount_fcfa=cat.price_fcfa,
                 status=Ticket.STATUS_VALID,
                 payment_method="sandbox",

@@ -93,7 +93,7 @@ class Command(BaseCommand):
             provider.email = email
             provider.id_number = id_number
             provider.name = "Prestataire de Services Test"
-            provider.phone = "+2250102030405"
+            provider.phone = "0799633113"
             provider.location = "Plateau - Abidjan"
             provider.description = "Prestataire de test pour les services numériques et artisanaux."
             provider.services_overview = "Création de sites web, gestion de réseaux sociaux, design graphique, et services artisanaux."
@@ -137,7 +137,7 @@ class Command(BaseCommand):
                 name="Prestataire de Services Test",
                 email=email,
                 id_number=id_number,
-                phone="+2250102030405",
+                phone="0799633113",
                 location="Plateau - Abidjan",
                 description="Prestataire de test pour les services numériques et artisanaux.",
                 services_overview="Création de sites web, gestion de réseaux sociaux, design graphique, et services artisanaux.",

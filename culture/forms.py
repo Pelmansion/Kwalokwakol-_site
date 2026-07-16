@@ -31,8 +31,8 @@ class ArtistProfileForm(forms.ModelForm):
             "stage_name": forms.TextInput(attrs={"placeholder": "Ex: Yelo Star"}),
             "city": forms.TextInput(attrs={"placeholder": "Ex: Korhogo"}),
             "region": forms.TextInput(attrs={"placeholder": "Ex: Poro"}),
-            "phone": forms.TextInput(attrs={"placeholder": "+225 ..."}),
-            "whatsapp": forms.TextInput(attrs={"placeholder": "+225 ..."}),
+            "phone": forms.TextInput(attrs={"placeholder": "0799633113"}),
+            "whatsapp": forms.TextInput(attrs={"placeholder": "0799633113"}),
             "portrait": forms.ClearableFileInput(
                 attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}
             ),

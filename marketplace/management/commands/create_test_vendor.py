@@ -93,7 +93,7 @@ class Command(BaseCommand):
             vendor.email = email
             vendor.id_number = id_number
             vendor.name = "Boutique Test"
-            vendor.phone = "+2250102030405"
+            vendor.phone = "0799633113"
             vendor.location = "Cocody - Abidjan"
             vendor.description = "Boutique de test pour les produits artisanaux et locaux."
             vendor.offer_type = Vendor.OFFER_BOTH
@@ -138,7 +138,7 @@ class Command(BaseCommand):
                 name="Boutique Test",
                 email=email,
                 id_number=id_number,
-                phone="+2250102030405",
+                phone="0799633113",
                 location="Cocody - Abidjan",
                 description="Boutique de test pour les produits artisanaux et locaux.",
                 offer_type=Vendor.OFFER_BOTH,

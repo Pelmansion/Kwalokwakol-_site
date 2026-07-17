@@ -2520,7 +2520,166 @@ textarea::placeholder { color: #94a3b8; }
   box-shadow: var(--shadow-xs);
 }
 
-/* Orders list */
+/* Orders list — tableau client */
+.my-orders {
+  padding-bottom: 48px;
+}
+
+.my-orders__table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.my-orders__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.my-orders__table th,
+.my-orders__table td {
+  padding: 14px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.my-orders__table thead th {
+  background: var(--surface-alt);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line-strong, var(--line));
+}
+
+.my-orders__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.my-orders__table tbody tr:hover {
+  background: rgba(194, 65, 12, 0.03);
+}
+
+.my-orders__id {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.my-orders__tracking,
+.my-orders__time,
+.my-orders__method,
+.my-orders__fee {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+}
+
+.my-orders__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.my-orders__items li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  line-height: 1.35;
+}
+
+.my-orders__item-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.my-orders__total {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.my-orders__table .badge {
+  display: inline-flex;
+  margin-bottom: 2px;
+}
+
+@media (max-width: 768px) {
+  .my-orders__table {
+    min-width: 0;
+  }
+
+  .my-orders__table thead {
+    display: none;
+  }
+
+  .my-orders__table,
+  .my-orders__table tbody,
+  .my-orders__table tr,
+  .my-orders__table td {
+    display: block;
+    width: 100%;
+  }
+
+  .my-orders__table tr {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .my-orders__table tr:last-child {
+    border-bottom: none;
+  }
+
+  .my-orders__table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: none;
+  }
+
+  .my-orders__table td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 88px;
+    padding-top: 2px;
+  }
+
+  .my-orders__table td[data-label="Articles"] {
+    flex-direction: column;
+  }
+
+  .my-orders__table td[data-label="Articles"]::before {
+    margin-bottom: 4px;
+  }
+
+  .my-orders__total {
+    font-size: 1.15rem;
+  }
+}
+
+/* Ancien layout cartes (conservé si réutilisé ailleurs) */
 .orders-list { display: grid; gap: 18px; padding-bottom: 40px; }
 
 .order-card {

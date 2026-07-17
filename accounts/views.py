@@ -138,6 +138,7 @@ def order_history(request):
             | Q(payment_method=Order.METHOD_LOCAL)
         )
         .exclude(payment_status=Order.PAYMENT_FAILED)
+        .prefetch_related("items__product")
         .order_by("-created_at")
     )
     return render(request, "accounts/orders.html", {"orders": orders})

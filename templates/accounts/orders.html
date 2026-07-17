@@ -8,87 +8,85 @@
     {% endif %}
   </section>
 
-  <section class="container orders-list">
-    {% for order in orders %}
-      <article class="order-card">
-        <header class="order-card__head">
-          <div>
-            <h3 class="order-card__title">Commande #{{ order.id }}</h3>
-            <p class="order-card__meta">Passée le {{ order.created_at|date:"d F Y à H:i" }}</p>
-          </div>
-          <div class="order-card__badges">
-            {% if order.status == "paid" or order.status == "done" %}
-              <span class="badge badge--success">{{ order.get_status_display }}</span>
-            {% elif order.status == "shipped" %}
-              <span class="badge badge--info">{{ order.get_status_display }}</span>
-            {% elif order.status == "cancelled" %}
-              <span class="badge badge--danger">{{ order.get_status_display }}</span>
-            {% else %}
-              <span class="badge badge--warning">{{ order.get_status_display }}</span>
-            {% endif %}
-            {% if order.payment_status == "success" %}
-              <span class="badge badge--success">Paiement : {{ order.get_payment_status_display }}</span>
-            {% elif order.payment_status == "failed" %}
-              <span class="badge badge--danger">Paiement : {{ order.get_payment_status_display }}</span>
-            {% else %}
-              <span class="badge badge--warning">Paiement : {{ order.get_payment_status_display }}</span>
-            {% endif %}
-          </div>
-        </header>
-
-        <ul class="order-card__items">
-          {% for item in order.items.all %}
-            <li class="order-item">
-                <div class="order-item__thumb">
-                  {% include "store/_product_image.html" with product=item.product %}
-                </div>
-              <div class="order-item__body">
-                <div class="order-item__name">{{ item.product.name|default:"Produit supprimé" }}</div>
-                <div class="order-item__meta muted">
-                  Quantité : {{ item.quantity }} · {{ item.unit_price|floatformat:0 }} FCFA l'unité
-                </div>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-
-        <footer class="order-card__foot">
-          <dl class="order-summary">
-            <div class="order-summary__row">
-              <dt>Sous-total articles</dt>
-              <dd>{{ order.subtotal_items|floatformat:0 }} FCFA</dd>
-            </div>
-            <div class="order-summary__row">
-              <dt>Frais de livraison</dt>
-              <dd>{{ order.delivery_fee|floatformat:0 }} FCFA</dd>
-            </div>
-            <div class="order-summary__row">
-              <dt>Livraison</dt>
-              <dd>{{ order.get_delivery_option_display }}</dd>
-            </div>
-            <div class="order-summary__row">
-              <dt>Paiement</dt>
-              <dd>{{ order.get_payment_method_display }}</dd>
-            </div>
-            {% if order.tracking_code %}
-              <div class="order-summary__row">
-                <dt>Suivi</dt>
-                <dd>{{ order.tracking_code }}</dd>
-              </div>
-            {% endif %}
-          </dl>
-          <div class="order-card__total">
-            <span class="muted">Total</span>
-            <strong>{{ order.total_amount|floatformat:0 }} FCFA</strong>
-          </div>
-        </footer>
-      </article>
-    {% empty %}
+  <section class="container my-orders">
+    {% if orders %}
+      <div class="my-orders__table-wrap">
+        <table class="my-orders__table">
+          <thead>
+            <tr>
+              <th scope="col">Commande</th>
+              <th scope="col">Date</th>
+              <th scope="col">Articles</th>
+              <th scope="col">Statut</th>
+              <th scope="col">Paiement</th>
+              <th scope="col">Livraison</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+              <tr>
+                <td data-label="Commande">
+                  <strong class="my-orders__id">#{{ order.id }}</strong>
+                  {% if order.tracking_code %}
+                    <span class="my-orders__tracking muted">Suivi : {{ order.tracking_code }}</span>
+                  {% endif %}
+                </td>
+                <td data-label="Date">
+                  <time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|date:"d/m/Y" }}</time>
+                  <span class="muted my-orders__time">{{ order.created_at|date:"H:i" }}</span>
+                </td>
+                <td data-label="Articles">
+                  <ul class="my-orders__items">
+                    {% for item in order.items.all %}
+                      <li>
+                        <span class="my-orders__item-name">{{ item.product.name|default:"Produit supprimé" }}</span>
+                        <span class="muted">× {{ item.quantity }}</span>
+                      </li>
+                    {% empty %}
+                      <li class="muted">Aucun article</li>
+                    {% endfor %}
+                  </ul>
+                </td>
+                <td data-label="Statut">
+                  {% if order.status == "paid" or order.status == "done" %}
+                    <span class="badge badge--success">{{ order.get_status_display }}</span>
+                  {% elif order.status == "shipped" %}
+                    <span class="badge badge--info">{{ order.get_status_display }}</span>
+                  {% elif order.status == "cancelled" %}
+                    <span class="badge badge--danger">{{ order.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge badge--warning">{{ order.get_status_display }}</span>
+                  {% endif %}
+                </td>
+                <td data-label="Paiement">
+                  {% if order.payment_status == "success" %}
+                    <span class="badge badge--success">{{ order.get_payment_status_display }}</span>
+                  {% elif order.payment_status == "failed" %}
+                    <span class="badge badge--danger">{{ order.get_payment_status_display }}</span>
+                  {% else %}
+                    <span class="badge badge--warning">{{ order.get_payment_status_display }}</span>
+                  {% endif %}
+                  <span class="muted my-orders__method">{{ order.get_payment_method_display }}</span>
+                </td>
+                <td data-label="Livraison">
+                  <span>{{ order.get_delivery_option_display }}</span>
+                  <span class="muted my-orders__fee">{{ order.delivery_fee|floatformat:0 }} FCFA</span>
+                </td>
+                <td data-label="Total">
+                  <strong class="my-orders__total">{{ order.total_amount|floatformat:0 }} FCFA</strong>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
       <div class="orders-empty">
         <h3>Aucune commande pour le moment</h3>
         <p class="muted">Explorez nos artisans et boutiques locales pour passer votre première commande.</p>
         <a class="btn" href="{% url 'store:product_list' %}">Parcourir les produits</a>
       </div>
-    {% endfor %}
+    {% endif %}
   </section>
 {% endblock %}

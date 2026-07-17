@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load media_tags %}
 {% block title %}Mes réservations — Kolê Group{% endblock %}
 {% block content %}
   <section class="container page-title">
@@ -14,211 +13,105 @@
     </p>
   </section>
 
-  <section class="container orders-list reservations-list">
-    {% for row in reservation_rows %}
-      {% with item=row.item %}
-      <article class="order-card reservation-card">
-        <header class="order-card__head">
-          <div>
-            <h3 class="order-card__title">
-              {% if item.service %}
-                <a href="{% url 'store:product_detail' item.service.slug %}">{{ item.service.name }}</a>
-              {% else %}
-                Service supprimé
-              {% endif %}
-            </h3>
-            <p class="order-card__meta">
-              Demandée le {{ item.created_at|date:"d F Y à H:i" }}
-            </p>
-          </div>
-          <div class="order-card__badges">
-            {% if item.status == "approved" %}
-              <span class="badge badge--success">{{ item.get_status_display }}</span>
-            {% elif item.status == "rejected" %}
-              <span class="badge badge--danger">{{ item.get_status_display }}</span>
-            {% else %}
-              <span class="badge badge--warning">{{ item.get_status_display }}</span>
-            {% endif %}
-          </div>
-        </header>
-
-        <div class="reservation-card__body">
-          <div class="reservation-card__thumb">
-            {% if item.service %}
-              {% include "store/_product_image.html" with product=item.service %}
-            {% endif %}
-          </div>
-          <dl class="reservation-card__details">
-            {% if item.service %}
-              <div class="reservation-card__row">
-                <dt>Tarif indicatif</dt>
-                <dd>{{ item.service.price|floatformat:0 }} FCFA</dd>
-              </div>
-              {% if item.service.category %}
-                <div class="reservation-card__row">
-                  <dt>Catégorie</dt>
-                  <dd>{{ item.service.category.name }}</dd>
-                </div>
-              {% endif %}
-            {% endif %}
-            {% if item.service_provider %}
-              <div class="reservation-card__row">
-                <dt>Prestataire</dt>
-                <dd>
-                  <a href="{% url 'store:service_provider_detail' item.service_provider.slug %}">{{ item.service_provider.name }}</a>
-                </dd>
-              </div>
-            {% elif item.vendor %}
-              <div class="reservation-card__row">
-                <dt>Boutique</dt>
-                <dd>
-                  <a href="{% url 'store:vendor_detail' item.vendor.slug %}">{{ item.vendor.name }}</a>
-                </dd>
-              </div>
-            {% endif %}
-            {% if item.comment %}
-              <div class="reservation-card__row reservation-card__row--full">
-                <dt>Votre message</dt>
-                <dd>« {{ item.comment }} »</dd>
-              </div>
-            {% endif %}
-            {% if item.status == "pending" %}
-              <div class="reservation-card__row reservation-card__row--full">
-                <dt>Annulation</dt>
-                <dd>
-                  {% if row.can_delete %}
-                    <span class="reservation-card__hint reservation-card__hint--ok">
-                      Possible jusqu'au {{ row.delete_deadline|date:"d/m/Y à H:i" }}
-                    </span>
+  <section class="container my-orders">
+    {% if reservation_rows %}
+      <div class="my-orders__table-wrap">
+        <table class="my-orders__table">
+          <thead>
+            <tr>
+              <th scope="col">Service</th>
+              <th scope="col">Date</th>
+              <th scope="col">Tarif</th>
+              <th scope="col">Catégorie</th>
+              <th scope="col">Prestataire</th>
+              <th scope="col">Statut</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in reservation_rows %}
+              {% with item=row.item %}
+              <tr>
+                <td data-label="Service">
+                  {% if item.service %}
+                    <strong class="my-orders__item-name">
+                      <a href="{% url 'store:product_detail' item.service.slug %}">{{ item.service.name }}</a>
+                    </strong>
                   {% else %}
-                    <span class="reservation-card__hint reservation-card__hint--locked">
-                      Délai dépassé — contactez le prestataire si besoin.
-                    </span>
+                    <span class="muted">Service supprimé</span>
                   {% endif %}
-                </dd>
-              </div>
-            {% endif %}
-          </dl>
-        </div>
-
-        <footer class="order-card__foot reservation-card__foot">
-          {% if item.service %}
-            <a class="btn btn--sm" href="{% url 'store:product_detail' item.service.slug %}">Voir l'offre</a>
-          {% endif %}
-          {% if row.can_delete %}
-            <form method="post" action="{% url 'accounts:cancel_service_reservation' item.pk %}" class="reservation-cancel-form" onsubmit="return confirm('Annuler cette réservation ?');">
-              {% csrf_token %}
-              <button type="submit" class="btn btn--ghost btn--sm btn--danger-text">Supprimer</button>
-            </form>
-          {% endif %}
-        </footer>
-      </article>
-      {% endwith %}
-    {% empty %}
+                  {% if item.comment %}
+                    <span class="muted my-orders__tracking">« {{ item.comment|truncatechars:80 }} »</span>
+                  {% endif %}
+                </td>
+                <td data-label="Date">
+                  <time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:"d/m/Y" }}</time>
+                  <span class="muted my-orders__time">{{ item.created_at|date:"H:i" }}</span>
+                </td>
+                <td data-label="Tarif">
+                  {% if item.service %}
+                    <strong class="my-orders__total">{{ item.service.price|floatformat:0 }} FCFA</strong>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td data-label="Catégorie">
+                  {% if item.service.category %}
+                    {{ item.service.category.name }}
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td data-label="Prestataire">
+                  {% if item.service_provider %}
+                    <a href="{% url 'store:service_provider_detail' item.service_provider.slug %}">{{ item.service_provider.name }}</a>
+                  {% elif item.vendor %}
+                    <a href="{% url 'store:vendor_detail' item.vendor.slug %}">{{ item.vendor.name }}</a>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td data-label="Statut">
+                  {% if item.status == "approved" %}
+                    <span class="badge badge--success">{{ item.get_status_display }}</span>
+                  {% elif item.status == "rejected" %}
+                    <span class="badge badge--danger">{{ item.get_status_display }}</span>
+                  {% else %}
+                    <span class="badge badge--warning">{{ item.get_status_display }}</span>
+                  {% endif %}
+                  {% if item.status == "pending" %}
+                    {% if row.can_delete %}
+                      <span class="muted my-orders__fee">Annulable jusqu'au {{ row.delete_deadline|date:"d/m/Y H:i" }}</span>
+                    {% else %}
+                      <span class="muted my-orders__fee">Délai d'annulation dépassé</span>
+                    {% endif %}
+                  {% endif %}
+                </td>
+                <td data-label="Actions">
+                  <div class="my-orders__actions">
+                    {% if item.service %}
+                      <a class="btn btn--sm" href="{% url 'store:product_detail' item.service.slug %}">Voir l'offre</a>
+                    {% endif %}
+                    {% if row.can_delete %}
+                      <form method="post" action="{% url 'accounts:cancel_service_reservation' item.pk %}" class="my-orders__inline-form" onsubmit="return confirm('Annuler cette réservation ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm btn--danger-text">Supprimer</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
       <div class="orders-empty">
         <h3>Aucune réservation pour le moment</h3>
         <p class="muted">Parcourez les services (location, hôtel, prestations…) et cliquez sur <strong>Réserver</strong> ou <strong>Demander ce service</strong>.</p>
         <a class="btn" href="{% url 'store:product_list' %}?type=service">Voir les services</a>
       </div>
-    {% endfor %}
+    {% endif %}
   </section>
-
-  <style>
-    .reservation-card__body {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 18px;
-      padding: 16px 24px;
-      align-items: start;
-    }
-    .reservation-card__thumb .product-card__image,
-    .reservation-card__thumb img,
-    .reservation-card__thumb .image-placeholder {
-      width: 120px;
-      height: 90px;
-      border-radius: 10px;
-      object-fit: cover;
-    }
-    .reservation-card__details {
-      margin: 0;
-      display: grid;
-      gap: 8px;
-    }
-    .reservation-card__row {
-      display: grid;
-      grid-template-columns: 130px 1fr;
-      gap: 8px;
-      font-size: 0.92rem;
-    }
-    .reservation-card__row dt {
-      margin: 0;
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .reservation-card__row dd {
-      margin: 0;
-      color: var(--ink);
-    }
-    .reservation-card__row--full {
-      grid-template-columns: 1fr;
-    }
-    .reservation-card__row--full dd {
-      margin-top: 4px;
-      line-height: 1.5;
-    }
-    .reservation-card__hint {
-      font-size: 0.85rem;
-    }
-    .reservation-card__hint--ok {
-      color: var(--forest, #1b4332);
-    }
-    .reservation-card__hint--locked {
-      color: var(--muted);
-    }
-    .reservation-card__foot {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 14px 24px 20px;
-    }
-    .reservation-cancel-form {
-      margin: 0;
-    }
-    .btn--danger-text {
-      color: #b91c1c !important;
-      border-color: rgba(185, 28, 28, 0.35) !important;
-    }
-    .btn--danger-text:hover {
-      background: rgba(185, 28, 28, 0.08) !important;
-    }
-    .order-card__title a {
-      color: inherit;
-      text-decoration: none;
-    }
-    .order-card__title a:hover {
-      color: var(--primary);
-    }
-    @media (max-width: 640px) {
-      .reservation-card__body {
-        grid-template-columns: 1fr;
-        padding: 16px 18px;
-      }
-      .reservation-card__row {
-        grid-template-columns: 1fr;
-        gap: 2px;
-      }
-      .reservation-card__foot {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 14px 18px 18px;
-      }
-      .reservation-card__foot .btn,
-      .reservation-cancel-form .btn {
-        width: 100%;
-        text-align: center;
-      }
-    }
-  </style>
 {% endblock %}

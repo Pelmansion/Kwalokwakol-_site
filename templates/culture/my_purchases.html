@@ -12,22 +12,38 @@
   </header>
 
   {% if purchases %}
-    <table class="payments-table">
-      <thead>
-        <tr><th>Chanson</th><th>Artiste</th><th>Date</th><th>Montant</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for p in purchases %}
-        <tr>
-          <td><a href="{% url 'culture:song_detail' p.song.slug %}">{{ p.song.title }}</a></td>
-          <td>{{ p.song.artist.stage_name }}</td>
-          <td>{{ p.paid_at|date:"j F Y" }}</td>
-          <td>{{ p.amount_fcfa|floatformat:0 }} FCFA</td>
-          <td><a class="btn btn--sm" href="{% url 'culture:song_download' p.download_token %}">⬇ Télécharger</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="my-orders__table-wrap">
+      <table class="my-orders__table">
+        <thead>
+          <tr>
+            <th scope="col">Chanson</th>
+            <th scope="col">Artiste</th>
+            <th scope="col">Date</th>
+            <th scope="col">Montant</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in purchases %}
+            <tr>
+              <td data-label="Chanson">
+                <strong class="my-orders__item-name">
+                  <a href="{% url 'culture:song_detail' p.song.slug %}">{{ p.song.title }}</a>
+                </strong>
+              </td>
+              <td data-label="Artiste">{{ p.song.artist.stage_name }}</td>
+              <td data-label="Date">{{ p.paid_at|date:"d/m/Y" }}</td>
+              <td data-label="Montant">
+                <strong class="my-orders__total">{{ p.amount_fcfa|floatformat:0 }} FCFA</strong>
+              </td>
+              <td data-label="Actions">
+                <a class="btn btn--sm" href="{% url 'culture:song_download' p.download_token %}">⬇ Télécharger</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <div class="empty-state">
       <p>Vous n'avez pas encore acheté de chanson.</p>

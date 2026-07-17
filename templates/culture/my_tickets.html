@@ -12,29 +12,54 @@
   </header>
 
   {% if tickets %}
-    <div class="ticket-list">
-      {% for t in tickets %}
-        <div class="ticket-row">
-          <div class="ticket-row__date">
-            <span>{{ t.event.starts_at|date:"d" }}</span>
-            <strong>{{ t.event.starts_at|date:"M"|upper }}</strong>
-          </div>
-          <div class="ticket-row__main">
-            <h3><a href="{% url 'culture:event_detail' t.event.slug %}">{{ t.event.title }}</a></h3>
-            <p>📍 {{ t.event.venue_name }}, {{ t.event.city }}</p>
-            <p>
-              <span class="badge" style="background: {{ t.category.color }}20; color: {{ t.category.color }};">{{ t.category.name }}</span>
-              {% if t.status == "valid" %}<span class="badge badge--free">Valide</span>
-              {% elif t.status == "used" %}<span class="badge badge--paid">Utilisé</span>
-              {% elif t.status == "pending" %}<span class="badge">En attente</span>
-              {% else %}<span class="badge">{{ t.get_status_display }}</span>{% endif %}
-            </p>
-          </div>
-          <div class="ticket-row__action">
-            <a class="btn" href="{% url 'culture:ticket_detail' t.reference %}">Voir le billet</a>
-          </div>
-        </div>
-      {% endfor %}
+    <div class="my-orders__table-wrap">
+      <table class="my-orders__table">
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Événement</th>
+            <th scope="col">Lieu</th>
+            <th scope="col">Catégorie</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tickets %}
+            <tr>
+              <td data-label="Date">
+                <time datetime="{{ t.event.starts_at|date:'c' }}">{{ t.event.starts_at|date:"d/m/Y" }}</time>
+                <span class="muted my-orders__time">{{ t.event.starts_at|date:"H:i" }}</span>
+              </td>
+              <td data-label="Événement">
+                <strong class="my-orders__item-name">
+                  <a href="{% url 'culture:event_detail' t.event.slug %}">{{ t.event.title }}</a>
+                </strong>
+              </td>
+              <td data-label="Lieu">
+                {{ t.event.venue_name }}{% if t.event.city %}, {{ t.event.city }}{% endif %}
+              </td>
+              <td data-label="Catégorie">
+                <span class="badge" style="background: {{ t.category.color }}20; color: {{ t.category.color }};">{{ t.category.name }}</span>
+              </td>
+              <td data-label="Statut">
+                {% if t.status == "valid" %}
+                  <span class="badge badge--success">Valide</span>
+                {% elif t.status == "used" %}
+                  <span class="badge badge--info">Utilisé</span>
+                {% elif t.status == "pending" %}
+                  <span class="badge badge--warning">En attente</span>
+                {% else %}
+                  <span class="badge">{{ t.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td data-label="Actions">
+                <a class="btn btn--sm" href="{% url 'culture:ticket_detail' t.reference %}">Voir le billet</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   {% else %}
     <div class="empty-state">

@@ -2622,8 +2622,25 @@ textarea::placeholder { color: #94a3b8; }
 .my-orders__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+}
+
+.my-orders__actions .btn,
+.my-orders__inline-form .btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: none;
+  min-height: 0;
+}
+
+.my-orders__actions .btn:hover,
+.my-orders__inline-form .btn:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .my-orders__inline-form {

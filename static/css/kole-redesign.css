@@ -177,10 +177,13 @@ h1, h2, h3:not(.product-card__name), .page-title h1, .flash__header h2,
   background: #fff;
   box-shadow: var(--shadow-sm);
 }
-.btn--small {
-  padding: 7px 14px;
+.btn--small,
+.btn--sm {
+  padding: 5px 12px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.2;
+  box-shadow: none;
 }
 .product-card__btn--filled {
   background: var(--rust);

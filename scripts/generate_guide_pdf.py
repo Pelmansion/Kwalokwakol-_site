@@ -14,7 +14,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "Guide_Utilisateur_Kole_Group.pdf"
 AFFICHES = ROOT / "docs" / "affiches"
-SITE = "https://xn--kolgroup-m1a.com"
+ONBOARDING = ROOT / "static" / "images" / "onboarding"
+
+SITE_DISPLAY = "kolêgroup.com"
+SITE = f"https://{SITE_DISPLAY}"
 
 
 def _img(path: Path, max_width_cm: float):
@@ -29,6 +32,23 @@ def _img(path: Path, max_width_cm: float):
     w = max_width_cm * cm
     h = w * (ih / float(iw))
     return Image(str(path), width=w, height=h)
+
+
+def _first_image(*candidates: Path, max_width_cm: float = 16):
+    for path in candidates:
+        img = _img(path, max_width_cm)
+        if img is not None:
+            return img
+    return None
+
+
+def _caption(text: str, style):
+    from reportlab.platypus import Paragraph
+
+    return Paragraph(
+        f'<i><font size="8" color="#6b5f54">{text}</font></i>',
+        style,
+    )
 
 
 def main() -> int:
@@ -56,8 +76,8 @@ def main() -> int:
     title = ParagraphStyle(
         "Titre",
         parent=styles["Heading1"],
-        fontSize=22,
-        spaceAfter=12,
+        fontSize=24,
+        spaceAfter=14,
         textColor=colors.HexColor("#9a3412"),
         alignment=TA_CENTER,
     )
@@ -110,108 +130,170 @@ def main() -> int:
         leftIndent=8,
         spaceAfter=5,
     )
+    tip = ParagraphStyle(
+        "Astuce",
+        parent=body,
+        fontSize=9.5,
+        backColor=colors.HexColor("#fff7ed"),
+        borderPadding=8,
+        leftIndent=6,
+        rightIndent=6,
+        spaceBefore=4,
+        spaceAfter=8,
+    )
     url_style = ParagraphStyle(
         "URL",
         parent=styles["Normal"],
-        fontSize=10,
+        fontSize=11,
         textColor=colors.HexColor("#c2410c"),
         alignment=TA_CENTER,
     )
+    toc = ParagraphStyle(
+        "TOC",
+        parent=styles["Normal"],
+        fontSize=10,
+        leading=16,
+        leftIndent=10,
+        spaceAfter=2,
+    )
+
+    def section(title_text: str):
+        story.append(Paragraph(title_text, h2))
+
+    def subsection(title_text: str):
+        story.append(Paragraph(title_text, h3))
+
+    def steps(lines: list[str]):
+        for line in lines:
+            story.append(Paragraph(line, step))
+
+    def bullets(lines: list[str]):
+        for line in lines:
+            story.append(Paragraph(f"• {line}", bullet))
+
+    def tip_box(text: str):
+        story.append(Paragraph(f"<b>💡 Astuce :</b> {text}", tip))
+
+    def add_illustration(*paths: Path, caption: str = "", width: float = 16):
+        img = _first_image(*paths, max_width_cm=width)
+        if img:
+            story.append(Spacer(1, 0.2 * cm))
+            story.append(img)
+            if caption:
+                story.append(_caption(caption, body))
+            story.append(Spacer(1, 0.15 * cm))
 
     story: list = []
-    page_w = A4[0] - 4 * cm
 
     # ── Couverture ──
-    story.append(Spacer(1, 2.5 * cm))
-    logo = _img(ROOT / "static" / "images" / "icons" / "icon-192.png", 3.2)
+    story.append(Spacer(1, 2 * cm))
+    logo = _img(ROOT / "static" / "images" / "icons" / "icon-192.png", 3.5)
     if logo:
         story.append(logo)
-        story.append(Spacer(1, 0.4 * cm))
+        story.append(Spacer(1, 0.5 * cm))
     story.append(Paragraph("Guide utilisateur", title))
-    story.append(Paragraph("Kolê Group — Marketplace Afro-moderne", cover_sub))
+    story.append(Paragraph("Kolê Group", ParagraphStyle("Brand", parent=cover_sub, fontSize=16, fontName="Helvetica-Bold")))
+    story.append(Paragraph("Marketplace Afro-moderne — Acheter · Réserver · Célébrer", cover_sub))
+    story.append(Spacer(1, 0.8 * cm))
+    story.append(Paragraph(f"<b>{SITE_DISPLAY}</b>", url_style))
+    story.append(Spacer(1, 0.4 * cm))
     story.append(
         Paragraph(
-            "Acheter · Réserver · Célébrer",
-            ParagraphStyle("Tag", parent=cover_sub, fontSize=11, textColor=colors.HexColor("#d4a24c")),
+            "Ce document explique, étape par étape et avec des illustrations, "
+            "comment utiliser le site Kolê Group : créer un compte, acheter, réserver un service, "
+            "ouvrir une boutique, proposer un service ou publier votre musique.",
+            ParagraphStyle("IntroCover", parent=body, alignment=TA_CENTER, fontSize=10),
         )
     )
     story.append(Spacer(1, 0.6 * cm))
-    story.append(Paragraph(f"<b>Site :</b> {SITE}", url_style))
     story.append(
         Paragraph(
-            f"Document généré le {date.today().strftime('%d/%m/%Y')} — "
-            "pour clients, vendeurs, prestataires et artistes.",
+            f"Version {date.today().strftime('%d/%m/%Y')} — "
+            "Destiné aux clients, vendeurs, prestataires et artistes.",
             ParagraphStyle("Meta", parent=styles["Normal"], fontSize=8, textColor=colors.grey, alignment=TA_CENTER),
         )
     )
     story.append(PageBreak())
 
+    # ── Sommaire ──
+    story.append(Paragraph("Sommaire", h2))
+    for item in [
+        "1. Bienvenue — Qu'est-ce que Kolê Group ?",
+        "2. Les 4 profils utilisateur",
+        "3. Créer un compte et se connecter",
+        "4. Naviguer sur le site (ordinateur et mobile)",
+        "5. Client — Acheter un produit (du panier au paiement)",
+        "6. Client — Réserver un service",
+        "7. Suivre ses commandes et réservations",
+        "8. Devenir vendeur (boutique en ligne)",
+        "9. Devenir prestataire de services",
+        "10. Kolê Culture — Musique, concerts, artistes",
+        "11. Aide, contact et installation sur mobile",
+        "12. Récapitulatif des adresses utiles",
+    ]:
+        story.append(Paragraph(item, toc))
+    story.append(PageBreak())
+
     # ── 1. Introduction ──
-    story.append(Paragraph("1. Bienvenue sur Kolê Group", h2))
+    section("1. Bienvenue — Qu'est-ce que Kolê Group ?")
     story.append(
         Paragraph(
-            "Kolê Group rassemble sur une seule plateforme les <b>boutiques locales</b>, "
-            "les <b>artisans</b>, les <b>prestataires de services</b> et l'univers "
-            "<b>Culture</b> (musique, concerts, artistes). Que vous souhaitiez acheter, "
-            "vendre, proposer un service ou publier votre musique, ce guide vous indique "
-            "où aller et comment démarrer.",
+            "<b>Kolê Group</b> est une marketplace en ligne qui regroupe tout ce dont vous avez besoin "
+            "au quotidien : <b>produits locaux</b> (mode, alimentation, artisanat…), "
+            "<b>services</b> (hébergement, location, réparation…), et l'univers "
+            "<b>Culture</b> (musique, concerts, artistes ivoiriens).",
             body,
         )
     )
-    img = _img(AFFICHES / "affiche-fonctionnement-profils.png", 16)
-    if img:
-        story.append(Spacer(1, 0.3 * cm))
-        story.append(img)
-    story.append(PageBreak())
-
-    # ── 2. Se connecter ──
-    story.append(Paragraph("2. Créer un compte et se connecter", h2))
-    story.append(Paragraph("2.1 Inscription (nouveau compte)", h3))
-    for line in [
-        f"1. Ouvrez <b>{SITE}</b> dans votre navigateur (Chrome, Safari, Firefox…).",
-        "2. En haut à droite, cliquez sur <b>Compte</b>, puis <b>Créer un compte</b>.",
-        f"3. Ou allez directement à : <b>{SITE}/compte/inscription/</b>",
-        "4. Renseignez email, nom d'utilisateur et mot de passe, puis validez.",
-        "5. Vérifiez votre boîte mail et cliquez sur le lien de confirmation.",
-        "6. Vous pouvez aussi vous inscrire avec <b>Google</b> ou <b>Facebook</b>.",
-    ]:
-        story.append(Paragraph(line, step))
-
-    story.append(Paragraph("2.2 Connexion (déjà inscrit)", h3))
-    for line in [
-        "1. Cliquez sur <b>Compte → Connexion</b> en haut de la page.",
-        f"2. Ou : <b>{SITE}/compte/connexion/</b>",
-        "3. Saisissez votre identifiant (email ou nom d'utilisateur) et mot de passe.",
-        "4. Sur mobile : utilisez l'icône <b>Compte</b> dans la barre du bas.",
-    ]:
-        story.append(Paragraph(line, step))
-
-    story.append(Spacer(1, 0.2 * cm))
-    story.append(Paragraph("2.3 Mot de passe oublié", h3))
     story.append(
         Paragraph(
-            "Sur la page de connexion, utilisez le lien <b>Mot de passe oublié ?</b> "
-            "et suivez les instructions reçues par email.",
+            "Le site est accessible depuis un <b>navigateur web</b> (Chrome, Safari, Firefox…) "
+            f"à l'adresse <b>{SITE_DISPLAY}</b>. Sur mobile, vous pouvez aussi l'<b>installer</b> "
+            "comme une application (voir section 11).",
             body,
         )
     )
+    add_illustration(
+        AFFICHES / "affiche-pub-kole-group.png",
+        ROOT / "docs" / "affiche-pub-kole-group.png",
+        caption="Kolê Group — une plateforme, plusieurs usages.",
+        width=14,
+    )
     story.append(PageBreak())
 
-    # ── 3. Navigation ──
-    story.append(Paragraph("3. Naviguer sur le site", h2))
-    nav_data = [
-        ["Zone", "Où cliquer", "À quoi ça sert"],
-        ["Accueil", "Logo Kolê ou barre du bas « Accueil »", "Page d'accueil, offres, catégories"],
-        ["Explorer", "Barre du bas ou menu « Explorer »", "Tous les produits et services"],
-        ["Recherche", "Barre en haut de page", "Chercher un produit, une boutique, un service"],
-        ["Panier", "Icône panier (barre du haut ou du bas)", "Voir et valider vos achats"],
-        ["Favoris", "Icône cœur", "Produits enregistrés pour plus tard"],
-        ["Compte", "Menu Compte (en haut) ou barre du bas", "Profil, commandes, réservations"],
-        ["Culture", "Bouton « Culture » dans le menu", "Musique, concerts, artistes"],
-        ["Aide", "Menu Aide", "FAQ, contact, conditions générales"],
-        ["Assistant Kwa", "Bulle orange en bas à droite", "Questions fréquentes, aide rapide"],
+    # ── 2. Profils ──
+    section("2. Les 4 profils utilisateur")
+    story.append(
+        Paragraph(
+            "Sur Kolê Group, tout le monde commence par un <b>compte client</b>. Ensuite, "
+            "vous pouvez activer un profil professionnel selon votre activité :",
+            body,
+        )
+    )
+    profils = [
+        ["Profil", "Pour qui ?", "Ce que vous pouvez faire"],
+        [
+            "Client",
+            "Tout visiteur",
+            "Acheter des produits, réserver des services, acheter de la musique et des billets",
+        ],
+        [
+            "Vendeur",
+            "Commerçants, artisans",
+            "Ouvrir une boutique, publier des produits, gérer les commandes",
+        ],
+        [
+            "Prestataire",
+            "Professionnels de services",
+            "Proposer des services (hôtel, location, réparation…), gérer les demandes",
+        ],
+        [
+            "Artiste",
+            "Musiciens, organisateurs",
+            "Publier de la musique, vendre des billets de concert (Kolê Culture)",
+        ],
     ]
-    t = Table(nav_data, colWidths=[3.2 * cm, 5.5 * cm, 7.8 * cm])
+    t = Table(profils, colWidths=[2.8 * cm, 4.2 * cm, 9.5 * cm])
     t.setStyle(
         TableStyle(
             [
@@ -224,127 +306,358 @@ def main() -> int:
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 5),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
+    story.append(t)
+    story.append(Spacer(1, 0.3 * cm))
+    add_illustration(
+        AFFICHES / "affiche-fonctionnement-profils.png",
+        ONBOARDING / "guide-profils.jpeg",
+        caption="Les quatre profils Kolê Group.",
+    )
+    tip_box(
+        "À votre première visite sur le site, un <b>guide interactif</b> s'affiche automatiquement "
+        "et reprend ces mêmes explications. Vous pouvez le parcourir en faisant glisser les écrans."
+    )
+    story.append(PageBreak())
+
+    # ── 3. Connexion ──
+    section("3. Créer un compte et se connecter")
+    subsection("3.1 Créer un compte (inscription)")
+    steps(
+        [
+            f"1. Ouvrez votre navigateur et allez sur <b>{SITE_DISPLAY}</b>.",
+            "2. En haut à droite, cliquez sur le menu <b>Compte</b>, puis sur <b>Créer un compte</b>.",
+            f"   Lien direct : <b>{SITE}/compte/inscription/</b>",
+            "3. Remplissez le formulaire : <b>adresse e-mail</b>, <b>nom d'utilisateur</b> "
+            "et <b>mot de passe</b> (minimum 8 caractères).",
+            "4. Validez le formulaire. Un e-mail de confirmation vous est envoyé.",
+            "5. Ouvrez votre boîte mail et cliquez sur le <b>lien de vérification</b> pour activer votre compte.",
+            "6. <b>Alternative rapide :</b> vous pouvez aussi vous inscrire avec votre compte "
+            "<b>Google</b> ou <b>Facebook</b> (boutons sur la page d'inscription).",
+        ]
+    )
+    tip_box(
+        "Sur téléphone, utilisez l'icône <b>Compte</b> dans la barre du bas de l'écran "
+        "pour accéder à l'inscription ou à la connexion."
+    )
+
+    subsection("3.2 Se connecter (déjà inscrit)")
+    steps(
+        [
+            "1. Cliquez sur <b>Compte → Connexion</b> en haut de la page.",
+            f"2. Lien direct : <b>{SITE}/compte/connexion/</b>",
+            "3. Saisissez votre <b>identifiant</b> (e-mail ou nom d'utilisateur) et votre <b>mot de passe</b>.",
+            "4. Cliquez sur <b>Se connecter</b>. Vous accédez alors à votre espace personnel.",
+        ]
+    )
+
+    subsection("3.3 Mot de passe oublié")
+    story.append(
+        Paragraph(
+            "Sur la page de connexion, cliquez sur <b>Mot de passe oublié ?</b>. "
+            "Saisissez votre e-mail : vous recevrez un lien pour choisir un nouveau mot de passe.",
+            body,
+        )
+    )
+    story.append(PageBreak())
+
+    # ── 4. Navigation ──
+    section("4. Naviguer sur le site (ordinateur et mobile)")
+    story.append(
+        Paragraph(
+            "Le site est organisé autour de zones claires. Voici où trouver chaque fonction :",
+            body,
+        )
+    )
+    nav_data = [
+        ["Zone", "Où cliquer (ordinateur)", "Sur mobile", "À quoi ça sert"],
+        ["Accueil", "Logo Kolê en haut", "Barre du bas « Accueil »", "Page d'accueil, offres, catégories"],
+        ["Explorer", "Menu « Explorer »", "Barre du bas « Explorer »", "Tous les produits et services"],
+        ["Recherche", "Barre en haut", "Barre en haut", "Chercher un produit, une boutique, un service"],
+        ["Panier", "Icône panier (haut)", "Barre du bas « Panier »", "Voir et valider vos achats"],
+        ["Favoris", "Icône cœur", "Menu Compte", "Produits enregistrés pour plus tard"],
+        ["Compte", "Menu Compte (haut)", "Barre du bas « Compte »", "Profil, commandes, réservations"],
+        ["Culture", "Bouton « Culture »", "Menu ou barre du bas", "Musique, concerts, artistes"],
+        ["Aide", "Menu Aide", "Menu Compte → Aide", "FAQ, contact, conditions générales"],
+        ["Kwa", "Bulle orange (bas droite)", "Bulle orange", "Assistant : réponses rapides"],
+    ]
+    t = Table(nav_data, colWidths=[2.2 * cm, 4 * cm, 3.8 * cm, 6.5 * cm])
+    t.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#fff7ed")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#9a3412")),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 8),
+                ("FONTSIZE", (0, 1), (-1, -1), 7.8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e7e5e4")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ]
         )
     )
     story.append(t)
-    story.append(Spacer(1, 0.3 * cm))
-    story.append(Paragraph("Pages utiles (adresses directes)", h3))
-    pages = [
-        f"<b>Accueil :</b> {SITE}/",
-        f"<b>Produits :</b> {SITE}/produits/",
-        f"<b>Panier :</b> {SITE}/panier/",
-        f"<b>Mon profil :</b> {SITE}/compte/profil/",
-        f"<b>Mes commandes :</b> {SITE}/compte/commandes/",
-        f"<b>FAQ :</b> {SITE}/page/faq/",
-        f"<b>Contact :</b> {SITE}/page/contact/",
-    ]
-    for p in pages:
-        story.append(Paragraph(f"• {p}", bullet))
-    story.append(PageBreak())
-
-    # ── 4. Comment ça marche ──
-    story.append(Paragraph("4. Comment ça marche ? (vue d'ensemble)", h2))
-    img = _img(AFFICHES / "affiche-fonctionnement-vue-ensemble.png", 16)
-    if img:
-        story.append(img)
-    story.append(Spacer(1, 0.2 * cm))
-    for line in [
-        "<b>Étape 1</b> — Créez votre compte et vérifiez votre email.",
-        "<b>Étape 2</b> — Explorez les catégories, produits et services.",
-        "<b>Étape 3</b> — Recevez vos achats ou réservez un service en ligne.",
-    ]:
-        story.append(Paragraph(f"• {line}", bullet))
-    story.append(PageBreak())
-
-    # ── 5. Client ──
-    story.append(Paragraph("5. Je suis client — Acheter ou réserver", h2))
-    img = _img(AFFICHES / "affiche-fonctionnement-client.png", 16)
-    if img:
-        story.append(img)
-        story.append(Spacer(1, 0.2 * cm))
-    story.append(Paragraph("Parcours en 5 étapes", h3))
-    for line in [
-        "<b>1. Inscription & connexion</b> — Créez un compte ou connectez-vous.",
-        "<b>2. Parcourir</b> — Catégories, recherche, fiches produit ou service.",
-        "<b>3. Panier ou réservation</b> — Ajoutez au panier OU choisissez une date pour un service.",
-        "<b>4. Payer</b> — Paiement sécurisé (GeniusPay) ou à la livraison selon l'offre.",
-        "<b>5. Suivi</b> — Menu Compte → Mes commandes / Mes réservations.",
-    ]:
-        story.append(Paragraph(line, step))
-    story.append(
-        Paragraph(
-            "<i>Livraison gratuite dès 15 000 FCFA sur les commandes éligibles.</i>",
-            ParagraphStyle("Note", parent=body, fontSize=9, textColor=colors.grey),
-        )
+    add_illustration(
+        AFFICHES / "affiche-fonctionnement-vue-ensemble.png",
+        ONBOARDING / "guide-vue-ensemble.jpeg",
+        caption="Vue d'ensemble : compte → explorer → recevoir ou réserver.",
     )
     story.append(PageBreak())
 
-    # ── 6. Vendeur & Prestataire ──
-    story.append(Paragraph("6. Je veux vendre ou proposer un service", h2))
-    img = _img(AFFICHES / "affiche-fonctionnement-vendeur-prestataire.png", 16)
-    if img:
-        story.append(img)
-        story.append(Spacer(1, 0.2 * cm))
-
-    story.append(Paragraph("6.1 Devenir vendeur (boutique en ligne)", h3))
-    for line in [
-        "1. Créez un compte client et connectez-vous.",
-        f"2. Menu <b>Compte → Devenir vendeur</b> ou {SITE}/vendeur/inscription/",
-        "3. Remplissez le formulaire (boutique, identité, documents KYC).",
-        "4. Choisissez une formule d'abonnement (Starter, Pro ou Premium).",
-        "5. Accédez à l'<b>espace vendeur</b> : ajoutez vos produits, gérez les commandes.",
-        f"6. Tableau de bord : {SITE}/vendeur/dashboard/",
-    ]:
-        story.append(Paragraph(line, step))
-
-    story.append(Paragraph("6.2 Devenir prestataire de services", h3))
-    for line in [
-        "1. Créez un compte et connectez-vous.",
-        f"2. Menu <b>Compte → Devenir prestataire</b> ou {SITE}/vendeur/prestataire/inscription/",
-        "3. Décrivez vos services, zone d'intervention et tarifs.",
-        "4. Choisissez une formule d'abonnement.",
-        "5. Publiez vos services et gérez les demandes clients.",
-        f"6. Tableau de bord : {SITE}/vendeur/prestataire/dashboard/",
-    ]:
-        story.append(Paragraph(line, step))
+    # ── 5. Client achat ──
+    section("5. Client — Acheter un produit (du panier au paiement)")
+    add_illustration(
+        AFFICHES / "affiche-fonctionnement-client.png",
+        ONBOARDING / "guide-client.jpeg",
+        caption="Parcours client : parcourir, ajouter au panier, payer, suivre.",
+    )
+    subsection("Étape 1 — Trouver un produit")
+    steps(
+        [
+            f"1. Sur l'accueil (<b>{SITE_DISPLAY}</b>) ou via <b>Explorer</b>, parcourez les catégories.",
+            f"2. Utilisez la <b>barre de recherche</b> ou la page <b>{SITE}/produits/</b>.",
+            "3. Cliquez sur un produit pour voir sa fiche : photos, prix, description, vendeur.",
+        ]
+    )
+    subsection("Étape 2 — Ajouter au panier")
+    steps(
+        [
+            "1. Sur la fiche produit, choisissez la <b>quantité</b> souhaitée.",
+            "2. Cliquez sur <b>Ajouter au panier</b>.",
+            "3. L'icône panier se met à jour. Vous pouvez continuer vos achats ou aller au panier.",
+            f"4. Panier : <b>{SITE}/panier/</b>",
+        ]
+    )
+    subsection("Étape 3 — Valider la commande")
+    steps(
+        [
+            "1. Dans le panier, vérifiez les articles, quantités et le total.",
+            "2. Cliquez sur <b>Passer commande</b> (vous devez être connecté).",
+            f"3. Page commande : <b>{SITE}/commande/</b> — renseignez adresse de livraison et téléphone.",
+            "4. Choisissez le mode de paiement proposé.",
+        ]
+    )
+    subsection("Étape 4 — Payer")
+    bullets(
+        [
+            "<b>Paiement en ligne (GeniusPay)</b> : Wave, Orange Money, MTN MoMo ou carte bancaire "
+            "selon disponibilité. Vous êtes redirigé vers une page sécurisée, puis revenez sur le site.",
+            "<b>Paiement à la livraison</b> : proposé par certains vendeurs — vous payez à réception.",
+        ]
+    )
+    subsection("Étape 5 — Suivre la livraison")
+    steps(
+        [
+            f"1. Menu <b>Compte → Mes commandes</b> ou <b>{SITE}/compte/commandes/</b>.",
+            "2. Consultez le <b>statut</b> : en préparation, expédiée, livrée.",
+            "3. Utilisez la <b>messagerie</b> pour contacter le vendeur si besoin.",
+        ]
+    )
+    tip_box("Livraison gratuite dès <b>15 000 FCFA</b> sur les commandes éligibles.")
     story.append(PageBreak())
 
-    # ── 7. Culture ──
-    story.append(Paragraph("7. Kolê Culture — Musique & concerts", h2))
-    img = _img(AFFICHES / "affiche-fonctionnement-culture.png", 16)
-    if img:
-        story.append(img)
-        story.append(Spacer(1, 0.2 * cm))
-    for line in [
-        f"<b>Explorer :</b> {SITE}/culture/ — musique, événements, artistes.",
-        "<b>Écouter & acheter</b> des titres d'artistes ivoiriens.",
-        "<b>Billets de concert</b> avec QR code scanné à l'entrée.",
-        "<b>Devenir artiste :</b> Compte → Activer profil artiste → Espace artiste.",
-        f"<b>Mes billets :</b> {SITE}/compte/ (menu Culture) — Mes billets / Mes achats musique.",
-    ]:
-        story.append(Paragraph(f"• {line}", bullet))
-    story.append(PageBreak())
-
-    # ── 8. Aide ──
-    story.append(Paragraph("8. Besoin d'aide ?", h2))
+    # ── 6. Réservation ──
+    section("6. Client — Réserver un service")
     story.append(
         Paragraph(
-            "• <b>Assistant Kwa</b> — bulle en bas à droite sur le site, réponses automatiques.<br/>"
-            f"• <b>FAQ :</b> {SITE}/page/faq/<br/>"
-            f"• <b>Contact :</b> {SITE}/page/contact/<br/>"
-            f"• <b>Conditions générales :</b> {SITE}/page/conditions-generales/<br/>"
-            "• <b>Installer l'app</b> — sur mobile, bouton « Installer Kolê Group » ou ajout à l'écran d'accueil.",
+            "Les services (hébergement, location de véhicule, prestations diverses) "
+            "ne passent pas par le panier classique : vous faites une <b>demande de réservation</b>.",
             body,
         )
     )
-    story.append(Spacer(1, 0.5 * cm))
+    steps(
+        [
+            f"1. Trouvez un service via <b>Explorer</b> ou <b>{SITE}/prestataires/</b>.",
+            "2. Ouvrez la fiche du service et lisez les conditions (tarif, durée, zone).",
+            "3. Cliquez sur <b>Réserver</b> ou <b>Demander une réservation</b>.",
+            "4. Remplissez le formulaire : dates, message au prestataire, coordonnées.",
+            "5. Envoyez la demande. Le prestataire la <b>valide</b> ou la <b>refuse</b>.",
+            f"6. Suivez vos demandes dans <b>Compte → Mes réservations</b> "
+            f"(<b>{SITE}/compte/reservations/</b>).",
+        ]
+    )
     story.append(
         Paragraph(
-            f"<b>Kolê Group</b> — {SITE}<br/>"
-            "Ce guide peut être partagé, imprimé ou diffusé à vos clients et partenaires.",
+            "<b>Annulation :</b> une demande en attente peut être annulée avant midi (12 h) : "
+            "le jour même si vous avez réservé le matin, sinon jusqu'à midi le lendemain.",
+            tip,
+        )
+    )
+    story.append(PageBreak())
+
+    # ── 7. Suivi ──
+    section("7. Suivre ses commandes et réservations")
+    story.append(
+        Paragraph(
+            "Toutes vos activités sont regroupées dans votre <b>espace Compte</b>. "
+            "Les listes s'affichent sous forme de <b>tableaux</b> clairs (date, statut, actions).",
+            body,
+        )
+    )
+    suivi = [
+        ["Page", "Adresse", "Contenu"],
+        ["Mon profil", f"{SITE}/compte/profil/", "Informations personnelles, changement de mot de passe"],
+        ["Mes commandes", f"{SITE}/compte/commandes/", "Historique des achats produits, statuts, messagerie"],
+        ["Mes réservations", f"{SITE}/compte/reservations/", "Demandes de services, statut validé/en attente"],
+        ["Mes favoris", f"{SITE}/favoris/", "Produits enregistrés avec l'icône cœur"],
+        ["Mes billets", f"{SITE}/culture/ (menu Compte)", "Billets de concert avec QR code"],
+        ["Mes achats musique", f"{SITE}/culture/ (menu Compte)", "Titres achetés, liens de téléchargement"],
+    ]
+    t = Table(suivi, colWidths=[3.5 * cm, 5.5 * cm, 7.5 * cm])
+    t.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#fff7ed")),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 9),
+                ("FONTSIZE", (0, 1), (-1, -1), 8.5),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e7e5e4")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]
+        )
+    )
+    story.append(t)
+    story.append(PageBreak())
+
+    # ── 8. Vendeur ──
+    section("8. Devenir vendeur (boutique en ligne)")
+    add_illustration(
+        AFFICHES / "affiche-fonctionnement-vendeur-prestataire.png",
+        ONBOARDING / "guide-vendeur-prestataire.jpeg",
+        caption="Devenir vendeur ou prestataire sur Kolê Group.",
+    )
+    steps(
+        [
+            "1. Créez un compte client et connectez-vous.",
+            f"2. Menu <b>Compte → Devenir vendeur</b> ou <b>{SITE}/vendeur/inscription/</b>.",
+            "3. Remplissez le formulaire : nom de boutique, description, identité, documents (KYC).",
+            "4. Choisissez une <b>formule d'abonnement</b> (Starter, Pro ou Premium).",
+            "5. Une fois validé, accédez à l'<b>espace vendeur</b> :",
+            "   • Ajouter des produits (photos, prix, stock)",
+            "   • Gérer les commandes reçues",
+            "   • Répondre aux avis clients",
+            f"6. Tableau de bord : <b>{SITE}/vendeur/dashboard/</b>",
+        ]
+    )
+    story.append(PageBreak())
+
+    # ── 9. Prestataire ──
+    section("9. Devenir prestataire de services")
+    steps(
+        [
+            "1. Créez un compte et connectez-vous.",
+            f"2. Menu <b>Compte → Devenir prestataire</b> ou "
+            f"<b>{SITE}/vendeur/prestataire/inscription/</b>.",
+            "3. Décrivez votre activité, zone d'intervention et tarifs indicatifs.",
+            "4. Choisissez une formule d'abonnement.",
+            "5. Publiez vos services depuis l'espace prestataire.",
+            "6. Recevez et traitez les demandes clients (accepter / refuser).",
+            f"7. Tableau de bord : <b>{SITE}/vendeur/prestataire/dashboard/</b>",
+            f"8. Liste des demandes : <b>{SITE}/vendeur/prestataire/demandes/</b>",
+        ]
+    )
+    story.append(PageBreak())
+
+    # ── 10. Culture ──
+    section("10. Kolê Culture — Musique, concerts, artistes")
+    add_illustration(
+        AFFICHES / "affiche-fonctionnement-culture.png",
+        ONBOARDING / "guide-culture.jpeg",
+        caption="Kolê Culture : écouter, acheter, assister à des concerts.",
+    )
+    bullets(
+        [
+            f"<b>Explorer Culture :</b> {SITE}/culture/ — musique, événements, artistes.",
+            "<b>Écouter et acheter</b> des titres d'artistes ivoiriens (téléchargement après achat).",
+            "<b>Acheter un billet</b> de concert — QR code scanné à l'entrée de l'événement.",
+            "<b>Devenir artiste :</b> Compte → Activer profil artiste → Espace artiste pour publier titres et événements.",
+            "<b>Mes billets</b> et <b>Mes achats musique</b> : accessibles depuis le menu Compte.",
+        ]
+    )
+    story.append(PageBreak())
+
+    # ── 11. Aide ──
+    section("11. Aide, contact et installation sur mobile")
+    subsection("11.1 Assistant Kwa")
+    story.append(
+        Paragraph(
+            "Une <b>bulle orange</b> en bas à droite du site ouvre l'assistant <b>Kwa</b>. "
+            "Posez votre question en langage simple : Kwa vous oriente vers la bonne page "
+            "(inscription, panier, vendeur, Culture…).",
+            body,
+        )
+    )
+    subsection("11.2 FAQ et contact")
+    bullets(
+        [
+            f"<b>FAQ :</b> {SITE}/page/faq/ — réponses aux questions fréquentes",
+            f"<b>Contact :</b> {SITE}/page/contact/",
+            f"<b>Conditions générales :</b> {SITE}/page/conditions-generales/",
+            f"<b>Confidentialité :</b> {SITE}/page/confidentialite/",
+            "<b>E-mail :</b> kwakolegroup@gmail.com",
+            "<b>Téléphone / WhatsApp :</b> 07 99 63 31 13",
+        ]
+    )
+    subsection("11.3 Installer Kolê Group sur votre téléphone")
+    steps(
+        [
+            "1. Ouvrez kolêgroup.com dans Chrome (Android) ou Safari (iPhone).",
+            "2. Sur Android : un bouton <b>Installer Kolê Group</b> peut apparaître en bas.",
+            "3. Sur iPhone : bouton <b>Partager</b> → <b>Sur l'écran d'accueil</b>.",
+            "4. L'icône Kolê s'ajoute comme une application — accès rapide sans retaper l'adresse.",
+        ]
+    )
+    story.append(PageBreak())
+
+    # ── 12. Récap ──
+    section("12. Récapitulatif des adresses utiles")
+    recap = [
+        ["Page", "Adresse complète"],
+        ["Accueil", f"{SITE}/"],
+        ["Produits", f"{SITE}/produits/"],
+        ["Panier", f"{SITE}/panier/"],
+        ["Inscription", f"{SITE}/compte/inscription/"],
+        ["Connexion", f"{SITE}/compte/connexion/"],
+        ["Mon profil", f"{SITE}/compte/profil/"],
+        ["Mes commandes", f"{SITE}/compte/commandes/"],
+        ["Mes réservations", f"{SITE}/compte/reservations/"],
+        ["Devenir vendeur", f"{SITE}/vendeur/inscription/"],
+        ["Devenir prestataire", f"{SITE}/vendeur/prestataire/inscription/"],
+        ["Kolê Culture", f"{SITE}/culture/"],
+        ["FAQ", f"{SITE}/page/faq/"],
+        ["Contact", f"{SITE}/page/contact/"],
+    ]
+    t = Table(recap, colWidths=[4.5 * cm, 12 * cm])
+    t.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#fff7ed")),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e7e5e4")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
+    story.append(t)
+    story.append(Spacer(1, 1 * cm))
+    story.append(
+        Paragraph(
+            f"<b>Kolê Group</b> — {SITE_DISPLAY}<br/>"
+            "Ce guide peut être partagé, imprimé ou diffusé à vos clients et partenaires.<br/>"
+            "Pour toute question : kwakolegroup@gmail.com · 07 99 63 31 13",
             ParagraphStyle("Fin", parent=styles["Normal"], fontSize=9, alignment=TA_CENTER, textColor=colors.HexColor("#6b5f54")),
         )
     )
@@ -353,7 +666,7 @@ def main() -> int:
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.grey)
-        canvas.drawString(2 * cm, 1.2 * cm, f"Kolê Group — Guide utilisateur — {SITE}")
+        canvas.drawString(2 * cm, 1.2 * cm, f"Kolê Group — Guide utilisateur — {SITE_DISPLAY}")
         canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"Page {doc.page}")
         canvas.restoreState()
 

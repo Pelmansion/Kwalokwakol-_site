@@ -10,6 +10,9 @@ echo "==> Dossier médias prêt : $MEDIA_DIR"
 echo "==> Migrations base de données..."
 python manage.py migrate --noinput
 
+echo "==> Pages statiques (FAQ, CGU, contact)..."
+python manage.py sync_static_pages
+
 echo "==> Démarrage Gunicorn sur le port ${PORT:-8000}..."
 exec gunicorn kwalo.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \

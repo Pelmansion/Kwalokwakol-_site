@@ -85,9 +85,10 @@ def resend_verification_email(request):
         return redirect("accounts:signup_email_sent")
 
     if user.is_active:
-        messages.info(
+        messages.success(
             request,
-            "Ce compte est déjà activé. Vous pouvez vous connecter directement.",
+            f"Le compte {user.email} est déjà activé — aucun email de confirmation n'est nécessaire. "
+            "Connectez-vous avec votre identifiant et le mot de passe choisi à l'inscription.",
         )
         request.session.pop("pending_verification_email", None)
         request.session.pop("verification_email_failed", None)

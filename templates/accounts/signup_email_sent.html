@@ -47,7 +47,12 @@
       </div>
 
       <p class="auth-alt">
-        Une fois le lien cliqué,
+        Votre compte est peut-être <strong>déjà activé</strong> (sans email reçu) ?
+        <a href="{% url 'accounts:login' %}">Essayez de vous connecter directement</a>.
+      </p>
+
+      <p class="auth-alt" style="margin-top: 8px;">
+        Sinon, une fois le lien cliqué dans l'email,
         <a href="{% url 'accounts:login' %}">connectez-vous à votre compte</a>.
       </p>
 

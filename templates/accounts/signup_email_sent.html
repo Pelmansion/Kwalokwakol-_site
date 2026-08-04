@@ -17,6 +17,16 @@
         {% endif %}
       </p>
 
+      {% if email_failed %}
+        <div class="alert alert--danger" role="alert">
+          <strong>Envoi impossible</strong>
+          <p class="alert__message">
+            Le serveur n'a pas pu envoyer l'email automatiquement. Utilisez le bouton ci-dessous pour réessayer,
+            ou contactez <a href="mailto:{{ kole_contact_email }}">{{ kole_contact_email }}</a>.
+          </p>
+        </div>
+      {% endif %}
+
       <div class="alert alert--info" role="status">
         <strong>Étape suivante</strong>
         <p class="alert__message">
@@ -40,6 +50,23 @@
         Une fois le lien cliqué,
         <a href="{% url 'accounts:login' %}">connectez-vous à votre compte</a>.
       </p>
+
+      <form method="post" action="{% url 'accounts:resend_verification_email' %}" class="auth-resend-form">
+        {% csrf_token %}
+        <label for="resend-email">Renvoyer l'email de confirmation</label>
+        <div class="auth-resend-form__row">
+          <input
+            id="resend-email"
+            type="email"
+            name="email"
+            value="{{ email|default:'' }}"
+            placeholder="Votre adresse email"
+            required
+            autocomplete="email"
+          >
+          <button class="btn btn--small" type="submit">Renvoyer</button>
+        </div>
+      </form>
     </div>
   </section>
 {% endblock %}

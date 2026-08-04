@@ -9,6 +9,7 @@ app_name = "accounts"
 urlpatterns = [
     path("inscription/", views.signup, name="signup"),
     path("inscription/email-envoye/", views.signup_email_sent, name="signup_email_sent"),
+    path("inscription/renvoyer-email/", views.resend_verification_email, name="resend_verification_email"),
     path("verifier-email/", views.verify_email, name="verify_email"),
     path(
         "connexion/",

@@ -270,6 +270,13 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="kwakolegroup@gmail.com").st
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="").strip()
 DEFAULT_FROM_EMAIL = f"Kolê Group <{EMAIL_HOST_USER}>"
 
+if not DEBUG and not EMAIL_HOST_PASSWORD:
+    print(
+        "ATTENTION: EMAIL_HOST_PASSWORD absent — les emails (confirmation d'inscription, etc.) "
+        "ne seront pas envoyés. Ajoutez le mot de passe d'application Gmail dans Render → Environment.",
+        file=sys.stderr,
+    )
+
 EMAIL_VERIFICATION_MAX_AGE = 48 * 3600
 
 # --- GENIUSPAY ---

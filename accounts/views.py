@@ -34,15 +34,16 @@ def signup(request):
             try:
                 send_verification_email(request, user)
             except Exception as e:
-                import traceback
-                traceback.print_exc()
+                logger.exception("Échec envoi email de vérification pour %s", user.email)
                 messages.error(
                     request,
-                    "L'email de vérification n'a pas pu être envoyé. Vérifiez le fichier .env (EMAIL_HOST_USER, EMAIL_HOST_PASSWORD) et la console du serveur pour les détails.",
+                    "L'email de vérification n'a pas pu être envoyé. Utilisez « Renvoyer l'email » sur la page suivante ou contactez le support.",
                 )
                 request.session["pending_verification_email"] = user.email
+                request.session["verification_email_failed"] = True
                 return redirect("accounts:signup_email_sent")
             request.session["pending_verification_email"] = user.email
+            request.session.pop("verification_email_failed", None)
             return redirect("accounts:signup_email_sent")
         messages.error(
             request,
@@ -55,8 +56,62 @@ def signup(request):
 
 def signup_email_sent(request):
     """Page affichée après inscription : indique de vérifier sa boîte mail."""
-    email = request.session.pop("pending_verification_email", None)
-    return render(request, "accounts/signup_email_sent.html", {"email": email})
+    email = request.session.get("pending_verification_email")
+    email_failed = request.session.get("verification_email_failed", False)
+    return render(
+        request,
+        "accounts/signup_email_sent.html",
+        {"email": email, "email_failed": email_failed},
+    )
+
+
+def resend_verification_email(request):
+    """Renvoie l'email de confirmation pour un compte inactif."""
+    if request.method != "POST":
+        return redirect("accounts:signup_email_sent")
+
+    email = (request.POST.get("email") or "").strip()
+    if not email:
+        messages.error(request, "Indiquez l'adresse email utilisée lors de l'inscription.")
+        return redirect("accounts:signup_email_sent")
+
+    user = User.objects.filter(email__iexact=email).first()
+    if not user:
+        messages.error(
+            request,
+            "Aucun compte trouvé avec cette adresse. Vérifiez l'orthographe ou créez un compte.",
+        )
+        request.session["pending_verification_email"] = email
+        return redirect("accounts:signup_email_sent")
+
+    if user.is_active:
+        messages.info(
+            request,
+            "Ce compte est déjà activé. Vous pouvez vous connecter directement.",
+        )
+        request.session.pop("pending_verification_email", None)
+        request.session.pop("verification_email_failed", None)
+        return redirect("accounts:login")
+
+    try:
+        send_verification_email(request, user)
+    except Exception:
+        logger.exception("Échec renvoi email de vérification pour %s", user.email)
+        messages.error(
+            request,
+            "Impossible d'envoyer l'email pour le moment. Réessayez dans quelques minutes ou écrivez à kwakolegroup@gmail.com.",
+        )
+        request.session["pending_verification_email"] = user.email
+        request.session["verification_email_failed"] = True
+        return redirect("accounts:signup_email_sent")
+
+    request.session["pending_verification_email"] = user.email
+    request.session.pop("verification_email_failed", None)
+    messages.success(
+        request,
+        f"Un nouvel email de confirmation a été envoyé à {user.email}. Pensez à vérifier vos spams.",
+    )
+    return redirect("accounts:signup_email_sent")
 
 
 def verify_email(request):

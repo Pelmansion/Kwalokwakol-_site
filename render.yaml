@@ -22,6 +22,12 @@ services:
         sync: false
       - key: GENIUS_API_SECRET
         sync: false
+      # Emails (confirmation d'inscription) — mot de passe d'application Gmail :
+      # https://myaccount.google.com/apppasswords
+      - key: EMAIL_HOST_USER
+        value: kwakolegroup@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
       # Dossier persistant pour les uploads (nécessite un disque Render — voir bloc disk ci-dessous)
       # - key: MEDIA_ROOT
       #   value: /data/media

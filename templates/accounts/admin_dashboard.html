@@ -373,7 +373,6 @@
                   <td class="text-right">
                     <form method="post" action="{% url 'accounts:set_user_role' u.id %}" class="report-role-form">{% csrf_token %}
                       <div class="report-select-wrap">
-                        <label class="sr-only" for="role-{{ u.id }}">Rôle de {{ u.username }}</label>
                         <select id="role-{{ u.id }}" name="role" class="report-select" aria-label="Changer le rôle de {{ u.username }}">
                           {% for value, label in role_choices %}
                             <option value="{{ value }}" {% if u.userprofile.role == value or not u.userprofile and value == 'customer' %}selected{% endif %}>{{ label }}</option>

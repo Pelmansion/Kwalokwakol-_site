@@ -57,9 +57,9 @@
       <h2>Liste des abonnements</h2>
     </div>
 
-    <form method="get" class="admin-filter-bar" style="display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;">
-      <input type="search" name="q" value="{{ q }}" placeholder="Rechercher (nom, username)..." style="flex: 1; min-width: 220px; height: 44px;">
-      <select name="status" style="height: 44px; min-width: 180px;">
+    <form method="get" class="admin-filter-bar">
+      <input type="search" name="q" value="{{ q }}" placeholder="Rechercher (nom, username)..." class="admin-filter-bar__search">
+      <select name="status" aria-label="Filtrer par statut">
         <option value="">Tous les statuts</option>
         {% for val, label in status_choices %}
           <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>

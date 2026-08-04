@@ -26,6 +26,60 @@
   .pagination a:hover { background: #f0fdfa; border-color: #0d9488; }
   .pagination .current { background: #0d9488; color: #fff; border-color: #0d9488; }
   .pagination .disabled { color: #94a3b8; pointer-events: none; }
+  .report-role-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .report-select-wrap { position: relative; display: inline-flex; }
+  .report-select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 148px;
+    height: 36px;
+    margin: 0;
+    padding: 0 34px 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
+      no-repeat right 11px center,
+      #fff;
+    background-size: 14px, auto;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+  .report-select:hover {
+    border-color: #0d9488;
+    background-color: #f8fafc;
+  }
+  .report-select:focus {
+    outline: none;
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.16);
+  }
+  .report-role-form .btn--small {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 0.78rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge--role-customer { background: #e0f2fe; color: #0369a1; }
+  .badge--role-admin { background: #ffedd5; color: #c2410c; }
+  .badge--role-super_admin { background: #ede9fe; color: #6d28d9; }
+  @media (max-width: 720px) {
+    .report-role-form { width: 100%; justify-content: stretch; }
+    .report-select-wrap { flex: 1; }
+    .report-select { width: 100%; min-width: 0; }
+    .report-role-form .btn--small { flex: 1; justify-content: center; }
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -309,10 +363,23 @@
                 <tr>
                   <td><strong>{{ u.username }}</strong></td>
                   <td>{% if u.email %}{{ u.email }}{% else %}—{% endif %}</td>
-                  <td>{% if u.userprofile %}<span class="badge">{{ u.userprofile.get_role_display }}</span>{% else %}<span class="badge">Client</span>{% endif %}</td>
+                  <td>
+                    {% if u.userprofile %}
+                      <span class="badge badge--role badge--role-{{ u.userprofile.role }}">{{ u.userprofile.get_role_display }}</span>
+                    {% else %}
+                      <span class="badge badge--role badge--role-customer">Client</span>
+                    {% endif %}
+                  </td>
                   <td class="text-right">
-                    <form method="post" action="{% url 'accounts:set_user_role' u.id %}" style="display:inline-flex;align-items:center;gap:8px">{% csrf_token %}
-                      <select name="role">{% for value, label in role_choices %}<option value="{{ value }}" {% if u.userprofile.role == value or not u.userprofile and value == 'customer' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                    <form method="post" action="{% url 'accounts:set_user_role' u.id %}" class="report-role-form">{% csrf_token %}
+                      <div class="report-select-wrap">
+                        <label class="sr-only" for="role-{{ u.id }}">Rôle de {{ u.username }}</label>
+                        <select id="role-{{ u.id }}" name="role" class="report-select" aria-label="Changer le rôle de {{ u.username }}">
+                          {% for value, label in role_choices %}
+                            <option value="{{ value }}" {% if u.userprofile.role == value or not u.userprofile and value == 'customer' %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
                       <button class="btn btn--small" type="submit">Mettre à jour</button>
                     </form>
                   </td>

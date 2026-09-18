@@ -154,8 +154,7 @@ WSGI_APPLICATION = 'kwalo.wsgi.application'
 # Local : SQLite si aucune URL n'est fournie.
 _IS_RENDER = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 _RENDER_PG_URL = (
-    "postgresql://kwalokwakole_user:YpgKxzLHXcvFoqY5PWRzIcDLFtxaprSa"
-    "@dpg-d80rc7gg4nts738ts4i0-a.oregon-postgres.render.com/kwalokwakole"
+    "postgresql://kwalokwakol_site_user:RkGLRqjzBlfBW7al5qwMIpNmNSCUeQ6J@dpg-damge9m7bikc73biidb0-a/kwalokwakol_site"
 )
 
 _database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()

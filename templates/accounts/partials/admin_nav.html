@@ -16,8 +16,8 @@
   <a class="admin-nav__link{% if active == 'system' %} is-active{% endif %}" href="{% url 'accounts:admin_system' %}">
     <span class="admin-nav__icon" aria-hidden="true">🗄️</span> Admins &amp; BDD
   </a>
-  {% endif %}
   <a class="admin-nav__link admin-nav__link--external" href="/admin/" target="_blank" rel="noopener">
     <span class="admin-nav__icon" aria-hidden="true">↗</span> Django Admin
   </a>
+  {% endif %}
 </nav>

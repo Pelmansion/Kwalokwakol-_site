@@ -14,7 +14,6 @@ from pathlib import Path
 import django
 import dj_database_url
 from decouple import config
-from django.core.exceptions import ImproperlyConfigured
 
 from kwalo.media_storage import configure_media
 
@@ -145,10 +144,6 @@ WSGI_APPLICATION = "kwalo.wsgi.application"
 # --- DATABASE ---
 _IS_RENDER = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 _database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
-if not _database_url and _IS_RENDER:
-    raise ImproperlyConfigured(
-        "DATABASE_URL est requis sur Render. Liez la base PostgreSQL dans Environment."
-    )
 
 if _database_url:
     DATABASES = {
@@ -159,6 +154,12 @@ if _database_url:
         )
     }
 else:
+    if _IS_RENDER:
+        print(
+            "ATTENTION: DATABASE_URL absent — SQLite temporaire (build collectstatic). "
+            "Liez PostgreSQL dans Render → Environment avant le démarrage.",
+            file=sys.stderr,
+        )
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

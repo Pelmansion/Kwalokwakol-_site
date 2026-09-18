@@ -7,6 +7,15 @@ if [ ! -f kwalo/settings.py ]; then
   echo "==> kwalo/settings.py créé depuis settings.example.py"
 fi
 
+if [ -n "${RENDER:-}" ] || [ -n "${RENDER_EXTERNAL_HOSTNAME:-}" ]; then
+  if [ -z "${DATABASE_URL:-}" ]; then
+    echo "ERREUR: DATABASE_URL est absent."
+    echo "Render → votre base PostgreSQL → Connect → choisissez ce service web."
+    echo "Ou ajoutez DATABASE_URL manuellement dans Environment."
+    exit 1
+  fi
+fi
+
 # Dossier des fichiers uploadés (disque Render ou media/ local)
 MEDIA_DIR="${MEDIA_ROOT:-media}"
 mkdir -p "$MEDIA_DIR"

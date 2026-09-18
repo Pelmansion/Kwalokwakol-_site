@@ -30,11 +30,23 @@ Un `package.json` à la racine délègue à Django :
 
 **Ne pas** utiliser `npm run build` seul sans `npm install`.
 
+## Lier la base PostgreSQL (obligatoire)
+
+Sans `DATABASE_URL`, le **build** peut passer mais le **démarrage** échouera.
+
+1. Render → **PostgreSQL** (ex. `kwalokwakole`)
+2. Onglet **Connect** → **Add connection** → sélectionnez votre **Web Service**
+3. Render ajoute automatiquement `DATABASE_URL` dans Environment
+4. **Redéployez** le service web
+
+Vérifiez dans **Environment** que `DATABASE_URL` commence par `postgresql://`.
+
 ## Variables d'environnement obligatoires
 
 - `SECRET_KEY` — clé Django (générée par Render ou manuelle)
 - `DEBUG` — `false`
-- `DATABASE_URL` — URL PostgreSQL Render
+- `DATABASE_URL` — URL PostgreSQL Render (via Connect)
+- `PYTHON_VERSION` — `3.12.3` (évite Python 3.14 instable)
 - `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` — Gmail (mot de passe d'application)
 - `GENIUS_API_KEY` / `GENIUS_API_SECRET` — paiements
 

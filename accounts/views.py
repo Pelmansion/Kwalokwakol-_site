@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
+from django.db import connection
 from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +17,15 @@ from django.utils import timezone
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
 from orders.models import Order
 from .email_utils import get_user_from_token, send_verification_email
-from .forms import ProfileForm, SignupForm
+from django.core.management import call_command
+
+from .db_overview import (
+    database_engine_label,
+    database_name,
+    pending_migrations_count,
+    table_stats,
+)
+from .forms import AdminUserCreateForm, ProfileForm, SignupForm
 from .models import UserProfile
 from .shopping_access import user_can_shop_as_customer
 from .reservation_utils import can_client_delete_reservation, reservation_delete_deadline
@@ -452,4 +461,84 @@ def view_service_provider_details(request, provider_id):
         request,
         "accounts/service_provider_details.html",
         {"provider": provider},
+    )
+
+
+def _admin_users_queryset():
+    return (
+        User.objects.filter(
+            Q(userprofile__role__in=(UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN))
+            | Q(is_superuser=True)
+        )
+        .select_related("userprofile")
+        .distinct()
+        .order_by("-date_joined")
+    )
+
+
+@login_required
+def admin_system(request):
+    """
+    Super admin : créer des administrateurs et consulter / maintenir la base de données.
+    """
+    profile = _ensure_admin(request, super_only=True)
+
+    create_form = AdminUserCreateForm()
+    if request.method == "POST":
+        form_type = request.POST.get("form_type", "")
+        if form_type == "create_admin":
+            create_form = AdminUserCreateForm(request.POST)
+            if create_form.is_valid():
+                data = create_form.cleaned_data
+                role = data["role"]
+                user = User.objects.create_user(
+                    username=data["username"],
+                    email=data["email"],
+                    password=data["password1"],
+                    first_name=data.get("first_name", ""),
+                    last_name=data.get("last_name", ""),
+                )
+                user.is_active = True
+                if role == UserProfile.ROLE_SUPER_ADMIN:
+                    user.is_staff = True
+                    user.is_superuser = True
+                user.save()
+                admin_profile, _ = UserProfile.objects.get_or_create(user=user)
+                admin_profile.role = role
+                admin_profile.save()
+                messages.success(
+                    request,
+                    f"Compte « {user.username} » créé avec le rôle "
+                    f"{admin_profile.get_role_display()}.",
+                )
+                return redirect("accounts:admin_system")
+        elif form_type == "db_action":
+            action = (request.POST.get("db_action") or "").strip()
+            if action == "sync_static_pages":
+                call_command("sync_static_pages")
+                messages.success(request, "Pages statiques synchronisées (FAQ, CGU, contact…).")
+            elif action == "sync_contact":
+                call_command("sync_contact_info")
+                messages.success(request, "Informations de contact synchronisées.")
+            else:
+                messages.error(request, "Action de base de données non reconnue.")
+            return redirect("accounts:admin_system")
+
+    admins = _admin_users_queryset()
+    pending_migrations = pending_migrations_count()
+
+    return render(
+        request,
+        "accounts/admin_system.html",
+        {
+            "profile": profile,
+            "create_form": create_form,
+            "admins": admins,
+            "db_engine": database_engine_label(),
+            "db_name": database_name(),
+            "db_vendor": connection.vendor,
+            "pending_migrations": pending_migrations,
+            "table_stats": table_stats(),
+            "debug_mode": settings.DEBUG,
+        },
     )

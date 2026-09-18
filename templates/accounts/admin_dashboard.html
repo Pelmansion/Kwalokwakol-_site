@@ -84,6 +84,7 @@
 {% endblock %}
 {% block content %}
   <section class="report-wrap container">
+    {% include "accounts/partials/admin_nav.html" with active="dashboard" %}
     <h1 class="report-title">Vue globale</h1>
     <p class="report-subtitle">Vendeurs, prestataires, commandes et chiffre d'affaires en un coup d'œil.</p>
 

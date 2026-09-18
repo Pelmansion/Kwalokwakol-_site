@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<style>
+  .report-wrap { padding: 28px 0 48px; background: #f8fafc; }
+  .report-title { margin: 0 0 6px 0; font-size: 1.75rem; font-weight: 800; color: #0d9488; letter-spacing: -0.03em; }
+  .report-title::after { content: ""; display: block; width: 48px; height: 3px; background: linear-gradient(90deg, #0d9488, #14b8a6); border-radius: 2px; margin-top: 10px; }
+  .report-subtitle { margin: 0 0 20px 0; font-size: 0.95rem; color: #64748b; }
+  .report-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 24px; }
+  .report-card__title { margin: 0 0 18px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .report-table th, .report-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  .report-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .report-table tbody tr:hover { background: #f8fafc; }
+  .admin-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .admin-nav__link { padding: 10px 18px; border-radius: 999px; font-size: 0.88rem; font-weight: 600; text-decoration: none; color: #475569; background: #fff; border: 1px solid #e2e8f0; }
+  .admin-nav__link:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+  .admin-nav__link.is-active { background: #0d9488; color: #fff; border-color: #0d9488; }
+  .admin-nav__link--external { margin-left: auto; }
+  .db-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .db-meta__item { padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+  .db-meta__label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+  .db-meta__value { font-size: 1rem; font-weight: 700; color: #0f172a; word-break: break-all; }
+  .db-meta__value--ok { color: #0d9488; }
+  .db-meta__value--warn { color: #d97706; }
+  .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .admin-form-grid .form-group { margin: 0; }
+  .admin-form-grid label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: #334155; }
+  .admin-form-grid input, .admin-form-grid select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+  .admin-form-grid .helptext { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
+  .admin-form-grid .errorlist { margin: 4px 0 0; padding: 0; list-style: none; color: #dc2626; font-size: 0.8rem; }
+  .db-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .badge--role-admin { background: #ffedd5; color: #c2410c; }
+  .badge--role-super_admin { background: #ede9fe; color: #6d28d9; }
+  @media (max-width: 720px) {
+    .admin-nav__link--external { margin-left: 0; width: 100%; text-align: center; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+  <section class="report-wrap container">
+    {% include "accounts/partials/admin_nav.html" with active="system" %}
+
+    <h1 class="report-title">Admins &amp; base de données</h1>
+    <p class="report-subtitle">Créez des comptes administrateurs et surveillez l'état de PostgreSQL.</p>
+
+    <div class="report-card">
+      <h2 class="report-card__title">État de la base de données</h2>
+      <div class="db-meta">
+        <div class="db-meta__item">
+          <span class="db-meta__label">Moteur</span>
+          <span class="db-meta__value db-meta__value--ok">{{ db_engine }}</span>
+        </div>
+        <div class="db-meta__item">
+          <span class="db-meta__label">Base</span>
+          <span class="db-meta__value">{{ db_name }}</span>
+        </div>
+        <div class="db-meta__item">
+          <span class="db-meta__label">Migrations en attente</span>
+          <span class="db-meta__value{% if pending_migrations %} db-meta__value--warn{% else %} db-meta__value--ok{% endif %}">
+            {% if pending_migrations %}{{ pending_migrations }} — redéployez ou lancez migrate{% else %}Aucune{% endif %}
+          </span>
+        </div>
+        <div class="db-meta__item">
+          <span class="db-meta__label">Mode DEBUG</span>
+          <span class="db-meta__value{% if debug_mode %} db-meta__value--warn{% endif %}">
+            {% if debug_mode %}Activé (local){% else %}Désactivé (production){% endif %}
+          </span>
+        </div>
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Table / modèle</th>
+            <th>Enregistrements</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table_stats %}
+            <tr>
+              <td><strong>{{ row.verbose }}</strong><br><span class="muted" style="font-size:0.8rem;">{{ row.label }}</span></td>
+              <td>{{ row.count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <h3 style="margin: 24px 0 12px; font-size: 1rem;">Actions de maintenance</h3>
+      <p class="muted" style="margin: 0 0 12px; font-size: 0.9rem;">
+        Synchronise les contenus essentiels sans toucher aux comptes ni aux commandes.
+      </p>
+      <div class="db-actions">
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="form_type" value="db_action">
+          <input type="hidden" name="db_action" value="sync_static_pages">
+          <button type="submit" class="btn btn--ghost">Synchroniser pages statiques</button>
+        </form>
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="form_type" value="db_action">
+          <input type="hidden" name="db_action" value="sync_contact">
+          <button type="submit" class="btn btn--ghost">Synchroniser infos contact</button>
+        </form>
+        <a class="btn btn--ghost" href="/admin/" target="_blank" rel="noopener">Ouvrir Django Admin ↗</a>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Créer un administrateur</h2>
+      <form method="post" class="admin-form-grid" style="align-items: start;">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="create_admin">
+
+        <div class="form-group">
+          <label for="{{ create_form.username.id_for_label }}">{{ create_form.username.label }}</label>
+          {{ create_form.username }}
+          {% if create_form.username.help_text %}<p class="helptext">{{ create_form.username.help_text }}</p>{% endif %}
+          {{ create_form.username.errors }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.email.id_for_label }}">{{ create_form.email.label }}</label>
+          {{ create_form.email }}
+          {{ create_form.email.errors }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.first_name.id_for_label }}">{{ create_form.first_name.label }}</label>
+          {{ create_form.first_name }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.last_name.id_for_label }}">{{ create_form.last_name.label }}</label>
+          {{ create_form.last_name }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.password1.id_for_label }}">{{ create_form.password1.label }}</label>
+          {{ create_form.password1 }}
+          {{ create_form.password1.errors }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.password2.id_for_label }}">{{ create_form.password2.label }}</label>
+          {{ create_form.password2 }}
+          {{ create_form.password2.errors }}
+        </div>
+        <div class="form-group">
+          <label for="{{ create_form.role.id_for_label }}">{{ create_form.role.label }}</label>
+          {{ create_form.role }}
+          {{ create_form.role.errors }}
+        </div>
+        <div class="form-group" style="align-self: end;">
+          <button type="submit" class="btn">Créer le compte admin</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Administrateurs existants</h2>
+      {% if admins %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Identifiant</th>
+              <th>E-mail</th>
+              <th>Rôle</th>
+              <th>Actif</th>
+              <th>Créé le</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for admin in admins %}
+              <tr>
+                <td><strong>{{ admin.username }}</strong></td>
+                <td>{{ admin.email|default:"—" }}</td>
+                <td>
+                  {% if admin.userprofile %}
+                    <span class="badge badge--role badge--role-{{ admin.userprofile.role }}">{{ admin.userprofile.get_role_display }}</span>
+                  {% elif admin.is_superuser %}
+                    <span class="badge badge--role badge--role-super_admin">Super admin</span>
+                  {% else %}
+                    <span class="badge">Admin</span>
+                  {% endif %}
+                </td>
+                <td>{% if admin.is_active %}Oui{% else %}Non{% endif %}</td>
+                <td>{{ admin.date_joined|date:"d/m/Y H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top: 12px; font-size: 0.85rem;">
+          Pour modifier un rôle existant, utilisez la section « Utilisateurs » de la
+          <a href="{% url 'accounts:admin_dashboard' %}">vue globale</a>.
+        </p>
+      {% else %}
+        <p class="muted">Aucun administrateur enregistré.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

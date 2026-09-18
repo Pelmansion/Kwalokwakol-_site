@@ -112,3 +112,55 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ["label", "address", "city", "phone", "is_default"]
+
+
+class AdminUserCreateForm(forms.Form):
+    """Création d'un compte administrateur par le super admin."""
+
+    username = forms.CharField(
+        max_length=150,
+        label="Identifiant",
+        help_text="Lettres, chiffres et @ . + - _ uniquement.",
+    )
+    email = forms.EmailField(label="E-mail")
+    first_name = forms.CharField(max_length=150, required=False, label="Prénom")
+    last_name = forms.CharField(max_length=150, required=False, label="Nom")
+    password1 = forms.CharField(
+        widget=forms.PasswordInput,
+        label="Mot de passe",
+        min_length=8,
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput,
+        label="Confirmer le mot de passe",
+    )
+    role = forms.ChoiceField(
+        label="Rôle",
+        choices=[
+            (UserProfile.ROLE_ADMIN, "Admin"),
+            (UserProfile.ROLE_SUPER_ADMIN, "Super admin"),
+        ],
+        initial=UserProfile.ROLE_ADMIN,
+    )
+
+    def clean_username(self):
+        username = (self.cleaned_data.get("username") or "").strip()
+        if not username:
+            raise forms.ValidationError("L'identifiant est obligatoire.")
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("Cet identifiant est déjà pris.")
+        return username
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Cet e-mail est déjà utilisé.")
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get("password1")
+        p2 = cleaned.get("password2")
+        if p1 and p2 and p1 != p2:
+            self.add_error("password2", "Les mots de passe ne correspondent pas.")
+        return cleaned

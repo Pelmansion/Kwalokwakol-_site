@@ -40,6 +40,11 @@ urlpatterns = [
     path("admin-panel/systeme/", views.admin_system, name="admin_system"),
     path("admin-panel/users/<int:user_id>/role/", views.set_user_role, name="set_user_role"),
     path(
+        "admin-panel/kyc/<str:entity_type>/<int:object_id>/<str:field_name>/",
+        views.serve_kyc_file,
+        name="serve_kyc_file",
+    ),
+    path(
         "admin-panel/vendors/<int:vendor_id>/details/",
         views.view_vendor_details,
         name="view_vendor_details",

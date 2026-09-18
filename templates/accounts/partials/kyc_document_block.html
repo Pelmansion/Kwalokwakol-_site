@@ -1,0 +1,31 @@
+{% load marketplace_tags %}
+<div class="document-section">
+  <h3>{{ label }}</h3>
+  {% if file_field and file_field.name %}
+    {% if file_field|storage_file_exists %}
+      <div class="document-preview">
+        <img
+          src="{% kyc_file_url entity_type object_id field_name %}"
+          alt="{{ label }}"
+          loading="lazy"
+          {% img_onerror_attr %}
+        >
+        <a
+          href="{% kyc_file_url entity_type object_id field_name %}"
+          target="_blank"
+          rel="noopener"
+          class="btn btn--small"
+          style="margin-top: 0.5rem;"
+        >Ouvrir en grand</a>
+      </div>
+    {% else %}
+      <p class="muted">
+        Fichier référencé en base mais introuvable sur le stockage
+        (disque Render effacé ou médias non migrés vers R2).
+        Demandez au vendeur ou prestataire de renvoyer ses documents.
+      </p>
+    {% endif %}
+  {% else %}
+    <p class="muted">Aucun document fourni</p>
+  {% endif %}
+</div>

@@ -55,38 +55,9 @@
           <span style="font-size: 1.1rem; font-weight: bold; color: #333;">{{ vendor.id_number|default:"—" }}</span>
         </div>
         
-        <div class="document-section">
-          <h3>Pièce d'identité recto</h3>
-          {% if vendor.id_document_front %}
-            <div class="document-preview">
-              <img src="{{ vendor.id_document_front.url }}" alt="Pièce d'identité recto" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;">
-              <a href="{{ vendor.id_document_front.url }}" target="_blank" class="btn btn--small" style="margin-top: 0.5rem;">Ouvrir en grand</a>
-            </div>
-          {% else %}
-            <p class="muted">Aucun document fourni</p>
-          {% endif %}
-        </div>
-
-        <div class="document-section">
-          <h3>Pièce d'identité verso</h3>
-          {% if vendor.id_document_back %}
-            <div class="document-preview">
-              <img src="{{ vendor.id_document_back.url }}" alt="Pièce d'identité verso" style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px;">
-              <a href="{{ vendor.id_document_back.url }}" target="_blank" class="btn btn--small" style="margin-top: 0.5rem;">Ouvrir en grand</a>
-            </div>
-          {% else %}
-            <p class="muted">Aucun document fourni</p>
-          {% endif %}
-        </div>
-
-        {% if vendor.profile_photo %}
-          <div class="document-section">
-            <h3>Photo de profil</h3>
-            <div class="document-preview">
-              <img src="{{ vendor.profile_photo.url }}" alt="Photo de profil" style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 8px;">
-            </div>
-          </div>
-        {% endif %}
+        {% include "accounts/partials/kyc_document_block.html" with entity_type="vendor" object_id=vendor.id field_name="id_document_front" label="Pièce d'identité recto" file_field=vendor.id_document_front %}
+        {% include "accounts/partials/kyc_document_block.html" with entity_type="vendor" object_id=vendor.id field_name="id_document_back" label="Pièce d'identité verso" file_field=vendor.id_document_back %}
+        {% include "accounts/partials/kyc_document_block.html" with entity_type="vendor" object_id=vendor.id field_name="profile_photo" label="Photo de profil" file_field=vendor.profile_photo %}
       </div>
     </div>
 
@@ -187,6 +158,8 @@
       max-width: 100%;
       max-height: 500px;
       object-fit: contain;
+      border: 1px solid #ddd;
+      border-radius: 8px;
     }
 
     .verification-actions {

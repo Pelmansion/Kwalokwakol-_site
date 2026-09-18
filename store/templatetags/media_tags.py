@@ -69,3 +69,29 @@ def product_image_url(product):
 def img_onerror_attr():
     """Attribut HTML onerror vers une icône de secours (usage : {% img_onerror_attr %})."""
     return mark_safe(f'onerror="this.onerror=null;this.src=\'{_PLACEHOLDER}\';"')
+
+
+@register.filter
+def storage_file_exists(file_field):
+    """True si le fichier existe réellement dans le stockage (local, R2, S3…)."""
+    try:
+        if not file_field or not getattr(file_field, "name", None):
+            return False
+        return file_field.storage.exists(file_field.name)
+    except Exception:
+        return False
+
+
+@register.simple_tag
+def kyc_file_url(entity_type, object_id, field_name):
+    """URL sécurisée (admin) pour un document KYC vendeur ou prestataire."""
+    from django.urls import reverse
+
+    return reverse(
+        "accounts:serve_kyc_file",
+        kwargs={
+            "entity_type": entity_type,
+            "object_id": object_id,
+            "field_name": field_name,
+        },
+    )

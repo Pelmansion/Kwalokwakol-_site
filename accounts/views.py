@@ -1,5 +1,7 @@
 import json
 import logging
+import mimetypes
+import os
 
 from django.conf import settings
 from django.contrib.auth import login
@@ -8,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.db import connection
+from django.http import FileResponse, Http404
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -502,6 +505,46 @@ def moderate_service_provider(request, provider_id, action):
             provider.verified_at = timezone.now()
         provider.save()
     return redirect("accounts:admin_validations")
+
+
+_KYC_FIELDS = frozenset({"id_document_front", "id_document_back", "profile_photo"})
+
+
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
+def serve_kyc_file(request, entity_type, object_id, field_name):
+    """Sert un document KYC via Django (admin uniquement, stockage local ou cloud)."""
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    if field_name not in _KYC_FIELDS:
+        raise Http404
+
+    if entity_type == "vendor":
+        obj = get_object_or_404(Vendor, id=object_id)
+    elif entity_type == "provider":
+        obj = get_object_or_404(ServiceProvider, id=object_id)
+    else:
+        raise Http404
+
+    file_field = getattr(obj, field_name, None)
+    if not file_field or not file_field.name:
+        raise Http404
+    if not file_field.storage.exists(file_field.name):
+        raise Http404
+
+    try:
+        file_handle = file_field.open("rb")
+    except OSError as exc:
+        raise Http404 from exc
+
+    content_type, _ = mimetypes.guess_type(file_field.name)
+    filename = os.path.basename(file_field.name)
+    response = FileResponse(
+        file_handle,
+        content_type=content_type or "application/octet-stream",
+    )
+    response["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response
 
 
 @login_required(login_url=reverse_lazy("accounts:admin_login"))

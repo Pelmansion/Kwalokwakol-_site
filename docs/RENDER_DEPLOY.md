@@ -30,16 +30,29 @@ Un `package.json` à la racine délègue à Django :
 
 **Ne pas** utiliser `npm run build` seul sans `npm install`.
 
-## Lier la base PostgreSQL (obligatoire)
+## Erreur « DATABASE_URL est absent » (démarrage)
 
-Sans `DATABASE_URL`, le **build** peut passer mais le **démarrage** échouera.
+Le **build réussit** mais le site **ne démarre pas** : le service web n'a pas accès à PostgreSQL.
 
-1. Render → **PostgreSQL** (ex. `kwalokwakole`)
-2. Onglet **Connect** → **Add connection** → sélectionnez votre **Web Service**
-3. Render ajoute automatiquement `DATABASE_URL` dans Environment
-4. **Redéployez** le service web
+### Méthode 1 — Lier la base (recommandé)
 
-Vérifiez dans **Environment** que `DATABASE_URL` commence par `postgresql://`.
+1. [Render Dashboard](https://dashboard.render.com) → cliquez sur votre base **PostgreSQL** (ex. `kwalokwakole`)
+2. Menu **Connect** (ou **Info**)
+3. Section **Connections** → **Add connection**
+4. Choisissez votre **Web Service** (pas la base elle-même)
+5. Validez → Render crée `DATABASE_URL` sur le **service web**
+6. Ouvrez le **Web Service** → **Environment** → vérifiez que `DATABASE_URL` apparaît (`postgresql://…`)
+7. **Manual Deploy** sur le service web
+
+### Méthode 2 — Coller l'URL à la main
+
+1. Base PostgreSQL → **Connect** → copiez **Internal Database URL**
+2. Web Service → **Environment** → **Add Environment Variable**
+   - Key : `DATABASE_URL`
+   - Value : l'URL copiée
+3. **Save** puis **Manual Deploy**
+
+> La variable doit être sur le **Web Service**, pas seulement sur la base de données.
 
 ## Variables d'environnement obligatoires
 

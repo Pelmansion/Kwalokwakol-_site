@@ -18,6 +18,26 @@ services:
         fromDatabase:
           name: kwalokwakole
           property: connectionString
+      - key: PGHOST
+        fromDatabase:
+          name: kwalokwakole
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: kwalokwakole
+          property: port
+      - key: PGUSER
+        fromDatabase:
+          name: kwalokwakole
+          property: user
+      - key: PGPASSWORD
+        fromDatabase:
+          name: kwalokwakole
+          property: password
+      - key: PGDATABASE
+        fromDatabase:
+          name: kwalokwakole
+          property: database
       - key: GENIUS_API_KEY
         sync: false
       - key: GENIUS_API_SECRET

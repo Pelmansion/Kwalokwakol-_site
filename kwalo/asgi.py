@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 
 import os
 
+from kwalo.database_config import ensure_database_url_env
 from kwalo.ensure_settings import ensure_settings_module
 
+ensure_database_url_env()
 ensure_settings_module()
 
 from django.core.asgi import get_asgi_application

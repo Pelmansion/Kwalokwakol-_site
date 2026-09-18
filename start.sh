@@ -5,6 +5,12 @@ set -o errexit
 cp kwalo/settings.example.py kwalo/settings.py
 echo "==> kwalo/settings.py synchronisé depuis settings.example.py"
 
+# DATABASE_URL ou variables PG* (Render → Connect → base liée).
+RESOLVED_DB_URL="$(python -c "from kwalo.database_config import ensure_database_url_env; print(ensure_database_url_env() or '')")"
+if [ -n "$RESOLVED_DB_URL" ]; then
+  export DATABASE_URL="$RESOLVED_DB_URL"
+fi
+
 if [ -z "${DATABASE_URL:-}" ]; then
   echo "ERREUR: DATABASE_URL est absent."
   echo "Render → PostgreSQL → Connect → liez la base au service web."

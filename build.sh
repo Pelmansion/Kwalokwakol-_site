@@ -8,6 +8,11 @@ echo "==> kwalo/settings.py synchronisé depuis settings.example.py"
 
 pip install -r requirements.txt
 
+RESOLVED_DB_URL="$(python -c "from kwalo.database_config import ensure_database_url_env; print(ensure_database_url_env() or '')")"
+if [ -n "$RESOLVED_DB_URL" ]; then
+  export DATABASE_URL="$RESOLVED_DB_URL"
+fi
+
 if [ -n "${RENDER:-}${RENDER_EXTERNAL_HOSTNAME:-}" ] && [ -z "${DATABASE_URL:-}" ]; then
   echo "ERREUR: DATABASE_URL absent sur Render (build)."
   echo "Liez PostgreSQL au Web Service avant de deployer."

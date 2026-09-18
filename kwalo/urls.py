@@ -20,7 +20,10 @@ from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
+from store.views_health import health_check
+
 urlpatterns = [
+    path("health/", health_check, name="health_check"),
     path('admin/', admin.site.urls),
     path("vendeur/", include("marketplace.urls")),
     path("compte/", include("accounts.urls")),

@@ -9,8 +9,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from kwalo.database_config import ensure_database_url_env
 from kwalo.ensure_settings import ensure_settings_module
 
+ensure_database_url_env()
 ensure_settings_module()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kwalo.settings")
 

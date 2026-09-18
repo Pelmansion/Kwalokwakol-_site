@@ -16,6 +16,7 @@ import dj_database_url
 from decouple import config
 from django.core.exceptions import ImproperlyConfigured
 
+from kwalo.database_config import ensure_database_url_env, postgres_ssl_required
 from kwalo.media_storage import configure_media
 
 DJANGO_FORMS_TEMPLATES_DIR = Path(django.__file__).resolve().parent / "forms" / "templates"
@@ -146,14 +147,17 @@ WSGI_APPLICATION = "kwalo.wsgi.application"
 # --- DATABASE ---
 # Production (Render) : PostgreSQL via DATABASE_URL uniquement — jamais SQLite.
 _IS_RENDER = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
-_database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
+ensure_database_url_env()
+_database_url = (
+    (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
+)
 
 if _database_url:
     DATABASES = {
         "default": dj_database_url.config(
             default=_database_url,
             conn_max_age=600,
-            ssl_require=not DEBUG,
+            ssl_require=postgres_ssl_required(_database_url, debug=DEBUG),
         )
     }
 elif _IS_RENDER or not DEBUG:

@@ -2,7 +2,9 @@
 
 ## Erreur `npm ENOENT package.json`
 
-Render essaie de builder en **Node.js** alors que ce projet est **Django (Python)**.
+Render essaie de builder en **Node.js**. Deux solutions :
+
+### Option A — Recommandée : Python 3
 
 Dans **Render → votre service → Settings** :
 
@@ -13,7 +15,20 @@ Dans **Render → votre service → Settings** :
 | **Start Command** | `bash start.sh` |
 | **Root Directory** | *(vide — racine du dépôt)* |
 
-Ne pas utiliser `npm install` ni `npm run build` : il n’y a pas de `package.json` à la racine (le frontend React est optionnel dans `frontend/`).
+### Option B — Si Render reste en Node.js
+
+Un `package.json` à la racine délègue à Django :
+
+| Paramètre | Valeur |
+|-----------|--------|
+| **Runtime** | `Node` |
+| **Build Command** | `npm install` |
+| **Start Command** | `npm start` |
+
+`npm install` exécute `build.sh` (pip, migrate, collectstatic…).  
+`npm start` lance Gunicorn via `start.sh`.
+
+**Ne pas** utiliser `npm run build` seul sans `npm install`.
 
 ## Variables d'environnement obligatoires
 

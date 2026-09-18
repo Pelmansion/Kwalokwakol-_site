@@ -1,0 +1,11 @@
+{
+  "name": "kolegroup",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wrapper Render — le site est Django/Python ; npm délègue à build.sh et start.sh.",
+  "scripts": {
+    "build": "bash build.sh",
+    "postinstall": "bash build.sh",
+    "start": "bash start.sh"
+  }
+}

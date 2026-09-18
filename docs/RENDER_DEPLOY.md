@@ -63,13 +63,31 @@ Le **build réussit** mais le site **ne démarre pas** : le service web n'a pas 
 - `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` — Gmail (mot de passe d'application)
 - `GENIUS_API_KEY` / `GENIUS_API_SECRET` — paiements
 
-## Fichier settings.py
+## Fichier settings.py (normal qu'il ne soit pas sur Git)
 
-`kwalo/settings.py` **n'est pas poussé sur Git** (secrets locaux).
+| Fichier | Sur GitHub ? | Rôle |
+|---------|--------------|------|
+| `kwalo/settings.example.py` | **Oui** | Modèle sans secrets |
+| `kwalo/settings.py` | **Non** (`.gitignore`) | Votre config locale avec mots de passe |
 
 - **Local :** `copy kwalo\settings.example.py kwalo\settings.py` puis éditer
-- **Render :** `build.sh` copie automatiquement `settings.example.py` → `settings.py`
+- **Render :** `build.sh` / `start.sh` copient `settings.example.py` → `settings.py` au déploiement
+
+## Message AWS_STORAGE_BUCKET_NAME (build)
+
+Ce message vient de `check_media_config.py` pendant le build. **Il n'empêche pas le build** (avertissement).
+
+Pour conserver les **images uploadées** sur Render gratuit, ajoutez Cloudflare R2 dans **Environment** :
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_STORAGE_BUCKET_NAME`
+- `AWS_S3_ENDPOINT_URL`
+- `AWS_S3_CUSTOM_DOMAIN`
+- `AWS_S3_REGION_NAME` = `auto`
+
+Guide : `docs/RENDER_MEDIAS.md`. Sans R2, le site fonctionne mais les uploads sont effacés à chaque deploy.
 
 ## Dépôt Git
 
-Projet lié à : https://github.com/pelmansions-ux/KOLEGROUP
+Projet lié à : https://github.com/Pelmansion/Kwalokwakol-_site

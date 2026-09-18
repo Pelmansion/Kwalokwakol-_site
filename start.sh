@@ -2,6 +2,11 @@
 # Commande de démarrage Render — migrations à chaque lancement, puis Gunicorn.
 set -o errexit
 
+if [ ! -f kwalo/settings.py ]; then
+  cp kwalo/settings.example.py kwalo/settings.py
+  echo "==> kwalo/settings.py créé depuis settings.example.py"
+fi
+
 # Dossier des fichiers uploadés (disque Render ou media/ local)
 MEDIA_DIR="${MEDIA_ROOT:-media}"
 mkdir -p "$MEDIA_DIR"

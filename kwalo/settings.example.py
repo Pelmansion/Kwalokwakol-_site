@@ -14,6 +14,7 @@ from pathlib import Path
 import django
 import dj_database_url
 from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 from kwalo.media_storage import configure_media
 
@@ -110,6 +111,7 @@ SITE_ID = 1
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "kwalo.middleware.LogUnhandledExceptionsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -142,6 +144,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "kwalo.wsgi.application"
 
 # --- DATABASE ---
+# Production (Render) : PostgreSQL via DATABASE_URL uniquement — jamais SQLite.
 _IS_RENDER = bool(os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"))
 _database_url = (os.environ.get("DATABASE_URL") or config("DATABASE_URL", default="")).strip()
 
@@ -153,15 +156,13 @@ if _database_url:
             ssl_require=not DEBUG,
         )
     }
+elif _IS_RENDER or not DEBUG:
+    raise ImproperlyConfigured(
+        "DATABASE_URL est obligatoire en production. "
+        "Render → Web Service → Environment → ajoutez DATABASE_URL "
+        "(PostgreSQL → Connect → lier la base au service web)."
+    )
 else:
-    # Pas de DATABASE_URL : SQLite (dev local ou build collectstatic).
-    # En production, start.sh refuse de demarrer Gunicorn sans DATABASE_URL.
-    if _IS_RENDER or not DEBUG:
-        print(
-            "ATTENTION: DATABASE_URL absent — SQLite temporaire. "
-            "Ajoutez DATABASE_URL au service web Render (PostgreSQL → Connect).",
-            file=sys.stderr,
-        )
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

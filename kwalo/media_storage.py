@@ -47,10 +47,15 @@ def configure_media(
 
     if bucket:
         if not access_key or not secret_key:
-            raise RuntimeError(
-                "AWS_STORAGE_BUCKET_NAME est défini mais AWS_ACCESS_KEY_ID ou "
-                "AWS_SECRET_ACCESS_KEY manque. Les uploads échoueront sur Render."
+            logger.warning(
+                "AWS_STORAGE_BUCKET_NAME=%s est défini mais AWS_ACCESS_KEY_ID ou "
+                "AWS_SECRET_ACCESS_KEY manque — stockage local utilisé (uploads "
+                "éphémères sur Render). Complétez les clés R2 ou retirez le bucket.",
+                bucket,
             )
+            bucket = ""
+
+    if bucket:
 
         if "storages" not in installed_apps:
             installed_apps.append("storages")

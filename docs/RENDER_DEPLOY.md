@@ -76,6 +76,15 @@ Le **build réussit** mais le site **ne démarre pas** : le service web n'a pas 
 - **Local :** `copy kwalo\settings.example.py kwalo\settings.py` puis éditer
 - **Render :** `build.sh` / `start.sh` copient `settings.example.py` → `settings.py` au déploiement
 
+## Erreur 500 (Internal Server Error) en production
+
+Si `/hors-ligne/` fonctionne mais `/`, `/produits/` ou `/compte/connexion/` renvoient une page « Oups, une erreur est survenue » :
+
+1. **Vérifiez `DATABASE_URL`** sur le **Web Service** (Environment), pas seulement sur la base PostgreSQL.
+2. **Redéployez** après mise à jour du code (`build.sh` / `start.sh` resynchronisent `settings.py` à chaque déploiement).
+3. **AWS / R2** : soit toutes les variables (`AWS_STORAGE_BUCKET_NAME`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_ENDPOINT_URL`, `AWS_S3_CUSTOM_DOMAIN`), soit **aucune** (ne laissez pas le bucket seul).
+4. Consultez les **logs Render** au moment d'une requête en erreur : le middleware journalise la traceback complète.
+
 ## Message AWS_STORAGE_BUCKET_NAME (build)
 
 Ce message vient de `check_media_config.py` pendant le build. **Il n'empêche pas le build** (avertissement).

@@ -2,10 +2,8 @@
 # Commande de démarrage Render — migrations à chaque lancement, puis Gunicorn.
 set -o errexit
 
-if [ ! -f kwalo/settings.py ]; then
-  cp kwalo/settings.example.py kwalo/settings.py
-  echo "==> kwalo/settings.py créé depuis settings.example.py"
-fi
+cp kwalo/settings.example.py kwalo/settings.py
+echo "==> kwalo/settings.py synchronisé depuis settings.example.py"
 
 if [ -z "${DATABASE_URL:-}" ]; then
   echo "ERREUR: DATABASE_URL est absent."
@@ -15,6 +13,13 @@ if [ -z "${DATABASE_URL:-}" ]; then
 fi
 
 echo "==> Base de donnees : PostgreSQL (DATABASE_URL definie)"
+python scripts/check_database.py
+
+# Évite qu'un ancien db.sqlite3 local ne prenne le pas sur PostgreSQL.
+if [ -f db.sqlite3 ]; then
+  rm -f db.sqlite3
+  echo "==> Ancien db.sqlite3 supprimé (PostgreSQL actif)"
+fi
 
 # Dossier des fichiers uploadés (disque Render ou media/ local)
 MEDIA_DIR="${MEDIA_ROOT:-media}"

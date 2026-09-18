@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
+{% block content %}
+  <section class="report-wrap container">
+    {% include "accounts/partials/admin_nav.html" with active="validations" %}
+    <h1 class="report-title">Validations</h1>
+    <p class="report-subtitle">Vendeurs et prestataires en attente de vérification.</p>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Vendeurs à valider</h2>
+      {% if vendors_pending_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Contact</th>
+              <th>Numéro d'identité</th>
+              <th>Localisation</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vendor in vendors_pending_page %}
+              <tr>
+                <td><strong>{{ vendor.name }}</strong></td>
+                <td>
+                  <div>{{ vendor.phone|default:"—" }}</div>
+                  <div class="muted">{{ vendor.email|default:"—" }}</div>
+                </td>
+                <td>
+                  <div>{{ vendor.id_number|default:"—" }}</div>
+                  <a href="{% url 'accounts:view_vendor_details' vendor.id %}" class="link" style="font-size: 0.85rem;">Voir les documents</a>
+                </td>
+                <td>{{ vendor.location|default:"—" }}</td>
+                <td><span class="badge badge--warning">{{ vendor.get_verification_status_display }}</span></td>
+                <td>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{% url 'accounts:view_vendor_details' vendor.id %}" class="btn btn--small btn--ghost">Détails</a>
+                    <a href="{% url 'subscriptions:admin_set_amount' 'vendor' vendor.id %}" class="btn btn--small btn--ghost" style="color: #c2410c;">Tarif</a>
+                    <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--success" type="submit">Valider</button></form>
+                    <form method="post" action="{% url 'accounts:moderate_vendor' vendor.id 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--ghost" type="submit">Refuser</button></form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if vendors_pending_page.has_other_pages %}
+          <nav class="pagination" aria-label="Vendeurs à valider">
+            {% if vendors_pending_page.has_previous %}
+              <a href="?vendors_page={{ vendors_pending_page.previous_page_number }}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}">‹ Préc.</a>
+            {% else %}<span class="disabled">‹ Préc.</span>{% endif %}
+            <span class="current">Page {{ vendors_pending_page.number }} / {{ vendors_pending_page.paginator.num_pages }}</span>
+            {% if vendors_pending_page.has_next %}
+              <a href="?vendors_page={{ vendors_pending_page.next_page_number }}{% if request.GET.providers_page %}&providers_page={{ request.GET.providers_page }}{% endif %}">Suiv. ›</a>
+            {% else %}<span class="disabled">Suiv. ›</span>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun vendeur en attente.</p>
+      {% endif %}
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Prestataires à valider</h2>
+      {% if providers_pending_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Contact</th>
+              <th>Numéro d'identité</th>
+              <th>Localisation</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for provider in providers_pending_page %}
+              <tr>
+                <td><strong>{{ provider.name }}</strong></td>
+                <td>
+                  <div>{{ provider.phone|default:"—" }}</div>
+                  <div class="muted">{{ provider.email|default:"—" }}</div>
+                </td>
+                <td>
+                  <div>{{ provider.id_number|default:"—" }}</div>
+                  <a href="{% url 'accounts:view_service_provider_details' provider.id %}" class="link" style="font-size: 0.85rem;">Voir les documents</a>
+                </td>
+                <td>{{ provider.location|default:"—" }}</td>
+                <td><span class="badge badge--warning">{{ provider.get_verification_status_display }}</span></td>
+                <td>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{% url 'accounts:view_service_provider_details' provider.id %}" class="btn btn--small btn--ghost">Détails</a>
+                    <a href="{% url 'subscriptions:admin_set_amount' 'provider' provider.id %}" class="btn btn--small btn--ghost" style="color: #c2410c;">Tarif</a>
+                    <form method="post" action="{% url 'accounts:moderate_service_provider' provider.id 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--success" type="submit">Valider</button></form>
+                    <form method="post" action="{% url 'accounts:moderate_service_provider' provider.id 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn--small btn--ghost" type="submit">Refuser</button></form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if providers_pending_page.has_other_pages %}
+          <nav class="pagination" aria-label="Prestataires à valider">
+            {% if providers_pending_page.has_previous %}
+              <a href="?providers_page={{ providers_pending_page.previous_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}">‹ Préc.</a>
+            {% else %}<span class="disabled">‹ Préc.</span>{% endif %}
+            <span class="current">Page {{ providers_pending_page.number }} / {{ providers_pending_page.paginator.num_pages }}</span>
+            {% if providers_pending_page.has_next %}
+              <a href="?providers_page={{ providers_pending_page.next_page_number }}{% if request.GET.vendors_page %}&vendors_page={{ request.GET.vendors_page }}{% endif %}">Suiv. ›</a>
+            {% else %}<span class="disabled">Suiv. ›</span>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun prestataire en attente.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

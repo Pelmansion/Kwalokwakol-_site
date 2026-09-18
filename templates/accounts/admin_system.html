@@ -1,21 +1,7 @@
 {% extends "base.html" %}
 {% block extra_head %}
+{% include "accounts/partials/admin_styles.html" %}
 <style>
-  .report-wrap { padding: 28px 0 48px; background: #f8fafc; }
-  .report-title { margin: 0 0 6px 0; font-size: 1.75rem; font-weight: 800; color: #0d9488; letter-spacing: -0.03em; }
-  .report-title::after { content: ""; display: block; width: 48px; height: 3px; background: linear-gradient(90deg, #0d9488, #14b8a6); border-radius: 2px; margin-top: 10px; }
-  .report-subtitle { margin: 0 0 20px 0; font-size: 0.95rem; color: #64748b; }
-  .report-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 24px; }
-  .report-card__title { margin: 0 0 18px 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
-  .report-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  .report-table th, .report-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-  .report-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .report-table tbody tr:hover { background: #f8fafc; }
-  .admin-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
-  .admin-nav__link { padding: 10px 18px; border-radius: 999px; font-size: 0.88rem; font-weight: 600; text-decoration: none; color: #475569; background: #fff; border: 1px solid #e2e8f0; }
-  .admin-nav__link:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
-  .admin-nav__link.is-active { background: #0d9488; color: #fff; border-color: #0d9488; }
-  .admin-nav__link--external { margin-left: auto; }
   .db-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
   .db-meta__item { padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
   .db-meta__label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
@@ -29,11 +15,6 @@
   .admin-form-grid .helptext { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
   .admin-form-grid .errorlist { margin: 4px 0 0; padding: 0; list-style: none; color: #dc2626; font-size: 0.8rem; }
   .db-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-  .badge--role-admin { background: #ffedd5; color: #c2410c; }
-  .badge--role-super_admin { background: #ede9fe; color: #6d28d9; }
-  @media (max-width: 720px) {
-    .admin-nav__link--external { margin-left: 0; width: 100%; text-align: center; }
-  }
 </style>
 {% endblock %}
 {% block content %}
@@ -184,8 +165,8 @@
           </tbody>
         </table>
         <p class="muted" style="margin-top: 12px; font-size: 0.85rem;">
-          Pour modifier un rôle existant, utilisez la section « Utilisateurs » de la
-          <a href="{% url 'accounts:admin_dashboard' %}">vue globale</a>.
+          Pour modifier un rôle existant, utilisez la page
+          <a href="{% url 'accounts:admin_users' %}">Utilisateurs</a>.
         </p>
       {% else %}
         <p class="muted">Aucun administrateur enregistré.</p>

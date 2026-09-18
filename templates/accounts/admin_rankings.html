@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
+{% block content %}
+  <section class="report-wrap container">
+    {% include "accounts/partials/admin_nav.html" with active="rankings" %}
+    <h1 class="report-title">Classements</h1>
+    <p class="report-subtitle">Performance des vendeurs et prestataires vérifiés.</p>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Vendeurs par chiffre d'affaires</h2>
+      {% if top_vendors_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Nom du vendeur</th>
+              <th class="text-right">Chiffre d'affaires</th>
+              <th class="text-right">Nombre de commandes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in top_vendors_page %}
+              <tr>
+                <td><strong>{{ top_vendors_page.start_index|add:forloop.counter0 }}</strong></td>
+                <td><strong>{{ v.name }}</strong></td>
+                <td class="text-right"><strong>{{ v.revenue|floatformat:0 }} FCFA</strong></td>
+                <td class="text-right">{{ v.order_count }} commande{{ v.order_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if top_vendors_page.has_other_pages %}
+          <nav class="pagination" aria-label="Vendeurs par CA">
+            {% if top_vendors_page.has_previous %}
+              <a href="?top_vendors_page={{ top_vendors_page.previous_page_number }}{% if request.GET.top_providers_page %}&top_providers_page={{ request.GET.top_providers_page }}{% endif %}">‹ Préc.</a>
+            {% else %}<span class="disabled">‹ Préc.</span>{% endif %}
+            <span class="current">Page {{ top_vendors_page.number }} / {{ top_vendors_page.paginator.num_pages }}</span>
+            {% if top_vendors_page.has_next %}
+              <a href="?top_vendors_page={{ top_vendors_page.next_page_number }}{% if request.GET.top_providers_page %}&top_providers_page={{ request.GET.top_providers_page }}{% endif %}">Suiv. ›</a>
+            {% else %}<span class="disabled">Suiv. ›</span>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun vendeur vérifié.</p>
+      {% endif %}
+    </div>
+
+    <div class="report-card">
+      <h2 class="report-card__title">Prestataires par demandes</h2>
+      {% if top_providers_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Nom du prestataire</th>
+              <th class="text-right">Demandes validées</th>
+              <th class="text-right">Total demandes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in top_providers_page %}
+              <tr>
+                <td><strong>{{ top_providers_page.start_index|add:forloop.counter0 }}</strong></td>
+                <td><strong>{{ p.name }}</strong></td>
+                <td class="text-right"><strong>{{ p.approved_count }}</strong></td>
+                <td class="text-right">{{ p.request_count }} demande{{ p.request_count|pluralize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if top_providers_page.has_other_pages %}
+          <nav class="pagination" aria-label="Prestataires par demandes">
+            {% if top_providers_page.has_previous %}
+              <a href="?top_providers_page={{ top_providers_page.previous_page_number }}{% if request.GET.top_vendors_page %}&top_vendors_page={{ request.GET.top_vendors_page }}{% endif %}">‹ Préc.</a>
+            {% else %}<span class="disabled">‹ Préc.</span>{% endif %}
+            <span class="current">Page {{ top_providers_page.number }} / {{ top_providers_page.paginator.num_pages }}</span>
+            {% if top_providers_page.has_next %}
+              <a href="?top_providers_page={{ top_providers_page.next_page_number }}{% if request.GET.top_vendors_page %}&top_vendors_page={{ request.GET.top_vendors_page }}{% endif %}">Suiv. ›</a>
+            {% else %}<span class="disabled">Suiv. ›</span>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun prestataire vérifié.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

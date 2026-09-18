@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
+{% block content %}
+  <section class="report-wrap container">
+    {% include "accounts/partials/admin_nav.html" with active="users" %}
+    <h1 class="report-title">Utilisateurs</h1>
+    <p class="report-subtitle">Gestion des rôles — réservé au super admin.</p>
+
+    <div class="report-card">
+      {% if users_page.object_list %}
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Contact</th>
+              <th>Rôle</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users_page %}
+              <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td>
+                  {% if u.userprofile %}
+                    <span class="badge badge--role badge--role-{{ u.userprofile.role }}">{{ u.userprofile.get_role_display }}</span>
+                  {% else %}
+                    <span class="badge badge--role badge--role-customer">Client</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <form method="post" action="{% url 'accounts:set_user_role' u.id %}" class="report-role-form">{% csrf_token %}
+                    <div class="report-select-wrap">
+                      <select id="role-{{ u.id }}" name="role" class="report-select" aria-label="Changer le rôle de {{ u.username }}">
+                        {% for value, label in role_choices %}
+                          <option value="{{ value }}" {% if u.userprofile.role == value or not u.userprofile and value == 'customer' %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <button class="btn btn--small" type="submit">Mettre à jour</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if users_page.has_other_pages %}
+          <nav class="pagination" aria-label="Utilisateurs">
+            {% if users_page.has_previous %}
+              <a href="?users_page={{ users_page.previous_page_number }}">‹ Préc.</a>
+            {% else %}<span class="disabled">‹ Préc.</span>{% endif %}
+            <span class="current">Page {{ users_page.number }} / {{ users_page.paginator.num_pages }}</span>
+            {% if users_page.has_next %}
+              <a href="?users_page={{ users_page.next_page_number }}">Suiv. ›</a>
+            {% else %}<span class="disabled">Suiv. ›</span>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="report-empty">Aucun utilisateur.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

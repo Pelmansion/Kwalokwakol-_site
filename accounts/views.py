@@ -6,11 +6,9 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.db import connection
-from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -19,6 +17,14 @@ from orders.models import Order
 from .email_utils import get_user_from_token, send_verification_email
 from django.core.management import call_command
 
+from .admin_helpers import (
+    overview_stats,
+    pending_count,
+    pending_pages,
+    ranking_pages,
+    subscription_stats,
+    users_page as admin_users_page,
+)
 from .db_overview import (
     database_engine_label,
     database_name,
@@ -282,116 +288,58 @@ def _ensure_admin(request, super_only=False):
     raise PermissionDenied
 
 
-PAGE_SIZE = 10
+def _admin_nav_context(profile) -> dict:
+    return {"profile": profile, "pending_count": pending_count()}
 
 
 @login_required
 def admin_dashboard(request):
     profile = _ensure_admin(request, super_only=False)
-    vendors_pending_qs = Vendor.objects.filter(
-        verification_status=Vendor.STATUS_PENDING
-    ).select_related("owner").order_by("-id")
-    providers_pending_qs = ServiceProvider.objects.filter(
-        verification_status=ServiceProvider.STATUS_PENDING
-    ).select_related("owner").order_by("-id")
-
-    paginator_v = Paginator(vendors_pending_qs, PAGE_SIZE)
-    paginator_p = Paginator(providers_pending_qs, PAGE_SIZE)
-    vendors_pending_page = paginator_v.get_page(request.GET.get("vendors_page", 1))
-    providers_pending_page = paginator_p.get_page(request.GET.get("providers_page", 1))
-    pending_count = vendors_pending_qs.count() + providers_pending_qs.count()
-
-    total_vendors = Vendor.objects.filter(verification_status=Vendor.STATUS_VERIFIED).count()
-    total_providers = ServiceProvider.objects.filter(verification_status=ServiceProvider.STATUS_VERIFIED).count()
-    total_orders = Order.objects.exclude(status=Order.STATUS_CANCELLED).count()
-    global_revenue = (
-        Order.objects.exclude(status=Order.STATUS_CANCELLED).aggregate(total=Sum("total_amount"))["total"] or 0
-    )
-
-    top_vendors_qs = (
-        Vendor.objects.filter(verification_status=Vendor.STATUS_VERIFIED)
-        .annotate(
-            revenue=Coalesce(
-                Sum(
-                    ExpressionWrapper(
-                        F("product__order_items__unit_price") * F("product__order_items__quantity"),
-                        output_field=DecimalField(),
-                    ),
-                    filter=Q(
-                        product__order_items__order__status__in=[
-                            Order.STATUS_PENDING,
-                            Order.STATUS_PAID,
-                            Order.STATUS_SHIPPED,
-                            Order.STATUS_DONE,
-                        ]
-                    ),
-                ),
-                Value(0, output_field=DecimalField()),
-            ),
-            order_count=Count(
-                "product__order_items__order",
-                distinct=True,
-                filter=Q(
-                    product__order_items__order__status__in=[
-                        Order.STATUS_PENDING,
-                        Order.STATUS_PAID,
-                        Order.STATUS_SHIPPED,
-                        Order.STATUS_DONE,
-                    ]
-                ),
-            ),
-        )
-        .order_by("-revenue")
-    )
-
-    top_providers_qs = (
-        ServiceProvider.objects.filter(verification_status=ServiceProvider.STATUS_VERIFIED)
-        .annotate(
-            request_count=Count("servicerequest"),
-            approved_count=Count(
-                "servicerequest", filter=Q(servicerequest__status="approved")
-            ),
-        )
-        .order_by("-approved_count", "-request_count")
-    )
-
-    paginator_top_v = Paginator(top_vendors_qs, PAGE_SIZE)
-    paginator_top_p = Paginator(top_providers_qs, PAGE_SIZE)
-    top_vendors_page = paginator_top_v.get_page(request.GET.get("top_vendors_page", 1))
-    top_providers_page = paginator_top_p.get_page(request.GET.get("top_providers_page", 1))
-
-    users_page = None
-    if request.user.is_superuser or profile.role == UserProfile.ROLE_SUPER_ADMIN:
-        users_qs = User.objects.all().select_related("userprofile").order_by("-id")
-        paginator_u = Paginator(users_qs, PAGE_SIZE)
-        users_page = paginator_u.get_page(request.GET.get("users_page", 1))
-
-    from subscriptions.models import Subscription
-    sub_stats = Subscription.objects.aggregate(
-        total=Count("id"),
-        active=Count("id", filter=Q(status=Subscription.STATUS_ACTIVE)),
-        pending=Count("id", filter=Q(status=Subscription.STATUS_PENDING)),
-        past_due=Count("id", filter=Q(status=Subscription.STATUS_PAST_DUE)),
-        monthly_revenue=Sum("monthly_amount", filter=Q(status=Subscription.STATUS_ACTIVE)),
-    )
-
+    stats = overview_stats()
     return render(
         request,
         "accounts/admin_dashboard.html",
         {
-            "vendors_pending_page": vendors_pending_page,
-            "providers_pending_page": providers_pending_page,
-            "top_vendors_page": top_vendors_page,
-            "top_providers_page": top_providers_page,
-            "users_page": users_page,
-            "pending_count": pending_count,
-            "profile": profile,
-            "total_vendors": total_vendors,
-            "total_providers": total_providers,
-            "total_orders": total_orders,
-            "global_revenue": global_revenue,
+            **_admin_nav_context(profile),
+            "total_vendors": stats["total_vendors"],
+            "total_providers": stats["total_providers"],
+            "total_orders": stats["total_orders"],
+            "global_revenue": stats["global_revenue"],
+            "sub_stats": subscription_stats(),
+        },
+    )
+
+
+@login_required
+def admin_validations(request):
+    profile = _ensure_admin(request, super_only=False)
+    return render(
+        request,
+        "accounts/admin_validations.html",
+        {**_admin_nav_context(profile), **pending_pages(request)},
+    )
+
+
+@login_required
+def admin_rankings(request):
+    profile = _ensure_admin(request, super_only=False)
+    return render(
+        request,
+        "accounts/admin_rankings.html",
+        {**_admin_nav_context(profile), **ranking_pages(request)},
+    )
+
+
+@login_required
+def admin_users(request):
+    profile = _ensure_admin(request, super_only=True)
+    return render(
+        request,
+        "accounts/admin_users.html",
+        {
+            **_admin_nav_context(profile),
+            "users_page": admin_users_page(request),
             "role_choices": UserProfile.ROLE_CHOICES,
-            "sub_stats": sub_stats,
         },
     )
 
@@ -407,7 +355,7 @@ def set_user_role(request, user_id):
         if role in valid_roles:
             profile.role = role
             profile.save()
-    return redirect("accounts:admin_dashboard")
+    return redirect("accounts:admin_users")
 
 
 @login_required
@@ -422,7 +370,7 @@ def moderate_vendor(request, vendor_id, action):
             vendor.verification_status = Vendor.STATUS_REJECTED
             vendor.verified_at = timezone.now()
         vendor.save()
-    return redirect("accounts:admin_dashboard")
+    return redirect("accounts:admin_validations")
 
 
 @login_required
@@ -437,7 +385,7 @@ def moderate_service_provider(request, provider_id, action):
             provider.verification_status = ServiceProvider.STATUS_REJECTED
             provider.verified_at = timezone.now()
         provider.save()
-    return redirect("accounts:admin_dashboard")
+    return redirect("accounts:admin_validations")
 
 
 @login_required
@@ -531,7 +479,7 @@ def admin_system(request):
         request,
         "accounts/admin_system.html",
         {
-            "profile": profile,
+            **_admin_nav_context(profile),
             "create_form": create_form,
             "admins": admins,
             "db_engine": database_engine_label(),

@@ -1,7 +1,13 @@
 <nav class="admin-nav" aria-label="Navigation administration">
   <a class="admin-nav__link{% if active == 'dashboard' %} is-active{% endif %}" href="{% url 'accounts:admin_dashboard' %}">Vue globale</a>
+  <a class="admin-nav__link{% if active == 'validations' %} is-active{% endif %}" href="{% url 'accounts:admin_validations' %}">
+    Validations
+    {% if pending_count %}<span class="admin-nav__badge">{{ pending_count }}</span>{% endif %}
+  </a>
+  <a class="admin-nav__link{% if active == 'rankings' %} is-active{% endif %}" href="{% url 'accounts:admin_rankings' %}">Classements</a>
   {% if request.user.is_superuser or profile.role == "super_admin" %}
-  <a class="admin-nav__link{% if active == 'system' %} is-active{% endif %}" href="{% url 'accounts:admin_system' %}">Admins &amp; base de données</a>
+  <a class="admin-nav__link{% if active == 'users' %} is-active{% endif %}" href="{% url 'accounts:admin_users' %}">Utilisateurs</a>
+  <a class="admin-nav__link{% if active == 'system' %} is-active{% endif %}" href="{% url 'accounts:admin_system' %}">Admins &amp; BDD</a>
   {% endif %}
   <a class="admin-nav__link admin-nav__link--external" href="/admin/" target="_blank" rel="noopener">Django Admin ↗</a>
 </nav>

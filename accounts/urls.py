@@ -34,6 +34,9 @@ urlpatterns = [
         name="cancel_service_reservation",
     ),
     path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-panel/validations/", views.admin_validations, name="admin_validations"),
+    path("admin-panel/classements/", views.admin_rankings, name="admin_rankings"),
+    path("admin-panel/utilisateurs/", views.admin_users, name="admin_users"),
     path("admin-panel/systeme/", views.admin_system, name="admin_system"),
     path("admin-panel/users/<int:user_id>/role/", views.set_user_role, name="set_user_role"),
     path(

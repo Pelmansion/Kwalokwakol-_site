@@ -14,6 +14,7 @@ from pathlib import Path
 import django
 import dj_database_url
 from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 from kwalo.media_storage import configure_media
 
@@ -154,18 +155,29 @@ if _database_url:
         )
     }
 else:
-    if _IS_RENDER:
+    if os.environ.get("RENDER_ALLOW_SQLITE_BUILD") == "1":
         print(
-            "ATTENTION: DATABASE_URL absent — SQLite temporaire (build collectstatic). "
-            "Liez PostgreSQL dans Render → Environment avant le démarrage.",
+            "INFO: SQLite temporaire pour collectstatic (build Render).",
             file=sys.stderr,
         )
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
         }
-    }
+    elif not DEBUG:
+        raise ImproperlyConfigured(
+            "DATABASE_URL est requis en production. "
+            "Render → PostgreSQL → Connect → ajoutez DATABASE_URL au service web."
+        )
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]

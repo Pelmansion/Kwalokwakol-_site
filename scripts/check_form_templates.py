@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 if not os.environ.get("DATABASE_URL"):
     os.environ["DEBUG"] = "true"
+    os.environ["RENDER_ALLOW_SQLITE_BUILD"] = "1"
 
 from kwalo.ensure_settings import ensure_settings_module
 

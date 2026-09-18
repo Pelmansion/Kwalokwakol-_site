@@ -1,66 +1,16 @@
 {% extends "base.html" %}
-{% block extra_head %}
-{% include "accounts/partials/admin_styles.html" %}
-<style>
-  .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .admin-form-grid .form-group { margin: 0; }
-  .admin-form-grid label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: #334155; }
-  .admin-form-grid input, .admin-form-grid select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
-  .admin-form-grid .helptext { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
-  .admin-form-grid .errorlist { margin: 4px 0 0; padding: 0; list-style: none; color: #dc2626; font-size: 0.8rem; }
-</style>
-{% endblock %}
+{% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
 {% block content %}
   {% include "accounts/partials/admin_shell_open.html" with admin_title="Utilisateurs" admin_subtitle="Créez des comptes et gérez les rôles. Seul le super admin peut créer ou promouvoir un super admin." admin_active="users" %}
 
     <div class="report-card">
-      <h2 class="report-card__title">Créer un utilisateur</h2>
-      <form method="post" class="admin-form-grid" style="align-items: start;">
-        {% csrf_token %}
-        <input type="hidden" name="form_type" value="create_user">
+      <div class="admin-card__header">
+        <h2 class="report-card__title">Comptes existants</h2>
+        <button type="button" class="btn" id="open-create-user-modal" aria-haspopup="dialog" aria-controls="create-user-modal">
+          + Créer un utilisateur
+        </button>
+      </div>
 
-        <div class="form-group">
-          <label for="{{ create_form.username.id_for_label }}">{{ create_form.username.label }}</label>
-          {{ create_form.username }}
-          {% if create_form.username.help_text %}<p class="helptext">{{ create_form.username.help_text }}</p>{% endif %}
-          {{ create_form.username.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.email.id_for_label }}">{{ create_form.email.label }}</label>
-          {{ create_form.email }}
-          {{ create_form.email.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.first_name.id_for_label }}">{{ create_form.first_name.label }}</label>
-          {{ create_form.first_name }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.last_name.id_for_label }}">{{ create_form.last_name.label }}</label>
-          {{ create_form.last_name }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.password1.id_for_label }}">{{ create_form.password1.label }}</label>
-          {{ create_form.password1 }}
-          {{ create_form.password1.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.password2.id_for_label }}">{{ create_form.password2.label }}</label>
-          {{ create_form.password2 }}
-          {{ create_form.password2.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.role.id_for_label }}">{{ create_form.role.label }}</label>
-          {{ create_form.role }}
-          {{ create_form.role.errors }}
-        </div>
-        <div class="form-group" style="align-self: end;">
-          <button type="submit" class="btn">Créer le compte</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="report-card">
-      <h2 class="report-card__title">Comptes existants</h2>
       {% if users_page.object_list %}
         <div class="admin-table-wrap">
           <table class="report-table">
@@ -121,5 +71,103 @@
       {% endif %}
     </div>
 
+    <div class="admin-modal{% if create_form.errors %} is-open{% endif %}" id="create-user-modal" role="dialog" aria-modal="true" aria-labelledby="create-user-modal-title" aria-hidden="{% if create_form.errors %}false{% else %}true{% endif %}">
+      <div class="admin-modal__dialog">
+        <header class="admin-modal__header">
+          <div>
+            <h2 class="admin-modal__title" id="create-user-modal-title">Créer un utilisateur</h2>
+            <p class="admin-modal__subtitle">Nouveau compte avec identifiant, e-mail et rôle.</p>
+          </div>
+          <button type="button" class="admin-modal__close" id="close-create-user-modal" aria-label="Fermer">&times;</button>
+        </header>
+        <div class="admin-modal__body">
+          <form method="post" class="admin-form-grid" id="create-user-form">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="create_user">
+
+            <div class="form-group">
+              <label for="{{ create_form.username.id_for_label }}">{{ create_form.username.label }}</label>
+              {{ create_form.username }}
+              {% if create_form.username.help_text %}<p class="helptext">{{ create_form.username.help_text }}</p>{% endif %}
+              {{ create_form.username.errors }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.email.id_for_label }}">{{ create_form.email.label }}</label>
+              {{ create_form.email }}
+              {{ create_form.email.errors }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.first_name.id_for_label }}">{{ create_form.first_name.label }}</label>
+              {{ create_form.first_name }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.last_name.id_for_label }}">{{ create_form.last_name.label }}</label>
+              {{ create_form.last_name }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.password1.id_for_label }}">{{ create_form.password1.label }}</label>
+              {{ create_form.password1 }}
+              {{ create_form.password1.errors }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.password2.id_for_label }}">{{ create_form.password2.label }}</label>
+              {{ create_form.password2 }}
+              {{ create_form.password2.errors }}
+            </div>
+            <div class="form-group form-group--full">
+              <label for="{{ create_form.role.id_for_label }}">{{ create_form.role.label }}</label>
+              {{ create_form.role }}
+              {{ create_form.role.errors }}
+            </div>
+            <div class="form-group form-group--full admin-modal__actions">
+              <button type="button" class="btn btn--ghost" id="cancel-create-user-modal">Annuler</button>
+              <button type="submit" class="btn">Créer le compte</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
   {% include "accounts/partials/admin_shell_close.html" %}
+
+  <script>
+    (function () {
+      var modal = document.getElementById("create-user-modal");
+      var openBtn = document.getElementById("open-create-user-modal");
+      var closeBtn = document.getElementById("close-create-user-modal");
+      var cancelBtn = document.getElementById("cancel-create-user-modal");
+      if (!modal || !openBtn) return;
+
+      function openModal() {
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        var first = modal.querySelector("input:not([type=hidden])");
+        if (first) first.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        openBtn.focus();
+      }
+
+      openBtn.addEventListener("click", openModal);
+      if (closeBtn) closeBtn.addEventListener("click", closeModal);
+      if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      });
+
+      if (modal.classList.contains("is-open")) {
+        document.body.style.overflow = "hidden";
+      }
+    })();
+  </script>
 {% endblock %}

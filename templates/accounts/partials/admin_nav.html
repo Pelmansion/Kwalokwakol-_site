@@ -9,10 +9,10 @@
   <a class="admin-nav__link{% if active == 'rankings' %} is-active{% endif %}" href="{% url 'accounts:admin_rankings' %}">
     <span class="admin-nav__icon" aria-hidden="true">🏆</span> Classements
   </a>
-  {% if request.user.is_superuser or profile.role == "super_admin" %}
   <a class="admin-nav__link{% if active == 'users' %} is-active{% endif %}" href="{% url 'accounts:admin_users' %}">
     <span class="admin-nav__icon" aria-hidden="true">👥</span> Utilisateurs
   </a>
+  {% if request.user.is_superuser or profile.role == "super_admin" %}
   <a class="admin-nav__link{% if active == 'system' %} is-active{% endif %}" href="{% url 'accounts:admin_system' %}">
     <span class="admin-nav__icon" aria-hidden="true">🗄️</span> Admins &amp; BDD
   </a>

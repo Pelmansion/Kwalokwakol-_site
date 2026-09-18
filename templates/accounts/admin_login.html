@@ -7,11 +7,21 @@
     </p>
   </section>
   <section class="container auth-card">
+    {% if form.non_field_errors %}
+      <div class="alert alert--error" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
     <form method="post">
       {% csrf_token %}
+      {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
       {{ form.as_p }}
       <button class="btn" type="submit">Se connecter</button>
     </form>
+    <p class="muted" style="margin-top:16px;font-size:0.9rem;">
+      Compte client ou vendeur ?
+      <a href="{% url 'accounts:login' %}">Connexion standard</a>
+    </p>
   </section>
 {% endblock %}
 

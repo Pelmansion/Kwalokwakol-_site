@@ -56,19 +56,19 @@
           <span>Gérer les abonnements et formules mensuelles.</span>
         </span>
       </a>
-      {% if request.user.is_superuser or profile.role == "super_admin" %}
       <a class="admin-shortcut" href="{% url 'accounts:admin_users' %}">
         <span class="admin-shortcut__icon" aria-hidden="true">👥</span>
         <span class="admin-shortcut__text">
           <strong>Utilisateurs</strong>
-          <span>Rôles et accès des comptes.</span>
+          <span>Créer des comptes et gérer les rôles.</span>
         </span>
       </a>
+      {% if request.user.is_superuser or profile.role == "super_admin" %}
       <a class="admin-shortcut" href="{% url 'accounts:admin_system' %}">
         <span class="admin-shortcut__icon" aria-hidden="true">🗄️</span>
         <span class="admin-shortcut__text">
           <strong>Admins &amp; base de données</strong>
-          <span>Créer des admins et surveiller PostgreSQL.</span>
+          <span>Surveiller PostgreSQL et maintenance.</span>
         </span>
       </a>
       {% endif %}

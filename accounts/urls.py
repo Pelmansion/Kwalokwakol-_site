@@ -21,7 +21,7 @@ urlpatterns = [
     ),
     path(
         "connexion-admin/",
-        auth_views.LoginView.as_view(template_name="accounts/admin_login.html"),
+        views.AdminLoginView.as_view(),
         name="admin_login",
     ),
     path("deconnexion/", auth_views.LogoutView.as_view(), name="logout"),

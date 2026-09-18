@@ -69,6 +69,7 @@ urlpatterns = [
     path("", include("store.urls")),
 ]
 
+handler403 = "store.views.handle_permission_denied"
 handler500 = "store.views.handle_server_error"
 
 # Fichiers uploadés en local / disque persistant uniquement (R2/S3 = URLs directes HTTPS)

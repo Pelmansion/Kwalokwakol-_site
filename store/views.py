@@ -37,6 +37,11 @@ def handle_server_error(request):
     return render(request, "500.html", status=500)
 
 
+def handle_permission_denied(request, exception):
+    """Page 403 lisible avec lien vers la connexion admin si besoin."""
+    return render(request, "403.html", status=403)
+
+
 DEFAULT_CATEGORIES = [
     "Alimentation",
     "Métiers du bâtiment",

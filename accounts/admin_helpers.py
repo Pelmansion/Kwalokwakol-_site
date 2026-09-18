@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+from django.contrib import messages
 from django.core.paginator import Paginator
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 
@@ -11,6 +16,57 @@ from orders.models import Order
 from subscriptions.models import Subscription
 
 PAGE_SIZE = 10
+
+
+@dataclass
+class AdminAccess:
+    profile: "UserProfile | None"
+    redirect: object | None
+
+
+def user_has_admin_access(user, *, super_only: bool = False, profile=None) -> bool:
+    """True si le compte peut accéder à l'espace admin (ou super admin seul)."""
+    from accounts.models import UserProfile
+
+    if not user or not user.is_authenticated:
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    if profile is None:
+        try:
+            profile = user.userprofile
+        except UserProfile.DoesNotExist:
+            return False
+    if super_only:
+        return profile.role == UserProfile.ROLE_SUPER_ADMIN
+    return profile.role in (UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN)
+
+
+def require_admin(request, *, super_only: bool = False) -> AdminAccess:
+    """
+    Vérifie l'accès admin sans renvoyer 403 :
+    redirige vers la connexion admin ou le tableau de bord.
+    """
+    from accounts.models import UserProfile
+
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    if user_has_admin_access(request.user, super_only=super_only, profile=profile):
+        return AdminAccess(profile=profile, redirect=None)
+
+    if super_only:
+        messages.error(
+            request,
+            "Cette section est réservée au super administrateur.",
+        )
+        return AdminAccess(profile=None, redirect=redirect("accounts:admin_dashboard"))
+
+    messages.error(
+        request,
+        "Connectez-vous avec un compte administrateur (Admin ou Super admin).",
+    )
+    login_url = reverse("accounts:admin_login")
+    next_url = request.get_full_path()
+    return AdminAccess(profile=None, redirect=redirect(f"{login_url}?next={next_url}"))
 
 _ORDER_STATUSES = [
     Order.STATUS_PENDING,

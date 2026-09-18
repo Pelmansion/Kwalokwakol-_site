@@ -8,17 +8,11 @@
   .db-meta__value { font-size: 1rem; font-weight: 700; color: #0f172a; word-break: break-all; }
   .db-meta__value--ok { color: #0d9488; }
   .db-meta__value--warn { color: #d97706; }
-  .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .admin-form-grid .form-group { margin: 0; }
-  .admin-form-grid label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: #334155; }
-  .admin-form-grid input, .admin-form-grid select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
-  .admin-form-grid .helptext { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
-  .admin-form-grid .errorlist { margin: 4px 0 0; padding: 0; list-style: none; color: #dc2626; font-size: 0.8rem; }
   .db-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 </style>
 {% endblock %}
 {% block content %}
-  {% include "accounts/partials/admin_shell_open.html" with admin_title="Admins & base de données" admin_subtitle="Créez des comptes administrateurs et surveillez l'état de PostgreSQL." admin_active="system" %}
+  {% include "accounts/partials/admin_shell_open.html" with admin_title="Admins & base de données" admin_subtitle="Surveillance PostgreSQL et maintenance — réservé au super admin." admin_active="system" %}
 
     <div class="report-card">
       <h2 class="report-card__title">État de la base de données</h2>
@@ -83,95 +77,10 @@
       </div>
     </div>
 
-    <div class="report-card">
-      <h2 class="report-card__title">Créer un administrateur</h2>
-      <form method="post" class="admin-form-grid" style="align-items: start;">
-        {% csrf_token %}
-        <input type="hidden" name="form_type" value="create_admin">
-
-        <div class="form-group">
-          <label for="{{ create_form.username.id_for_label }}">{{ create_form.username.label }}</label>
-          {{ create_form.username }}
-          {% if create_form.username.help_text %}<p class="helptext">{{ create_form.username.help_text }}</p>{% endif %}
-          {{ create_form.username.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.email.id_for_label }}">{{ create_form.email.label }}</label>
-          {{ create_form.email }}
-          {{ create_form.email.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.first_name.id_for_label }}">{{ create_form.first_name.label }}</label>
-          {{ create_form.first_name }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.last_name.id_for_label }}">{{ create_form.last_name.label }}</label>
-          {{ create_form.last_name }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.password1.id_for_label }}">{{ create_form.password1.label }}</label>
-          {{ create_form.password1 }}
-          {{ create_form.password1.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.password2.id_for_label }}">{{ create_form.password2.label }}</label>
-          {{ create_form.password2 }}
-          {{ create_form.password2.errors }}
-        </div>
-        <div class="form-group">
-          <label for="{{ create_form.role.id_for_label }}">{{ create_form.role.label }}</label>
-          {{ create_form.role }}
-          {{ create_form.role.errors }}
-        </div>
-        <div class="form-group" style="align-self: end;">
-          <button type="submit" class="btn">Créer le compte admin</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="report-card">
-      <h2 class="report-card__title">Administrateurs existants</h2>
-      {% if admins %}
-        <div class="admin-table-wrap">
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Identifiant</th>
-                <th>E-mail</th>
-                <th>Rôle</th>
-                <th>Actif</th>
-                <th>Créé le</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for admin in admins %}
-                <tr>
-                  <td><strong>{{ admin.username }}</strong></td>
-                  <td>{{ admin.email|default:"—" }}</td>
-                  <td>
-                    {% if admin.userprofile %}
-                      <span class="badge badge--role badge--role-{{ admin.userprofile.role }}">{{ admin.userprofile.get_role_display }}</span>
-                    {% elif admin.is_superuser %}
-                      <span class="badge badge--role badge--role-super_admin">Super admin</span>
-                    {% else %}
-                      <span class="badge">Admin</span>
-                    {% endif %}
-                  </td>
-                  <td>{% if admin.is_active %}Oui{% else %}Non{% endif %}</td>
-                  <td>{{ admin.date_joined|date:"d/m/Y H:i" }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        <p class="muted" style="margin-top: 12px; font-size: 0.85rem;">
-          Pour modifier un rôle existant, utilisez la page
-          <a href="{% url 'accounts:admin_users' %}">Utilisateurs</a>.
-        </p>
-      {% else %}
-        <p class="muted">Aucun administrateur enregistré.</p>
-      {% endif %}
-    </div>
+    <p class="muted" style="font-size: 0.9rem;">
+      Pour créer ou modifier des comptes utilisateurs, utilisez la page
+      <a href="{% url 'accounts:admin_users' %}">Utilisateurs</a>.
+    </p>
 
   {% include "accounts/partials/admin_shell_close.html" %}
 {% endblock %}

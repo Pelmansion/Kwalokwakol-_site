@@ -6,10 +6,11 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.views import LoginView
 from django.db import connection
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 
 from marketplace.models import ServiceProvider, ServiceRequest, Vendor
@@ -22,7 +23,9 @@ from .admin_helpers import (
     pending_count,
     pending_pages,
     ranking_pages,
+    require_admin,
     subscription_stats,
+    user_has_admin_access,
     users_page as admin_users_page,
 )
 from .db_overview import (
@@ -31,7 +34,7 @@ from .db_overview import (
     pending_migrations_count,
     table_stats,
 )
-from .forms import AdminUserCreateForm, ProfileForm, SignupForm
+from .forms import AdminLoginForm, AdminUserCreateForm, ProfileForm, SignupForm
 from .models import UserProfile
 from .shopping_access import user_can_shop_as_customer
 from .reservation_utils import can_client_delete_reservation, reservation_delete_deadline
@@ -268,33 +271,83 @@ def cancel_service_reservation(request, pk):
     return redirect("accounts:service_reservations")
 
 
-def _ensure_admin(request, super_only=False):
-    """
-    Vérifie que l'utilisateur est admin ou super admin de l'application.
-    super_only=True : uniquement super admin.
-    """
-    if not request.user.is_authenticated:
-        raise PermissionDenied
-    profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    role = getattr(profile, "role", UserProfile.ROLE_CUSTOMER)
-    if request.user.is_superuser:
-        return profile
-    if super_only:
-        if role == UserProfile.ROLE_SUPER_ADMIN:
-            return profile
-        raise PermissionDenied
-    if role in (UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN):
-        return profile
-    raise PermissionDenied
+class AdminLoginView(LoginView):
+    """Connexion dédiée à l'espace admin avec contrôle du rôle."""
+
+    template_name = "accounts/admin_login.html"
+    authentication_form = AdminLoginForm
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        return self.get_redirect_url() or reverse_lazy("accounts:admin_dashboard")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and user_has_admin_access(request.user):
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
 
 
 def _admin_nav_context(profile) -> dict:
     return {"profile": profile, "pending_count": pending_count()}
 
 
-@login_required
+def _is_app_super_admin(request, profile) -> bool:
+    return request.user.is_superuser or profile.role == UserProfile.ROLE_SUPER_ADMIN
+
+
+def _assignable_role_choices(request, profile):
+    if _is_app_super_admin(request, profile):
+        return UserProfile.ROLE_CHOICES
+    return [
+        choice
+        for choice in UserProfile.ROLE_CHOICES
+        if choice[0] != UserProfile.ROLE_SUPER_ADMIN
+    ]
+
+
+def _user_is_super_admin(user) -> bool:
+    if user.is_superuser:
+        return True
+    try:
+        return user.userprofile.role == UserProfile.ROLE_SUPER_ADMIN
+    except UserProfile.DoesNotExist:
+        return False
+
+
+def _user_role(user) -> str:
+    if user.is_superuser:
+        return UserProfile.ROLE_SUPER_ADMIN
+    try:
+        return user.userprofile.role
+    except UserProfile.DoesNotExist:
+        return UserProfile.ROLE_CUSTOMER
+
+
+def _create_app_user(data, role):
+    user = User.objects.create_user(
+        username=data["username"],
+        email=data["email"],
+        password=data["password1"],
+        first_name=data.get("first_name", ""),
+        last_name=data.get("last_name", ""),
+    )
+    user.is_active = True
+    if role == UserProfile.ROLE_SUPER_ADMIN:
+        user.is_staff = True
+        user.is_superuser = True
+    user.save()
+    user_profile, _ = UserProfile.objects.get_or_create(user=user)
+    user_profile.role = role
+    user_profile.save()
+    return user, user_profile
+
+
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def admin_dashboard(request):
-    profile = _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
     stats = overview_stats()
     return render(
         request,
@@ -310,9 +363,12 @@ def admin_dashboard(request):
     )
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def admin_validations(request):
-    profile = _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
     return render(
         request,
         "accounts/admin_validations.html",
@@ -320,9 +376,12 @@ def admin_validations(request):
     )
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def admin_rankings(request):
-    profile = _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
     return render(
         request,
         "accounts/admin_rankings.html",
@@ -330,37 +389,90 @@ def admin_rankings(request):
     )
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def admin_users(request):
-    profile = _ensure_admin(request, super_only=True)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
+    super_admin = _is_app_super_admin(request, profile)
+    create_form = AdminUserCreateForm(allow_super_admin=super_admin)
+
+    if request.method == "POST" and request.POST.get("form_type") == "create_user":
+        create_form = AdminUserCreateForm(
+            request.POST,
+            allow_super_admin=super_admin,
+        )
+        if create_form.is_valid():
+            data = create_form.cleaned_data
+            user, user_profile = _create_app_user(data, data["role"])
+            messages.success(
+                request,
+                f"Compte « {user.username} » créé avec le rôle "
+                f"{user_profile.get_role_display()}.",
+            )
+            return redirect("accounts:admin_users")
+
+    users_page = admin_users_page(request)
+    for user in users_page.object_list:
+        user.app_role = _user_role(user)
+        user.role_locked = not super_admin and _user_is_super_admin(user)
+
     return render(
         request,
         "accounts/admin_users.html",
         {
             **_admin_nav_context(profile),
-            "users_page": admin_users_page(request),
-            "role_choices": UserProfile.ROLE_CHOICES,
+            "users_page": users_page,
+            "role_choices": _assignable_role_choices(request, profile),
+            "create_form": create_form,
+            "is_super_admin": super_admin,
         },
     )
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def set_user_role(request, user_id):
-    _ensure_admin(request, super_only=True)
-    target = get_object_or_404(User, id=user_id)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
+    super_admin = _is_app_super_admin(request, profile)
+    target = get_object_or_404(User.objects.select_related("userprofile"), id=user_id)
     if request.method == "POST":
         role = request.POST.get("role")
-        profile, _ = UserProfile.objects.get_or_create(user=target)
-        valid_roles = {choice[0] for choice in UserProfile.ROLE_CHOICES}
+        if not super_admin and _user_is_super_admin(target):
+            messages.error(
+                request,
+                "Vous ne pouvez pas modifier le rôle d'un super admin.",
+            )
+            return redirect("accounts:admin_users")
+        valid_roles = {
+            choice[0] for choice in _assignable_role_choices(request, profile)
+        }
         if role in valid_roles:
-            profile.role = role
-            profile.save()
+            target_profile, _ = UserProfile.objects.get_or_create(user=target)
+            target_profile.role = role
+            target_profile.save()
+            if role == UserProfile.ROLE_SUPER_ADMIN and super_admin:
+                target.is_staff = True
+                target.is_superuser = True
+                target.save(update_fields=["is_staff", "is_superuser"])
+            elif _user_is_super_admin(target) and role != UserProfile.ROLE_SUPER_ADMIN:
+                target.is_staff = False
+                target.is_superuser = False
+                target.save(update_fields=["is_staff", "is_superuser"])
+            messages.success(request, f"Rôle de « {target.username} » mis à jour.")
+        else:
+            messages.error(request, "Rôle non autorisé.")
     return redirect("accounts:admin_users")
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def moderate_vendor(request, vendor_id, action):
-    _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
     vendor = get_object_or_404(Vendor, id=vendor_id)
     if request.method == "POST":
         if action == "approve":
@@ -373,9 +485,11 @@ def moderate_vendor(request, vendor_id, action):
     return redirect("accounts:admin_validations")
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def moderate_service_provider(request, provider_id, action):
-    _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
     provider = get_object_or_404(ServiceProvider, id=provider_id)
     if request.method == "POST":
         if action == "approve":
@@ -388,10 +502,12 @@ def moderate_service_provider(request, provider_id, action):
     return redirect("accounts:admin_validations")
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def view_vendor_details(request, vendor_id):
     """Vue détaillée d'un vendeur pour validation admin."""
-    _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
     vendor = get_object_or_404(Vendor, id=vendor_id)
     return render(
         request,
@@ -400,10 +516,12 @@ def view_vendor_details(request, vendor_id):
     )
 
 
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def view_service_provider_details(request, provider_id):
     """Vue détaillée d'un prestataire pour validation admin."""
-    _ensure_admin(request, super_only=False)
+    access = require_admin(request)
+    if access.redirect:
+        return access.redirect
     provider = get_object_or_404(ServiceProvider, id=provider_id)
     return render(
         request,
@@ -412,80 +530,35 @@ def view_service_provider_details(request, provider_id):
     )
 
 
-def _admin_users_queryset():
-    return (
-        User.objects.filter(
-            Q(userprofile__role__in=(UserProfile.ROLE_ADMIN, UserProfile.ROLE_SUPER_ADMIN))
-            | Q(is_superuser=True)
-        )
-        .select_related("userprofile")
-        .distinct()
-        .order_by("-date_joined")
-    )
-
-
-@login_required
+@login_required(login_url=reverse_lazy("accounts:admin_login"))
 def admin_system(request):
-    """
-    Super admin : créer des administrateurs et consulter / maintenir la base de données.
-    """
-    profile = _ensure_admin(request, super_only=True)
+    """Super admin uniquement : état et maintenance de la base de données."""
+    access = require_admin(request, super_only=True)
+    if access.redirect:
+        return access.redirect
+    profile = access.profile
 
-    create_form = AdminUserCreateForm()
     if request.method == "POST":
-        form_type = request.POST.get("form_type", "")
-        if form_type == "create_admin":
-            create_form = AdminUserCreateForm(request.POST)
-            if create_form.is_valid():
-                data = create_form.cleaned_data
-                role = data["role"]
-                user = User.objects.create_user(
-                    username=data["username"],
-                    email=data["email"],
-                    password=data["password1"],
-                    first_name=data.get("first_name", ""),
-                    last_name=data.get("last_name", ""),
-                )
-                user.is_active = True
-                if role == UserProfile.ROLE_SUPER_ADMIN:
-                    user.is_staff = True
-                    user.is_superuser = True
-                user.save()
-                admin_profile, _ = UserProfile.objects.get_or_create(user=user)
-                admin_profile.role = role
-                admin_profile.save()
-                messages.success(
-                    request,
-                    f"Compte « {user.username} » créé avec le rôle "
-                    f"{admin_profile.get_role_display()}.",
-                )
-                return redirect("accounts:admin_system")
-        elif form_type == "db_action":
-            action = (request.POST.get("db_action") or "").strip()
-            if action == "sync_static_pages":
-                call_command("sync_static_pages")
-                messages.success(request, "Pages statiques synchronisées (FAQ, CGU, contact…).")
-            elif action == "sync_contact":
-                call_command("sync_contact_info")
-                messages.success(request, "Informations de contact synchronisées.")
-            else:
-                messages.error(request, "Action de base de données non reconnue.")
-            return redirect("accounts:admin_system")
-
-    admins = _admin_users_queryset()
-    pending_migrations = pending_migrations_count()
+        action = (request.POST.get("db_action") or "").strip()
+        if action == "sync_static_pages":
+            call_command("sync_static_pages")
+            messages.success(request, "Pages statiques synchronisées (FAQ, CGU, contact…).")
+        elif action == "sync_contact":
+            call_command("sync_contact_info")
+            messages.success(request, "Informations de contact synchronisées.")
+        else:
+            messages.error(request, "Action de base de données non reconnue.")
+        return redirect("accounts:admin_system")
 
     return render(
         request,
         "accounts/admin_system.html",
         {
             **_admin_nav_context(profile),
-            "create_form": create_form,
-            "admins": admins,
             "db_engine": database_engine_label(),
             "db_name": database_name(),
             "db_vendor": connection.vendor,
-            "pending_migrations": pending_migrations,
+            "pending_migrations": pending_migrations_count(),
             "table_stats": table_stats(),
             "debug_mode": settings.DEBUG,
         },

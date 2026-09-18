@@ -28,6 +28,27 @@ class LoginFormWithInactiveMessage(AuthenticationForm):
         return self.cleaned_data
 
 
+class AdminLoginForm(LoginFormWithInactiveMessage):
+    """Connexion réservée aux comptes Admin et Super admin."""
+
+    def clean(self):
+        cleaned = super().clean()
+        if self.errors:
+            return cleaned
+        user = self.get_user()
+        if user is None:
+            return cleaned
+        from accounts.admin_helpers import user_has_admin_access
+
+        if not user_has_admin_access(user):
+            self.add_error(
+                None,
+                "Ce compte n'a pas les droits administrateur. "
+                "Utilisez la connexion client ou demandez l'accès à un super admin.",
+            )
+        return cleaned
+
+
 class SignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
     avatar = forms.ImageField(required=False, widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"}))
@@ -115,7 +136,7 @@ class AddressForm(forms.ModelForm):
 
 
 class AdminUserCreateForm(forms.Form):
-    """Création d'un compte administrateur par le super admin."""
+    """Création d'un compte utilisateur depuis l'espace admin."""
 
     username = forms.CharField(
         max_length=150,
@@ -134,14 +155,19 @@ class AdminUserCreateForm(forms.Form):
         widget=forms.PasswordInput,
         label="Confirmer le mot de passe",
     )
-    role = forms.ChoiceField(
-        label="Rôle",
-        choices=[
+    role = forms.ChoiceField(label="Rôle")
+
+    def __init__(self, *args, allow_super_admin=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = [
+            (UserProfile.ROLE_CUSTOMER, "Client"),
             (UserProfile.ROLE_ADMIN, "Admin"),
-            (UserProfile.ROLE_SUPER_ADMIN, "Super admin"),
-        ],
-        initial=UserProfile.ROLE_ADMIN,
-    )
+        ]
+        if allow_super_admin:
+            choices.append((UserProfile.ROLE_SUPER_ADMIN, "Super admin"))
+        self.fields["role"].choices = choices
+        self.fields["role"].initial = UserProfile.ROLE_CUSTOMER
+        self.allow_super_admin = allow_super_admin
 
     def clean_username(self):
         username = (self.cleaned_data.get("username") or "").strip()
@@ -156,6 +182,12 @@ class AdminUserCreateForm(forms.Form):
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("Cet e-mail est déjà utilisé.")
         return email
+
+    def clean_role(self):
+        role = self.cleaned_data.get("role")
+        if role == UserProfile.ROLE_SUPER_ADMIN and not self.allow_super_admin:
+            raise forms.ValidationError("Vous ne pouvez pas créer de super admin.")
+        return role
 
     def clean(self):
         cleaned = super().clean()

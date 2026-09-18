@@ -65,6 +65,9 @@ def require_admin(request, *, super_only: bool = False) -> AdminAccess:
         "Connectez-vous avec un compte administrateur (Admin ou Super admin).",
     )
     login_url = reverse("accounts:admin_login")
+    # Déjà connecté sans droits admin : pas de ?next= (évite ERR_TOO_MANY_REDIRECTS).
+    if request.user.is_authenticated:
+        return AdminAccess(profile=None, redirect=redirect(login_url))
     next_url = request.get_full_path()
     return AdminAccess(profile=None, redirect=redirect(f"{login_url}?next={next_url}"))
 

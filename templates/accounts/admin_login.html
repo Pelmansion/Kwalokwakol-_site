@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load marketplace_tags %}
 {% block content %}
   <section class="container page-title">
     <h1>Connexion administration</h1>
@@ -7,14 +8,32 @@
     </p>
   </section>
   <section class="container auth-card">
+    {% if user.is_authenticated and not user|is_app_admin %}
+      <div class="alert alert--warning" role="alert" style="margin-bottom:16px;">
+        <p>
+          Vous êtes connecté en tant que <strong>{{ user.username }}</strong>,
+          mais ce compte n'a pas les droits administrateur.
+        </p>
+        <p style="margin-top:8px;">
+          Déconnectez-vous puis reconnectez-vous avec un compte Admin,
+          ou demandez l'accès à un super administrateur.
+        </p>
+      </div>
+      <p style="margin-bottom:16px;">
+        <a class="btn btn--ghost" href="{% url 'accounts:logout' %}?next={% url 'accounts:admin_login' %}">Se déconnecter</a>
+        <a class="btn btn--ghost" href="{% url 'store:home' %}">Retour à l'accueil</a>
+      </p>
+    {% endif %}
+
     {% if form.non_field_errors %}
       <div class="alert alert--error" role="alert">
         {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
       </div>
     {% endif %}
+
     <form method="post">
       {% csrf_token %}
-      {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+      {% if request.GET.next and user|is_app_admin %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
       {{ form.as_p }}
       <button class="btn" type="submit">Se connecter</button>
     </form>
@@ -24,4 +43,3 @@
     </p>
   </section>
 {% endblock %}
-

@@ -276,7 +276,9 @@ class AdminLoginView(LoginView):
 
     template_name = "accounts/admin_login.html"
     authentication_form = AdminLoginForm
-    redirect_authenticated_user = True
+    # Ne pas renvoyer automatiquement les utilisateurs connectés vers ?next=
+    # (sinon boucle : admin-panel → connexion-admin → admin-panel pour un non-admin).
+    redirect_authenticated_user = False
 
     def get_success_url(self):
         return self.get_redirect_url() or reverse_lazy("accounts:admin_dashboard")

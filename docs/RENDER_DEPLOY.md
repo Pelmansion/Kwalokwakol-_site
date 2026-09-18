@@ -46,13 +46,16 @@ Le **build réussit** mais le site **ne démarre pas** : le service web n'a pas 
 
 ### Méthode 2 — Coller l'URL à la main
 
-1. Base PostgreSQL → **Connect** → copiez **Internal Database URL**
-2. Web Service → **Environment** → **Add Environment Variable**
+1. Base PostgreSQL → **Connect**
+2. Copiez **Internal Database URL** (recommandé, même réseau Render)
+   - ou **External Database URL** si le service est ailleurs
+3. **Web Service** → **Environment** → **Add Environment Variable**
    - Key : `DATABASE_URL`
-   - Value : l'URL copiée
-3. **Save** puis **Manual Deploy**
+   - Value : l'URL `postgresql://...` (sans espaces)
+4. **Save Changes** puis **Manual Deploy**
 
-> La variable doit être sur le **Web Service**, pas seulement sur la base de données.
+> La variable doit être sur le **Web Service**, pas seulement sur la base PostgreSQL.
+> Sans `DATABASE_URL` sur le service web, le build peut réussir mais le site plantera au démarrage.
 
 ## Variables d'environnement obligatoires
 

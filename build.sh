@@ -9,16 +9,13 @@ if [ ! -f kwalo/settings.py ]; then
 fi
 
 pip install -r requirements.txt
-
-# collectstatic sans PostgreSQL ; SQLite temporaire autorisé
-export RENDER_ALLOW_SQLITE_BUILD=1
 python manage.py collectstatic --noinput
-unset RENDER_ALLOW_SQLITE_BUILD
-
 python scripts/check_form_templates.py
 python scripts/check_media_config.py || true
 
 if [ -n "${DATABASE_URL:-}" ]; then
   echo "==> Migrations (build, DATABASE_URL presente)..."
   python manage.py migrate --noinput
+else
+  echo "==> DATABASE_URL absente au build — migrations au demarrage (start.sh)."
 fi

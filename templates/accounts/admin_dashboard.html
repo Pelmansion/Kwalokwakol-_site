@@ -1,81 +1,106 @@
 {% extends "base.html" %}
 {% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
 {% block content %}
-  <section class="report-wrap container">
-    {% include "accounts/partials/admin_nav.html" with active="dashboard" %}
-    <h1 class="report-title">Vue globale</h1>
-    <p class="report-subtitle">Indicateurs clés de la plateforme.</p>
+  {% include "accounts/partials/admin_shell_open.html" with admin_title="Vue globale" admin_subtitle="Vendeurs, prestataires, commandes et chiffre d'affaires en un coup d'œil." admin_active="dashboard" %}
 
-    <div class="report-kpi-row">
-      <div class="report-kpi">
-        <span class="report-kpi__value">{{ total_vendors }}</span>
-        <span class="report-kpi__label">Vendeurs actifs</span>
-      </div>
-      <div class="report-kpi">
-        <span class="report-kpi__value">{{ total_providers }}</span>
-        <span class="report-kpi__label">Prestataires actifs</span>
-      </div>
-      <div class="report-kpi">
-        <span class="report-kpi__value">{{ total_orders }}</span>
-        <span class="report-kpi__label">Commandes</span>
-      </div>
-      <div class="report-kpi report-kpi--highlight">
-        <span class="report-kpi__value">{{ global_revenue|floatformat:0 }} <small>FCFA</small></span>
-        <span class="report-kpi__label">Chiffre d'affaires global</span>
-      </div>
+    <div class="admin-kpi-grid">
+      <article class="admin-kpi">
+        <div class="admin-kpi__head">
+          <span class="admin-kpi__icon" aria-hidden="true">🏪</span>
+        </div>
+        <span class="admin-kpi__value admin-kpi__value--teal">{{ total_vendors }}</span>
+        <span class="admin-kpi__label">Vendeurs actifs</span>
+      </article>
+      <article class="admin-kpi">
+        <div class="admin-kpi__head">
+          <span class="admin-kpi__icon" aria-hidden="true">🛠️</span>
+        </div>
+        <span class="admin-kpi__value admin-kpi__value--teal">{{ total_providers }}</span>
+        <span class="admin-kpi__label">Prestataires actifs</span>
+      </article>
+      <article class="admin-kpi">
+        <div class="admin-kpi__head">
+          <span class="admin-kpi__icon" aria-hidden="true">📦</span>
+        </div>
+        <span class="admin-kpi__value admin-kpi__value--teal">{{ total_orders }}</span>
+        <span class="admin-kpi__label">Commandes</span>
+      </article>
+      <article class="admin-kpi admin-kpi--accent">
+        <div class="admin-kpi__head">
+          <span class="admin-kpi__icon" aria-hidden="true">💰</span>
+        </div>
+        <span class="admin-kpi__value admin-kpi__value--orange">{{ global_revenue|floatformat:0 }} <small>FCFA</small></span>
+        <span class="admin-kpi__label">Chiffre d'affaires global</span>
+      </article>
     </div>
 
     <div class="admin-shortcuts">
       <a class="admin-shortcut" href="{% url 'accounts:admin_validations' %}">
-        <strong>Validations {% if pending_count %}<span class="admin-nav__badge">{{ pending_count }}</span>{% endif %}</strong>
-        <span>Vendeurs et prestataires en attente de validation.</span>
+        <span class="admin-shortcut__icon" aria-hidden="true">✅</span>
+        <span class="admin-shortcut__text">
+          <strong>Validations {% if pending_count %}<span class="admin-nav__badge">{{ pending_count }}</span>{% endif %}</strong>
+          <span>Vendeurs et prestataires en attente de validation.</span>
+        </span>
       </a>
       <a class="admin-shortcut" href="{% url 'accounts:admin_rankings' %}">
-        <strong>Classements</strong>
-        <span>Top vendeurs par CA et prestataires par demandes.</span>
+        <span class="admin-shortcut__icon" aria-hidden="true">🏆</span>
+        <span class="admin-shortcut__text">
+          <strong>Classements</strong>
+          <span>Top vendeurs par CA et prestataires par demandes.</span>
+        </span>
       </a>
       <a class="admin-shortcut" href="{% url 'subscriptions:admin_list' %}">
-        <strong>Abonnements</strong>
-        <span>Gérer les abonnements et formules mensuelles.</span>
+        <span class="admin-shortcut__icon" aria-hidden="true">💳</span>
+        <span class="admin-shortcut__text">
+          <strong>Abonnements</strong>
+          <span>Gérer les abonnements et formules mensuelles.</span>
+        </span>
       </a>
       {% if request.user.is_superuser or profile.role == "super_admin" %}
       <a class="admin-shortcut" href="{% url 'accounts:admin_users' %}">
-        <strong>Utilisateurs</strong>
-        <span>Rôles et accès des comptes.</span>
+        <span class="admin-shortcut__icon" aria-hidden="true">👥</span>
+        <span class="admin-shortcut__text">
+          <strong>Utilisateurs</strong>
+          <span>Rôles et accès des comptes.</span>
+        </span>
       </a>
       <a class="admin-shortcut" href="{% url 'accounts:admin_system' %}">
-        <strong>Admins &amp; base de données</strong>
-        <span>Créer des admins et surveiller PostgreSQL.</span>
+        <span class="admin-shortcut__icon" aria-hidden="true">🗄️</span>
+        <span class="admin-shortcut__text">
+          <strong>Admins &amp; base de données</strong>
+          <span>Créer des admins et surveiller PostgreSQL.</span>
+        </span>
       </a>
       {% endif %}
     </div>
 
-    <div class="report-card" style="background: linear-gradient(135deg, #fff 0%, #fffaf6 100%); border-left: 4px solid #c2410c;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-        <h2 class="report-card__title" style="border: none; margin: 0; padding: 0;">Abonnements mensuels</h2>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <a href="{% url 'subscriptions:admin_list' %}" class="btn">Gérer les abonnements</a>
-          <a href="{% url 'subscriptions:admin_plans' %}" class="btn btn--ghost">Formules</a>
+    <section class="admin-card admin-card--featured">
+      <header class="admin-card__header">
+        <h2 class="admin-card__title"><span aria-hidden="true">💳</span> Abonnements mensuels</h2>
+        <div class="admin-card__actions">
+          <a href="{% url 'subscriptions:admin_list' %}" class="btn">Gérer les abonnements →</a>
+          <a href="{% url 'subscriptions:admin_plans' %}" class="btn btn--ghost">⚙ Formules</a>
         </div>
+      </header>
+      <div class="admin-kpi-grid" style="margin-bottom: 0;">
+        <article class="admin-kpi">
+          <span class="admin-kpi__value admin-kpi__value--teal">{{ sub_stats.active|default:0 }}</span>
+          <span class="admin-kpi__label">Abonnés actifs</span>
+        </article>
+        <article class="admin-kpi admin-kpi--warn">
+          <span class="admin-kpi__value admin-kpi__value--amber">{{ sub_stats.pending|default:0 }}</span>
+          <span class="admin-kpi__label">En attente de paiement</span>
+        </article>
+        <article class="admin-kpi admin-kpi--danger">
+          <span class="admin-kpi__value admin-kpi__value--red">{{ sub_stats.past_due|default:0 }}</span>
+          <span class="admin-kpi__label">Expirés</span>
+        </article>
+        <article class="admin-kpi admin-kpi--accent">
+          <span class="admin-kpi__value admin-kpi__value--orange">{{ sub_stats.monthly_revenue|default:0|floatformat:0 }} <small>FCFA</small></span>
+          <span class="admin-kpi__label">Revenus mensuels récurrents</span>
+        </article>
       </div>
-      <div class="report-kpi-row" style="margin: 0;">
-        <div class="report-kpi">
-          <span class="report-kpi__value">{{ sub_stats.active|default:0 }}</span>
-          <span class="report-kpi__label">Abonnés actifs</span>
-        </div>
-        <div class="report-kpi">
-          <span class="report-kpi__value" style="color: #d97706;">{{ sub_stats.pending|default:0 }}</span>
-          <span class="report-kpi__label">En attente de paiement</span>
-        </div>
-        <div class="report-kpi">
-          <span class="report-kpi__value" style="color: #dc2626;">{{ sub_stats.past_due|default:0 }}</span>
-          <span class="report-kpi__label">Expirés</span>
-        </div>
-        <div class="report-kpi report-kpi--highlight">
-          <span class="report-kpi__value" style="color: #c2410c;">{{ sub_stats.monthly_revenue|default:0|floatformat:0 }} <small>FCFA</small></span>
-          <span class="report-kpi__label">Revenus mensuels récurrents</span>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+
+  {% include "accounts/partials/admin_shell_close.html" %}
 {% endblock %}

@@ -1,34 +1,33 @@
 {% extends "base.html" %}
 {% block extra_head %}{% include "accounts/partials/admin_styles.html" %}{% endblock %}
 {% block content %}
-  <section class="report-wrap container">
-    {% include "accounts/partials/admin_nav.html" with active="rankings" %}
-    <h1 class="report-title">Classements</h1>
-    <p class="report-subtitle">Performance des vendeurs et prestataires vérifiés.</p>
+  {% include "accounts/partials/admin_shell_open.html" with admin_title="Classements" admin_subtitle="Performance des vendeurs et prestataires vérifiés." admin_active="rankings" %}
 
     <div class="report-card">
       <h2 class="report-card__title">Vendeurs par chiffre d'affaires</h2>
       {% if top_vendors_page.object_list %}
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Rang</th>
-              <th>Nom du vendeur</th>
-              <th class="text-right">Chiffre d'affaires</th>
-              <th class="text-right">Nombre de commandes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for v in top_vendors_page %}
+        <div class="admin-table-wrap">
+          <table class="report-table">
+            <thead>
               <tr>
-                <td><strong>{{ top_vendors_page.start_index|add:forloop.counter0 }}</strong></td>
-                <td><strong>{{ v.name }}</strong></td>
-                <td class="text-right"><strong>{{ v.revenue|floatformat:0 }} FCFA</strong></td>
-                <td class="text-right">{{ v.order_count }} commande{{ v.order_count|pluralize }}</td>
+                <th>Rang</th>
+                <th>Nom du vendeur</th>
+                <th class="text-right">Chiffre d'affaires</th>
+                <th class="text-right">Nombre de commandes</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for v in top_vendors_page %}
+                <tr>
+                  <td><strong>{{ top_vendors_page.start_index|add:forloop.counter0 }}</strong></td>
+                  <td><strong>{{ v.name }}</strong></td>
+                  <td class="text-right"><strong>{{ v.revenue|floatformat:0 }} FCFA</strong></td>
+                  <td class="text-right">{{ v.order_count }} commande{{ v.order_count|pluralize }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         {% if top_vendors_page.has_other_pages %}
           <nav class="pagination" aria-label="Vendeurs par CA">
             {% if top_vendors_page.has_previous %}
@@ -48,26 +47,28 @@
     <div class="report-card">
       <h2 class="report-card__title">Prestataires par demandes</h2>
       {% if top_providers_page.object_list %}
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Rang</th>
-              <th>Nom du prestataire</th>
-              <th class="text-right">Demandes validées</th>
-              <th class="text-right">Total demandes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for p in top_providers_page %}
+        <div class="admin-table-wrap">
+          <table class="report-table">
+            <thead>
               <tr>
-                <td><strong>{{ top_providers_page.start_index|add:forloop.counter0 }}</strong></td>
-                <td><strong>{{ p.name }}</strong></td>
-                <td class="text-right"><strong>{{ p.approved_count }}</strong></td>
-                <td class="text-right">{{ p.request_count }} demande{{ p.request_count|pluralize }}</td>
+                <th>Rang</th>
+                <th>Nom du prestataire</th>
+                <th class="text-right">Demandes validées</th>
+                <th class="text-right">Total demandes</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for p in top_providers_page %}
+                <tr>
+                  <td><strong>{{ top_providers_page.start_index|add:forloop.counter0 }}</strong></td>
+                  <td><strong>{{ p.name }}</strong></td>
+                  <td class="text-right"><strong>{{ p.approved_count }}</strong></td>
+                  <td class="text-right">{{ p.request_count }} demande{{ p.request_count|pluralize }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         {% if top_providers_page.has_other_pages %}
           <nav class="pagination" aria-label="Prestataires par demandes">
             {% if top_providers_page.has_previous %}
@@ -83,5 +84,6 @@
         <p class="report-empty">Aucun prestataire vérifié.</p>
       {% endif %}
     </div>
-  </section>
+
+  {% include "accounts/partials/admin_shell_close.html" %}
 {% endblock %}

@@ -3,26 +3,22 @@
 {% include "accounts/partials/admin_styles.html" %}
 <style>
   .db-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-  .db-meta__item { padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
-  .db-meta__label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+  .db-meta__item { padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+  .db-meta__label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; letter-spacing: 0.04em; }
   .db-meta__value { font-size: 1rem; font-weight: 700; color: #0f172a; word-break: break-all; }
   .db-meta__value--ok { color: #0d9488; }
   .db-meta__value--warn { color: #d97706; }
   .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .admin-form-grid .form-group { margin: 0; }
   .admin-form-grid label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: #334155; }
-  .admin-form-grid input, .admin-form-grid select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+  .admin-form-grid input, .admin-form-grid select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
   .admin-form-grid .helptext { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
   .admin-form-grid .errorlist { margin: 4px 0 0; padding: 0; list-style: none; color: #dc2626; font-size: 0.8rem; }
   .db-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 </style>
 {% endblock %}
 {% block content %}
-  <section class="report-wrap container">
-    {% include "accounts/partials/admin_nav.html" with active="system" %}
-
-    <h1 class="report-title">Admins &amp; base de données</h1>
-    <p class="report-subtitle">Créez des comptes administrateurs et surveillez l'état de PostgreSQL.</p>
+  {% include "accounts/partials/admin_shell_open.html" with admin_title="Admins & base de données" admin_subtitle="Créez des comptes administrateurs et surveillez l'état de PostgreSQL." admin_active="system" %}
 
     <div class="report-card">
       <h2 class="report-card__title">État de la base de données</h2>
@@ -49,22 +45,24 @@
         </div>
       </div>
 
-      <table class="report-table">
-        <thead>
-          <tr>
-            <th>Table / modèle</th>
-            <th>Enregistrements</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in table_stats %}
+      <div class="admin-table-wrap">
+        <table class="report-table">
+          <thead>
             <tr>
-              <td><strong>{{ row.verbose }}</strong><br><span class="muted" style="font-size:0.8rem;">{{ row.label }}</span></td>
-              <td>{{ row.count }}</td>
+              <th>Table / modèle</th>
+              <th>Enregistrements</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for row in table_stats %}
+              <tr>
+                <td><strong>{{ row.verbose }}</strong><br><span class="muted" style="font-size:0.8rem;">{{ row.label }}</span></td>
+                <td>{{ row.count }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
       <h3 style="margin: 24px 0 12px; font-size: 1rem;">Actions de maintenance</h3>
       <p class="muted" style="margin: 0 0 12px; font-size: 0.9rem;">
@@ -134,36 +132,38 @@
     <div class="report-card">
       <h2 class="report-card__title">Administrateurs existants</h2>
       {% if admins %}
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Identifiant</th>
-              <th>E-mail</th>
-              <th>Rôle</th>
-              <th>Actif</th>
-              <th>Créé le</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for admin in admins %}
+        <div class="admin-table-wrap">
+          <table class="report-table">
+            <thead>
               <tr>
-                <td><strong>{{ admin.username }}</strong></td>
-                <td>{{ admin.email|default:"—" }}</td>
-                <td>
-                  {% if admin.userprofile %}
-                    <span class="badge badge--role badge--role-{{ admin.userprofile.role }}">{{ admin.userprofile.get_role_display }}</span>
-                  {% elif admin.is_superuser %}
-                    <span class="badge badge--role badge--role-super_admin">Super admin</span>
-                  {% else %}
-                    <span class="badge">Admin</span>
-                  {% endif %}
-                </td>
-                <td>{% if admin.is_active %}Oui{% else %}Non{% endif %}</td>
-                <td>{{ admin.date_joined|date:"d/m/Y H:i" }}</td>
+                <th>Identifiant</th>
+                <th>E-mail</th>
+                <th>Rôle</th>
+                <th>Actif</th>
+                <th>Créé le</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for admin in admins %}
+                <tr>
+                  <td><strong>{{ admin.username }}</strong></td>
+                  <td>{{ admin.email|default:"—" }}</td>
+                  <td>
+                    {% if admin.userprofile %}
+                      <span class="badge badge--role badge--role-{{ admin.userprofile.role }}">{{ admin.userprofile.get_role_display }}</span>
+                    {% elif admin.is_superuser %}
+                      <span class="badge badge--role badge--role-super_admin">Super admin</span>
+                    {% else %}
+                      <span class="badge">Admin</span>
+                    {% endif %}
+                  </td>
+                  <td>{% if admin.is_active %}Oui{% else %}Non{% endif %}</td>
+                  <td>{{ admin.date_joined|date:"d/m/Y H:i" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         <p class="muted" style="margin-top: 12px; font-size: 0.85rem;">
           Pour modifier un rôle existant, utilisez la page
           <a href="{% url 'accounts:admin_users' %}">Utilisateurs</a>.
@@ -172,5 +172,6 @@
         <p class="muted">Aucun administrateur enregistré.</p>
       {% endif %}
     </div>
-  </section>
+
+  {% include "accounts/partials/admin_shell_close.html" %}
 {% endblock %}

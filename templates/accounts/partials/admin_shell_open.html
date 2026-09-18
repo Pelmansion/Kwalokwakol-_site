@@ -1,0 +1,15 @@
+<section class="admin-page">
+  <header class="admin-hero">
+    <div class="admin-page__inner">
+      <p class="admin-hero__eyebrow">⚙️ Administration Kolê Group</p>
+      <h1 class="admin-hero__title">{{ admin_title }}</h1>
+      {% if admin_subtitle %}<p class="admin-hero__subtitle">{{ admin_subtitle }}</p>{% endif %}
+    </div>
+  </header>
+  <div class="admin-toolbar">
+    <div class="admin-page__inner">
+      {% include "accounts/partials/admin_nav.html" with active=admin_active %}
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="admin-page__inner">

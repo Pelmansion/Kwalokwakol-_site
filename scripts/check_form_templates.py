@@ -9,6 +9,10 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 if not os.environ.get("DATABASE_URL"):
     os.environ["DEBUG"] = "true"
+
+from kwalo.ensure_settings import ensure_settings_module
+
+ensure_settings_module()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kwalo.settings")
 
 import django

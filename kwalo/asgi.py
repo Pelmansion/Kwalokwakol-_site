@@ -9,6 +9,10 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 
 import os
 
+from kwalo.ensure_settings import ensure_settings_module
+
+ensure_settings_module()
+
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kwalo.settings')

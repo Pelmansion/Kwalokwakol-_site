@@ -254,6 +254,9 @@
             <span aria-hidden="true">🎤</span>
             <span>Culture</span>
           </a>
+          <a class="topbar__item" href="{% url 'magazine:home' %}" aria-label="Dan Prestige Magazine">
+            <span>Magazine</span>
+          </a>
 
           {% if not user.is_authenticated or user|is_client %}
           <a class="topbar__item" href="{% url 'store:favorites' %}" aria-label="Mes favoris">
@@ -367,6 +370,8 @@
               <li><a href="{% url 'store:service_provider_list' %}">Prestataires</a></li>
               <li><a href="{% url 'store:product_list' %}?type=service">Services</a></li>
               <li><a href="{% url 'store:vendor_list' %}">Boutiques</a></li>
+              <li><a href="{% url 'culture:home' %}">Culture</a></li>
+              <li><a href="{% url 'magazine:home' %}">Dan Prestige Magazine</a></li>
             </ul>
           </div>
 
@@ -530,6 +535,7 @@
            "cart": "{% url "store:cart_detail" %}",
            "favorites": "{% url "store:favorites" %}",
            "culture": "{% url "culture:home" %}",
+           "magazine": "{% url "magazine:home" %}",
            "songs": "{% url "culture:song_list" %}",
            "events": "{% url "culture:event_list" %}",
            "artists": "{% url "culture:artist_list" %}",

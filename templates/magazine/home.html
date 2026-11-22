@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}{{ magazine_name }} — Kolê Group{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">
+  <meta name="description" content="{{ vision|truncatechars:155 }}">
+  <meta property="og:title" content="{{ magazine_name }}">
+  <meta property="og:description" content="{{ vision|truncatechars:155 }}">
+{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <section class="mag-hero">
+    <div class="container mag-hero__inner">
+      <p class="mag-hero__eyebrow">Dan Prestige Magazine</p>
+      <h1>{{ magazine_name }}</h1>
+      <p class="mag-hero__vision">{{ vision }}</p>
+      <div class="mag-hero__actions">
+        {% if latest_issue and latest_issue.product_id %}
+          <form method="post" action="{% url 'magazine:add_issue_to_cart' latest_issue.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn" type="submit">Acheter le dernier numéro</button>
+          </form>
+        {% else %}
+          <a class="btn" href="{% url 'magazine:boutique' %}">Acheter le dernier numéro</a>
+        {% endif %}
+        <a class="btn btn--ghost" href="{% url 'magazine:boutique' %}#abonnements">S'abonner</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    {% include "magazine/_nav.html" with mag_nav="home" %}
+
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Nos contenus</h2></header>
+      <div class="mag-grid mag-grid--4">
+        {% for c in content_types %}
+          <article class="mag-icon-card">
+            <div class="mag-icon-card__icon" aria-hidden="true">{{ c.icon }}</div>
+            <h3>{{ c.title }}</h3>
+            <p>{{ c.text }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Impact attendu</h2></header>
+      <ul class="mag-impact">
+        {% for point in impact_points %}
+          <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {% if articles %}
+    <section class="mag-section">
+      <header class="mag-section__head">
+        <h2>Derniers articles</h2>
+        <a class="mag-section__more" href="{% url 'magazine:article_list' %}">Tous les articles →</a>
+      </header>
+      <div class="mag-grid mag-grid--3">
+        {% for article in articles %}
+          {% include "magazine/_article_card.html" %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if videos %}
+    <section class="mag-section">
+      <header class="mag-section__head">
+        <h2>Vidéos récentes</h2>
+        <a class="mag-section__more" href="{% url 'magazine:video_list' %}">Toutes les vidéos →</a>
+      </header>
+      <div class="mag-grid mag-grid--3">
+        {% for video in videos %}
+          <a class="mag-card" href="{{ video.get_absolute_url }}">
+            <div class="mag-card__media">
+              {% if video.thumbnail %}
+                <img src="{{ video.thumbnail|file_url }}" alt="{{ video.title }}" loading="lazy" {% img_onerror_attr %}>
+              {% endif %}
+            </div>
+            <div class="mag-card__body">
+              {% if video.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+              <span class="mag-card__meta">{{ video.get_kind_display }}</span>
+              <h3 class="mag-card__title">{{ video.title }}</h3>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if portraits %}
+    <section class="mag-section">
+      <header class="mag-section__head">
+        <h2>Portraits</h2>
+        <a class="mag-section__more" href="{% url 'magazine:portrait_list' %}">Galerie →</a>
+      </header>
+      <div class="mag-grid mag-grid--4">
+        {% for portrait in portraits %}
+          <a class="mag-card" href="{{ portrait.get_absolute_url }}">
+            <div class="mag-card__media" style="aspect-ratio:1;">
+              {% if portrait.image %}
+                <img src="{{ portrait.image|file_url }}" alt="{{ portrait.title }}" loading="lazy" {% img_onerror_attr %}>
+              {% endif %}
+            </div>
+            <div class="mag-card__body">
+              <h3 class="mag-card__title">{{ portrait.subject_name|default:portrait.title }}</h3>
+              {% if portrait.locality %}<p class="mag-card__text">{{ portrait.locality }}</p>{% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if partners %}
+    <section class="mag-section">
+      <header class="mag-section__head">
+        <h2>Partenaires & sponsors</h2>
+        <a class="mag-section__more" href="{% url 'magazine:partners' %}">Devenir partenaire →</a>
+      </header>
+      <div class="mag-grid mag-grid--4">
+        {% for p in partners %}
+          <div class="mag-icon-card" style="text-align:center;">
+            {% if p.logo %}
+              <img src="{{ p.logo|file_url }}" alt="{{ p.name }}" loading="lazy" style="max-height:48px;margin:0 auto 10px;display:block;" {% img_onerror_attr %}>
+            {% endif %}
+            <h3 style="font-size:0.95rem;">{{ p.name }}</h3>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <div class="mag-cta">
+      <div>
+        <h2>Recevez chaque numéro</h2>
+        <p>Abonnez-vous pour suivre les personnalités, talents et réussites du peuple Dan.</p>
+      </div>
+      <a class="btn" href="{% url 'magazine:boutique' %}#abonnements">S'abonner</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

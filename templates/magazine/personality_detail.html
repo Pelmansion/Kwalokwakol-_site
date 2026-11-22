@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}{{ person.full_name }} — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="repertoire" %}
+    <article class="mag-section" style="display:grid;gap:24px;grid-template-columns:minmax(0,240px) 1fr;">
+      <div>
+        {% if person.photo %}
+          <img src="{{ person.photo|file_url }}" alt="{{ person.full_name }}" loading="lazy" style="width:100%;border-radius:16px;" {% img_onerror_attr %}>
+        {% endif %}
+      </div>
+      <div class="mag-prose">
+        <h1>{{ person.full_name }}</h1>
+        <p class="mag-card__meta">{{ person.profession }}</p>
+        <p class="muted">{{ person.locality }}{% if person.region %} · {{ person.region }}{% endif %}</p>
+        {% if person.bio %}<h2>Parcours</h2><div>{{ person.bio|linebreaks }}</div>{% endif %}
+        {% if person.achievements %}<h2>Réalisations</h2><div>{{ person.achievements|linebreaks }}</div>{% endif %}
+      </div>
+    </article>
+  </div>
+</div>
+{% endblock %}

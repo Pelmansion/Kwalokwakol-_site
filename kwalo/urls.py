@@ -36,6 +36,7 @@ urlpatterns = [
     path("avis/", include("reviews.urls")),
     path("abonnement/", include("subscriptions.urls")),
     path("culture/", include("culture.urls")),
+    path("magazine/", include("magazine.urls")),
     # --- PWA : fichiers servis à la racine pour un scope global ---
     path(
         "manifest.webmanifest",

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}Vidéos — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="videos" %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Vidéos</h2></header>
+      <form class="mag-filters" method="get">
+        <select name="type" aria-label="Type">
+          <option value="">Tous les types</option>
+          {% for value, label in kinds %}
+            <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <input type="search" name="localite" value="{{ filters.localite }}" placeholder="Localité" aria-label="Localité">
+        <button class="btn" type="submit">Filtrer</button>
+      </form>
+      <div class="mag-grid mag-grid--3">
+        {% for video in videos %}
+          <a class="mag-card" href="{{ video.get_absolute_url }}">
+            <div class="mag-card__media">
+              {% if video.thumbnail %}
+                <img src="{{ video.thumbnail|file_url }}" alt="{{ video.title }}" loading="lazy" {% img_onerror_attr %}>
+              {% endif %}
+            </div>
+            <div class="mag-card__body">
+              {% if video.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+              <span class="mag-card__meta">{{ video.get_kind_display }}</span>
+              <h3 class="mag-card__title">{{ video.title }}</h3>
+            </div>
+          </a>
+        {% empty %}
+          <p class="mag-empty">Aucune vidéo.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

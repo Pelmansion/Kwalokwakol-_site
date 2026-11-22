@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "store",
     "subscriptions",
     "culture",
+    "magazine",
 ]
 
 SITE_ID = 1

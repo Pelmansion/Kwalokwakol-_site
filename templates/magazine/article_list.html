@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Articles — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="articles" %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Articles</h2></header>
+      <form class="mag-filters" method="get">
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Rechercher…" aria-label="Rechercher">
+        <select name="categorie" aria-label="Catégorie">
+          <option value="">Toutes catégories</option>
+          {% for value, label in categories %}
+            <option value="{{ value }}" {% if filters.categorie == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select name="localite" aria-label="Localité">
+          <option value="">Toutes localités</option>
+          {% for loc in localities %}
+            <option value="{{ loc }}" {% if filters.localite == loc %}selected{% endif %}>{{ loc }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" type="submit">Filtrer</button>
+      </form>
+      <div class="mag-grid mag-grid--3">
+        {% for article in articles %}
+          {% include "magazine/_article_card.html" %}
+        {% empty %}
+          <p class="mag-empty">Aucun article trouvé.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

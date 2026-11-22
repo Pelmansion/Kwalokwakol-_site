@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Charte éditoriale — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="charter" %}
+    <section class="mag-section mag-prose">
+      <h1>Charte éditoriale</h1>
+      <p>Dan Prestige Magazine s'engage à informer avec exigence, respect et indépendance.</p>
+      {% for point in charter_points %}
+        <article class="mag-icon-card" style="margin-bottom:14px;">
+          <h3>{{ point.title }}</h3>
+          <p>{{ point.text }}</p>
+        </article>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

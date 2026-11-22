@@ -1,0 +1,16 @@
+{% load media_tags %}
+<a class="mag-card" href="{{ article.get_absolute_url }}">
+  <div class="mag-card__media">
+    {% if article.cover_image %}
+      <img src="{{ article.cover_image|file_url }}" alt="{{ article.title }}" loading="lazy" {% img_onerror_attr %}>
+    {% endif %}
+  </div>
+  <div class="mag-card__body">
+    <div>
+      {% if article.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+      <span class="mag-card__meta">{{ article.get_category_display }}{% if article.locality %} · {{ article.locality }}{% endif %}</span>
+    </div>
+    <h3 class="mag-card__title">{{ article.title }}</h3>
+    {% if article.excerpt %}<p class="mag-card__text">{{ article.excerpt|truncatewords:22 }}</p>{% endif %}
+  </div>
+</a>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}Répertoire — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="repertoire" %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Répertoire des personnalités</h2></header>
+      <p class="mag-section__lead">Uniquement les fiches avec consentement validé.</p>
+      <form class="mag-filters" method="get">
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Nom, profession…" aria-label="Recherche">
+        <input type="search" name="localite" value="{{ filters.localite }}" placeholder="Localité" aria-label="Localité">
+        <input type="search" name="profession" value="{{ filters.profession }}" placeholder="Profession" aria-label="Profession">
+        <button class="btn" type="submit">Filtrer</button>
+      </form>
+      <div class="mag-grid mag-grid--3">
+        {% for person in personalities %}
+          <a class="mag-card" href="{{ person.get_absolute_url }}">
+            <div class="mag-card__media" style="aspect-ratio:1;">
+              {% if person.photo %}
+                <img src="{{ person.photo|file_url }}" alt="{{ person.full_name }}" loading="lazy" {% img_onerror_attr %}>
+              {% endif %}
+            </div>
+            <div class="mag-card__body">
+              <h3 class="mag-card__title">{{ person.full_name }}</h3>
+              <span class="mag-card__meta">{{ person.profession }}</span>
+              {% if person.locality %}<p class="mag-card__text">{{ person.locality }}{% if person.region %} · {{ person.region }}{% endif %}</p>{% endif %}
+            </div>
+          </a>
+        {% empty %}
+          <p class="mag-empty">Aucune personnalité à afficher.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

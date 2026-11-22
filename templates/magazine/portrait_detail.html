@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}{{ portrait.title }} — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="portraits" %}
+    <article class="mag-section mag-prose">
+      {% if portrait.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+      <h1>{{ portrait.title }}</h1>
+      <img src="{{ portrait.image|file_url }}" alt="{{ portrait.title }}" loading="lazy" style="width:100%;max-width:720px;border-radius:16px;" {% img_onerror_attr %}>
+      {% if portrait.caption %}<p>{{ portrait.caption }}</p>{% endif %}
+      <p class="muted">
+        {% if portrait.subject_name %}{{ portrait.subject_name }}{% endif %}
+        {% if portrait.locality %} · {{ portrait.locality }}{% endif %}
+        {% if portrait.photographer %} · Photo : {{ portrait.photographer }}{% endif %}
+      </p>
+    </article>
+  </div>
+</div>
+{% endblock %}

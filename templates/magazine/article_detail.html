@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}{{ article.title }} — {{ magazine_name }}{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">
+  <meta name="description" content="{{ article.excerpt|default:article.title|truncatechars:155 }}">
+{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="articles" %}
+    <article class="mag-section mag-prose">
+      {% if article.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+      <p class="mag-card__meta">{{ article.get_category_display }} · {{ article.published_at|date:"d/m/Y" }}{% if article.locality %} · {{ article.locality }}{% endif %}</p>
+      <h1>{{ article.title }}</h1>
+      {% if article.author_name %}<p class="muted">Par {{ article.author_name }}</p>{% endif %}
+      {% if article.cover_image %}
+        <img src="{{ article.cover_image|file_url }}" alt="{{ article.title }}" loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:16px;margin:16px 0;" {% img_onerror_attr %}>
+      {% endif %}
+      {% if article.excerpt %}<p><strong>{{ article.excerpt }}</strong></p>{% endif %}
+      <div>{{ article.body|linebreaks }}</div>
+    </article>
+    {% if related %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>À lire aussi</h2></header>
+      <div class="mag-grid mag-grid--3">
+        {% for article in related %}{% include "magazine/_article_card.html" %}{% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

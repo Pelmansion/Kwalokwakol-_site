@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}Partenaires — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="partners" %}
+
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Publicité & partenariats</h2></header>
+      <p class="mag-section__lead">Valorisez votre marque auprès d'un public engagé, en Côte d'Ivoire et dans la diaspora.</p>
+      <div class="mag-grid mag-grid--2">
+        {% for offer in offers %}
+          <article class="mag-icon-card">
+            <h3>{{ offer.title }}</h3>
+            <p>{{ offer.text }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    {% if partners %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Ils nous font confiance</h2></header>
+      <div class="mag-grid mag-grid--4">
+        {% for p in partners %}
+          <div class="mag-icon-card" style="text-align:center;">
+            {% if p.logo %}
+              <img src="{{ p.logo|file_url }}" alt="{{ p.name }}" loading="lazy" style="max-height:48px;margin:0 auto 8px;" {% img_onerror_attr %}>
+            {% endif %}
+            <h3 style="font-size:0.95rem;margin:0;">{{ p.name }}</h3>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Nous contacter</h2></header>
+      <form method="post" class="mag-form mag-icon-card">
+        {% csrf_token %}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button class="btn" type="submit">Envoyer la demande</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

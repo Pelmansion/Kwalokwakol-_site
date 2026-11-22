@@ -1,0 +1,11 @@
+<nav class="mag-nav" aria-label="Navigation magazine">
+  <a href="{% url 'magazine:home' %}" class="{% if mag_nav == 'home' %}is-active{% endif %}">Accueil</a>
+  <a href="{% url 'magazine:article_list' %}" class="{% if mag_nav == 'articles' %}is-active{% endif %}">Articles</a>
+  <a href="{% url 'magazine:video_list' %}" class="{% if mag_nav == 'videos' %}is-active{% endif %}">Vidéos</a>
+  <a href="{% url 'magazine:portrait_list' %}" class="{% if mag_nav == 'portraits' %}is-active{% endif %}">Portraits</a>
+  <a href="{% url 'magazine:repertoire' %}" class="{% if mag_nav == 'repertoire' %}is-active{% endif %}">Répertoire</a>
+  <a href="{% url 'magazine:boutique' %}" class="{% if mag_nav == 'boutique' %}is-active{% endif %}">Boutique</a>
+  <a href="{% url 'magazine:team' %}" class="{% if mag_nav == 'team' %}is-active{% endif %}">Équipe</a>
+  <a href="{% url 'magazine:charter' %}" class="{% if mag_nav == 'charter' %}is-active{% endif %}">Charte</a>
+  <a href="{% url 'magazine:partners' %}" class="{% if mag_nav == 'partners' %}is-active{% endif %}">Partenaires</a>
+</nav>

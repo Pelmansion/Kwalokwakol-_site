@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static media_tags %}
+{% block title %}Notre équipe — {{ magazine_name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="team" %}
+    <section class="mag-section">
+      <header class="mag-section__head"><h2>Notre équipe</h2></header>
+      <p class="mag-section__lead">Les femmes et hommes qui portent la ligne éditoriale et le rayonnement de Dan Prestige Magazine.</p>
+      <div class="mag-grid mag-grid--3">
+        {% for m in members %}
+          <article class="mag-card">
+            <div class="mag-team-photo">
+              {% if m.photo %}
+                <img src="{{ m.photo|file_url }}" alt="{{ m.name }}" loading="lazy" {% img_onerror_attr %}>
+              {% endif %}
+            </div>
+            <div class="mag-card__body">
+              <h3 class="mag-card__title">{{ m.name }}</h3>
+              <span class="mag-card__meta">{{ m.role }}</span>
+              {% if m.bio %}<p class="mag-card__text">{{ m.bio }}</p>{% endif %}
+            </div>
+          </article>
+        {% empty %}
+          <p class="mag-empty">Équipe à compléter.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

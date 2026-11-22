@@ -281,90 +281,60 @@ def home(request):
         .prefetch_related("media")
     )
 
-    # Produits mis en avant (utilisés pour la section \"Ventes flash\")
-    products = base_products[:12]
+    # Ventes flash : uniquement produits avec promo réelle (ancien prix > prix)
+    flash_products = [
+        p
+        for p in base_products.select_related("category", "vendor", "service_provider")[:60]
+        if p.promo_discount_percent
+    ][:12]
 
-    # Quelques produits par catégorie pour la page d'accueil
-    category_sections = []
-    for category in categories_qs:
-        cat_products = products_for_platform_category(base_products, category).select_related(
-            "category"
-        )[:8]
-        if cat_products:
-            category_sections.append(
-                {
-                    "category": category,
-                    "products": list(cat_products),
-                }
-            )
-
-    if categories_qs.exists():
-        categories = categories_qs
-        sidebar_categories = list(categories_qs[:SIDEBAR_CATEGORIES_LIMIT])
-        has_more_categories = categories_qs.count() > SIDEBAR_CATEGORIES_LIMIT
-    else:
-        categories = DEFAULT_CATEGORIES
-        sidebar_categories = DEFAULT_CATEGORIES[:SIDEBAR_CATEGORIES_LIMIT]
-        has_more_categories = len(DEFAULT_CATEGORIES) > SIDEBAR_CATEGORIES_LIMIT
+    new_products = list(
+        base_products.filter(kind=Product.PRODUCT)
+        .select_related("category", "vendor")
+        .order_by("-created_at")[:8]
+    )
+    popular_products = list(
+        base_products.filter(kind=Product.PRODUCT)
+        .select_related("category", "vendor")
+        .order_by("-id")[:8]
+    )
+    featured_services = list(
+        base_products.filter(kind=Product.SERVICE)
+        .select_related("category", "service_provider")
+        .order_by("-created_at")[:6]
+    )
+    featured_providers = list(
+        ServiceProvider.objects.filter(is_active=True)
+        .filter(active_subscription_q())
+        .filter(verification_status=ServiceProvider.STATUS_VERIFIED)
+        .order_by("name")[:6]
+    )
+    verified_vendors = list(
+        Vendor.objects.filter(is_active=True)
+        .filter(active_subscription_q())
+        .filter(verification_status=Vendor.STATUS_VERIFIED)
+        .order_by("name")[:8]
+    )
 
     category_cards = []
-    if hasattr(categories, "exists") and categories.exists():
-        for category in categories:
-            count = count_products_for_platform_category(base_products, category)
-            if count:
-                category_cards.append({"category": category, "count": count})
+    for category in categories_qs:
+        name_l = (category.name or "").lower()
+        if "dan prestige" in name_l or "magazine" in name_l:
+            continue
+        count = count_products_for_platform_category(base_products, category)
+        if count:
+            category_cards.append({"category": category, "count": count})
 
-    react_products = [_react_product_row(p) for p in products[:4]]
-    react_base_discover = base_products.order_by("-created_at")
-    react_discover_products = [
-        _react_product_row(p) for p in react_base_discover.filter(kind=Product.PRODUCT)
-    ]
-    react_discover_services = [
-        _react_product_row(p) for p in react_base_discover.filter(kind=Product.SERVICE)
-    ]
-    react_discover_vendors = [
-        _react_vendor_row(v)
-        for v in Vendor.objects.filter(is_active=True).filter(active_subscription_q()).order_by("name")
-    ]
-    react_discover_providers = [
-        _react_service_provider_row(sp)
-        for sp in ServiceProvider.objects.filter(is_active=True)
-        .filter(active_subscription_q())
-        .order_by("name")
-    ]
-    react_data = {
-        "title": "Explorez les meilleures offres locales",
-        "subtitle": "Produits et services artisanaux, livraison rapide et paiement sécurisé.",
-        "highlights": [
-            {"title": "Paiement sécurisé", "subtitle": "Carte & Mobile Money"},
-            {"title": "Artisans vérifiés", "subtitle": "Qualité garantie"},
-            {"title": "Livraison 24h", "subtitle": "Disponible localement"},
-        ],
-        "products": react_products,
-        "discoverTabs": {
-            "products": react_discover_products,
-            "services": react_discover_services,
-            "vendors": react_discover_vendors,
-            "providers": react_discover_providers,
-        },
-        "discoverMoreUrls": {
-            "products": reverse("store:product_list"),
-            "services": f"{reverse('store:product_list')}?type=service",
-            "vendors": reverse("store:vendor_list"),
-            "providers": reverse("store:service_provider_list"),
-        },
-    }
     return render(
         request,
         "store/home.html",
         {
-            "categories": categories,
-            "sidebar_categories": sidebar_categories,
-            "has_more_categories": has_more_categories,
             "category_cards": category_cards,
-            "products": products,
-            "category_sections": category_sections,
-            "react_data": react_data,
+            "flash_products": flash_products,
+            "new_products": new_products or popular_products,
+            "featured_services": featured_services,
+            "featured_providers": featured_providers,
+            "verified_vendors": verified_vendors,
             "favorites": favorites,
             "hero_background": HomepageBackground.get_active(),
             "popular_services": _popular_artisan_service_links(),

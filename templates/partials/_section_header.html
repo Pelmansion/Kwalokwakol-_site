@@ -1,0 +1,9 @@
+<header class="section-header">
+  <div>
+    {% if eyebrow %}<span class="section-header__eyebrow">{{ eyebrow }}</span>{% endif %}
+    <h2 class="section-header__title">{{ title }}</h2>
+  </div>
+  {% if more_url %}
+    <a class="section-header__more" href="{{ more_url }}">{{ more_label|default:"Voir tout" }} →</a>
+  {% endif %}
+</header>

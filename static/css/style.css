@@ -1,55 +1,7 @@
 /* =============================================================
-   Kolê Group — Design System
-   Thème : Marketplace Afro-moderne (artisanat, commerce, services)
+   Kolê Group — Design System (composants)
+   Tokens : kole-tokens.css (chargé avant ce fichier)
    ============================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-
-:root {
-  /* Palette principale — terre cuite, safran, vert sauge, crème */
-  --primary: #C2410C;          /* terracotta / brique */
-  --primary-dark: #9A3412;
-  --primary-light: #F97316;
-  --primary-50: #FFF7ED;
-  --primary-100: #FFEDD5;
-
-  --accent: #D4A24C;           /* safran / or */
-  --accent-dark: #A77A2B;
-  --accent-soft: #FBE8C4;
-
-  --forest: #1F6B4A;           /* vert sauge foncé */
-  --forest-soft: #D8ECE0;
-
-  --cream: #F6F1EA;            /* papier chaud (moins gris « template ») */
-  --cream-2: #EDE6DC;
-  --surface: #FFFCF8;
-  --surface-alt: #F3EDE6;
-
-  --ink: #1B1410;              /* texte principal très sombre chocolat */
-  --ink-soft: #443A33;
-  --muted: #6B5F54;
-  --line: rgba(27, 20, 16, 0.09);
-  --line-strong: rgba(27, 20, 16, 0.18);
-
-  --danger: #DC2626;
-  --success: #059669;
-  --info: #1D6B52;            /* ton forêt (évite le bleu « UI générique ») */
-  --warning: #D97706;
-
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
-
-  --shadow-xs: 0 1px 2px rgba(27, 20, 16, 0.06);
-  --shadow-sm: 0 2px 10px rgba(27, 20, 16, 0.06);
-  --shadow: 0 6px 20px rgba(27, 20, 16, 0.07);
-  --shadow-lg: 0 18px 44px rgba(27, 20, 16, 0.1);
-  --shadow-primary: 0 10px 28px rgba(194, 65, 12, 0.22);
-
-  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
-}
 
 /* Formulaire caché : uniquement pour émettre le jeton CSRF (pas d’affichage) */
 .csrf-bootstrap {

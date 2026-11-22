@@ -168,3 +168,16 @@ def product_card_title(name):
 @register.filter
 def is_demo_product(name):
     return bool(name and name.startswith("[DEMO]"))
+
+
+@register.filter
+def fcfa(value):
+    """Formate un montant en « 15 000 FCFA » (séparateur d'espaces)."""
+    if value is None or value == "":
+        return "0 FCFA"
+    try:
+        amount = int(round(float(value)))
+    except (TypeError, ValueError):
+        return f"{value} FCFA"
+    formatted = f"{amount:,}".replace(",", " ")
+    return f"{formatted} FCFA"

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Proposer un référencement — {{ magazine_name }}{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=2">
+  <meta name="description" content="Proposez l'ajout d'une personnalité au répertoire Dan Prestige Magazine.">
+{% endblock %}
+{% block content %}
+<div class="mag-page">
+  <div class="container" style="padding-top:28px;">
+    {% include "magazine/_nav.html" with mag_nav="repertoire" %}
+    <section class="mag-section mag-prose">
+      <header class="mag-section__head"><h2>Demande de référencement</h2></header>
+      <p>Soumettez une fiche pour le répertoire. Toute publication nécessite un consentement explicite et une validation éditoriale.</p>
+      <form method="post" enctype="multipart/form-data" class="mag-form">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mag-form__field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+            {{ field }}
+            {% if field.errors %}<p class="mag-form__error">{{ field.errors|striptags }}</p>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn" type="submit">Envoyer la demande</button>
+      </form>
+    </section>
+    {% include "magazine/_editorial_footer.html" %}
+  </div>
+</div>
+{% endblock %}

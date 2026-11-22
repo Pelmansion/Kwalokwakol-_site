@@ -3,216 +3,184 @@
 {% load marketplace_tags %}
 {% block content %}
 <div class="home-page">
-  <div class="page-wrap">
+  <div class="page-wrap container">
 
-    {# ── Hero + catégories (maquette kole-group-redesign) ── #}
-    <section class="hero-section">
-      {% if not user.is_authenticated or user|is_client %}
-      <aside class="categories-sidebar" aria-label="Navigation par catégories">
-        <div class="cat-title">Catégories</div>
-        <nav class="categories-sidebar__nav">
-          {% if sidebar_categories.0 %}
-            {% for category in sidebar_categories %}
-              {% if category.slug %}
-                <a href="{% url 'store:category_detail' category.slug %}" class="cat-item">
-                  <span class="cat-icon">{{ category.name|category_name_emoji }}</span>
-                  {{ category.name }}
-                </a>
-              {% else %}
-                <span class="cat-item cat-item--muted">
-                  <span class="cat-icon">{{ category|category_name_emoji }}</span>
-                  {{ category }}
-                </span>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        </nav>
-        {% if has_more_categories %}
-          <a class="categories-sidebar__more" href="#categories">Voir toutes les catégories →</a>
-        {% endif %}
-      </aside>
-      {% endif %}
-
+    {# 1. Bandeau principal #}
+    <section class="hero-section hero-section--full" aria-roledescription="carousel" aria-label="Mises en avant">
       <div class="hero__banner">
         <div class="hero-slider" id="hero-slider">
-          <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% static "images/hero-main.jpg" %}');">
+          <div class="hero-slide hero-slide--active hero-slide--main" style="--hero-bg: url('{% if hero_background and hero_background.image %}{{ hero_background.image.url }}{% else %}{% static "images/hero-main.jpg" %}{% endif %}');">
             <div class="hero-bg-pattern" aria-hidden="true"></div>
             <div class="hero__content">
               <p class="hero__eyebrow">Artisans &amp; commerces de proximité</p>
               <h1><em>Kolê</em> Group</h1>
               <p>Vivres, artisanat, bâtiment et services — ce que votre quartier propose, au même endroit.</p>
-              <a class="btn hero-cta" href="{% url 'store:product_list' %}">
-                Découvrir les offres
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-              <div class="hero__stats">
-                <div class="stat-item">
-                  <strong>+150</strong>
-                  <span>Artisans</span>
-                </div>
-                <div class="stat-item">
-                  <strong>24h</strong>
-                  <span>Livraison locale</span>
-                </div>
-                <div class="stat-item">
-                  <strong>100%</strong>
-                  <span>Qualité vérifiée</span>
-                </div>
-              </div>
-            </div>
-            <div class="hero-visual" aria-hidden="true">
-              <div class="hero-cart-mockup">🛒</div>
+              <a class="btn btn--primary hero-cta" href="{% url 'store:product_list' %}">Découvrir les offres</a>
             </div>
           </div>
 
-          <div class="hero-slide hero-slide--flash" style="--hero-bg: url('{% static "images/hero-flash.jpg" %}');">
+          <div class="hero-slide hero-slide--flash" style="--hero-bg: url('{% static "images/hero-flash.jpg" %}');" data-lazy-bg="{% static 'images/hero-flash.jpg' %}">
             <div class="hero-bg-pattern" aria-hidden="true"></div>
             <div class="hero__content">
               <p class="hero__eyebrow">Offres du moment</p>
-              <h1>Ventes flash du jour</h1>
+              <h1>Ventes flash</h1>
               <p>Réductions sur une sélection d'articles locaux — le temps presse, les stocks aussi.</p>
-              <a class="btn hero-cta" href="#flash">
-                Voir les ventes flash
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-              <div class="hero__stats">
-                <div class="stat-item">
-                  <strong>-30%</strong>
-                  <span>En moyenne</span>
-                </div>
-                <div class="stat-item">
-                  <strong>Stock</strong>
-                  <span>Limité</span>
-                </div>
-                <div class="stat-item">
-                  <strong>Local</strong>
-                  <span>Artisans &amp; boutiques</span>
-                </div>
-              </div>
-            </div>
-            <div class="hero-visual" aria-hidden="true">
-              <div class="hero-cart-mockup">🔥</div>
+              <a class="btn btn--primary hero-cta" href="#flash">Voir les ventes flash</a>
             </div>
           </div>
 
-          <div class="hero-slide hero-slide--services" style="--hero-bg: url('{% static "images/hero-services.jpg" %}');">
+          <div class="hero-slide hero-slide--services" style="--hero-bg: url('{% static "images/hero-services.jpg" %}');" data-lazy-bg="{% static 'images/hero-services.jpg' %}">
             <div class="hero-bg-pattern" aria-hidden="true"></div>
             <div class="hero__content">
               <p class="hero__eyebrow">Prestataires autour de vous</p>
               <h1>Services artisanaux à portée de main</h1>
               <p>Coiffure, bâtiment, couture, numérique… le bon profil, sans chercher au hasard.</p>
-              <a class="btn hero-cta" href="{% url 'store:product_list' %}?type=service">
-                Chercher un service
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-              <div class="hero__stats">
-                <div class="stat-item">
-                  <strong>10+</strong>
-                  <span>Catégories</span>
-                </div>
-                <div class="stat-item">
-                  <strong>Rapide</strong>
-                  <span>Demande en ligne</span>
-                </div>
-                <div class="stat-item">
-                  <strong>Sécurisé</strong>
-                  <span>Profils vérifiés</span>
-                </div>
-              </div>
-            </div>
-            <div class="hero-visual" aria-hidden="true">
-              <div class="hero-cart-mockup">🛠️</div>
+              <a class="btn btn--primary hero-cta" href="{% url 'store:product_list' %}?type=service">Chercher un service</a>
             </div>
           </div>
         </div>
-        <div class="hero-slider__dots slide-dots" id="hero-slider-dots">
-          <button type="button" data-index="0" class="is-active" aria-label="Slide 1"></button>
-          <button type="button" data-index="1" aria-label="Slide 2"></button>
-          <button type="button" data-index="2" aria-label="Slide 3"></button>
+        <div class="hero-slider__dots slide-dots" id="hero-slider-dots" role="tablist" aria-label="Diapositives">
+          <button type="button" data-index="0" class="is-active" role="tab" aria-selected="true" aria-label="Diapositive 1"></button>
+          <button type="button" data-index="1" role="tab" aria-selected="false" aria-label="Diapositive 2"></button>
+          <button type="button" data-index="2" role="tab" aria-selected="false" aria-label="Diapositive 3"></button>
         </div>
       </div>
     </section>
 
-    {# ── Bannière Culture ── #}
-    <section class="culture-banner">
-      <div class="culture-banner__text">
-        <div class="culture-label">✦ Kolê Culture — Votre scène locale</div>
-        <h2 class="culture-title">Vibrez au rythme<br>de <em>votre région</em></h2>
-        <p class="culture-sub">Artistes locaux, sons inédits, billets de concert : tout l'univers culturel ivoirien réuni en un seul endroit.</p>
-        <div class="culture-tags">
-          <a class="culture-tag" href="{% url 'culture:song_list' %}">🎵 Streaming &amp; téléchargement</a>
-          <a class="culture-tag" href="{% url 'culture:event_list' %}?when=upcoming">🎫 Billetterie &amp; QR</a>
-          <a class="culture-tag" href="{% url 'culture:artist_list' %}?verifie=1">🎤 Artistes vérifiés</a>
-        </div>
-      </div>
-      <div class="culture-cta-group">
-        <div class="vip-badge">✦ LIVE 2026</div>
-        <a class="culture-btn" href="{% url 'culture:home' %}">
-          Explorer Kolê Culture
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a class="culture-btn culture-btn--ghost" href="{% url 'culture:event_list' %}?when=upcoming">
-          Concerts à venir
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-    </section>
-
-    {# ── Bannière Dan Prestige Magazine ── #}
-    <section class="culture-banner" style="background:linear-gradient(135deg,#1a1510,#3d2a1a);">
-      <div class="culture-banner__text">
-        <div class="culture-label">✦ Dan Prestige Magazine</div>
-        <h2 class="culture-title">Personnalités, talents<br>&amp; réussites <em>Dan</em></h2>
-        <p class="culture-sub">Magazine, reportages, portraits et répertoire — en Côte d'Ivoire et dans la diaspora.</p>
-      </div>
-      <div class="culture-cta-group">
-        <a class="culture-btn" href="{% url 'magazine:home' %}">
-          Découvrir le magazine
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a class="culture-btn culture-btn--ghost" href="{% url 'magazine:boutique' %}">Boutique &amp; abonnements</a>
-      </div>
-    </section>
-
-    {# ── Ventes flash ── #}
-    <section class="home-section flash" id="flash">
-      <div class="section-header flash__header">
-        <h2 class="section-title">
-          <span class="fire" aria-hidden="true">🔥</span> Ventes flash
-          <span class="section-title__meta">— Offres limitées</span>
-        </h2>
-        <a class="section-link" href="{% url 'store:product_list' %}">
-          Voir tout
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-      <div class="product-grid cards-grid">
-        {% for product in products %}
-          {% include "store/_product_card.html" with product=product favorites=favorites %}
-        {% empty %}
-          <p class="empty">Ajoutez des produits pour remplir cette section.</p>
-        {% endfor %}
-      </div>
-    </section>
-
-    {# ── Grille catégories ── #}
+    {# 2. Catégories (tuiles) #}
     {% if category_cards %}
-    <section class="home-section home-section--tight" id="categories">
-      <div class="section-header">
-        <h2 class="section-title">Découvrez nos catégories</h2>
-        <span class="section-header__sub">Un aperçu rapide de ce que proposent artisans et boutiques</span>
-      </div>
-      <div class="cat-grid">
+    <section class="home-section" id="categories">
+      {% include "partials/_section_header.html" with eyebrow="Parcourir" title="Catégories" more_url=None %}
+      <div class="cat-tiles" role="list">
         {% for item in category_cards %}
-          <a class="cat-card" href="{% url 'store:category_detail' item.category.slug %}">
-            <div class="cat-card-icon">{{ item.category.name|category_name_emoji }}</div>
-            <div class="cat-card-name">{{ item.category.name }}</div>
-            <div class="cat-card-count">{{ item.count }} offre{{ item.count|pluralize }}</div>
+          <a class="cat-tile" href="{% url 'store:category_detail' item.category.slug %}" role="listitem">
+            <span class="cat-tile__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </span>
+            <span class="cat-tile__name">{{ item.category.name }}</span>
           </a>
         {% endfor %}
       </div>
     </section>
     {% endif %}
+
+    {# 3. Ventes flash — masquée si vide #}
+    {% if flash_products %}
+    <section class="home-section flash" id="flash">
+      {% url 'store:product_list' as products_url %}
+      {% include "partials/_section_header.html" with eyebrow="Promo" title="Ventes flash" more_url=products_url more_label="Voir tout" %}
+      <div class="product-grid cards-grid">
+        {% for product in flash_products %}
+          {% include "store/_product_card.html" with product=product favorites=favorites %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 4. Nouveautés / populaires #}
+    {% if new_products %}
+    <section class="home-section" id="nouveautes">
+      {% url 'store:product_list' as products_url %}
+      {% include "partials/_section_header.html" with eyebrow="Sélection" title="Nouveautés" more_url=products_url more_label="Voir tout" %}
+      <div class="product-grid cards-grid">
+        {% for product in new_products %}
+          {% include "store/_product_card.html" with product=product favorites=favorites %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 5. Services et prestataires #}
+    {% if featured_services or featured_providers or popular_services %}
+    <section class="home-section" id="services">
+      {% url 'store:service_provider_list' as providers_url %}
+      {% include "partials/_section_header.html" with eyebrow="Services" title="Services &amp; prestataires" more_url=providers_url more_label="Voir tout" %}
+      {% if featured_services %}
+      <div class="product-grid cards-grid">
+        {% for product in featured_services %}
+          {% include "store/_product_card.html" with product=product favorites=favorites %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if featured_providers %}
+      <div class="vendor-strip" style="margin-top:24px;">
+        {% for sp in featured_providers %}
+          <a class="vendor-chip" href="{% url 'store:service_provider_detail' sp.slug %}">
+            <span>{{ sp.name }}</span>
+            <span class="badge badge--verified">Vérifié</span>
+          </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {# 6. Boutiques vérifiées #}
+    {% if verified_vendors %}
+    <section class="home-section" id="boutiques">
+      {% url 'store:vendor_list' as vendors_url %}
+      {% include "partials/_section_header.html" with eyebrow="Confiance" title="Boutiques vérifiées" more_url=vendors_url more_label="Toutes les boutiques" %}
+      <div class="vendor-strip">
+        {% for vendor in verified_vendors %}
+          <a class="vendor-chip" href="{% url 'store:vendor_detail' vendor.slug %}">
+            <span>{{ vendor.name }}</span>
+            <span class="badge badge--verified">Vérifié</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 7. Univers Kolê #}
+    <section class="home-section univers-kole" id="univers">
+      {% include "partials/_section_header.html" with eyebrow="Écosystème" title="Univers Kolê" %}
+      <div class="univers-kole__grid">
+        <article class="univers-card univers-card--culture">
+          <span class="kole-eyebrow">Kolê Culture</span>
+          <h3>Vibrez au rythme de <em>votre région</em></h3>
+          <p>Artistes locaux, sons inédits et billets de concert.</p>
+          <div class="univers-card__actions">
+            <a class="btn btn--primary" href="{% url 'culture:home' %}">Explorer Culture</a>
+            <a class="btn btn--tertiary" href="{% url 'culture:event_list' %}?when=upcoming">Concerts à venir</a>
+          </div>
+        </article>
+        <article class="univers-card univers-card--magazine">
+          <span class="kole-eyebrow">Dan Prestige Magazine</span>
+          <h3>Personnalités &amp; <em>réussites Dan</em></h3>
+          <p>Reportages, portraits et répertoire — en Côte d'Ivoire et diaspora.</p>
+          <div class="univers-card__actions">
+            <a class="btn btn--accent" href="{% url 'magazine:home' %}">Lire le magazine</a>
+            <a class="btn btn--tertiary" href="{% url 'magazine:boutique' %}">Boutique &amp; abonnements</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    {# 8. Bloc confiance #}
+    <section class="home-section trust-strip" aria-label="Engagements Kolê">
+      <div class="trust-strip__grid">
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h13v10H3z"/><path d="M16 10h3l2 3v4h-5V10z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+          <h3>Livraison locale</h3>
+          <p>Retrait et livraison près de chez vous.</p>
+        </div>
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <h3>Paiement sécurisé</h3>
+          <p>Orange Money, MTN MoMo et Wave.</p>
+        </div>
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2l.9-5.5-4-3.9L9.5 8z"/></svg>
+          <h3>Artisans vérifiés</h3>
+          <p>Profils contrôlés avant mise en ligne.</p>
+        </div>
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-1.2 4.4L21 21l-5.2-1.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
+          <h3>Assistance WhatsApp</h3>
+          <p>Une équipe disponible pour vous aider.</p>
+        </div>
+      </div>
+    </section>
 
   </div>
 </div>
@@ -229,40 +197,37 @@
     var dots = dotsContainer.querySelectorAll("button");
     var current = 0;
     var timer = null;
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     function goTo(index) {
       slides[current].classList.remove("hero-slide--active");
       dots[current].classList.remove("is-active");
+      dots[current].setAttribute("aria-selected", "false");
       current = index;
       slides[current].classList.add("hero-slide--active");
       dots[current].classList.add("is-active");
+      dots[current].setAttribute("aria-selected", "true");
     }
 
-    function next() {
-      goTo((current + 1) % slides.length);
-    }
-
+    function next() { goTo((current + 1) % slides.length); }
     function startAuto() {
+      if (reduceMotion) return;
       stopAuto();
       timer = setInterval(next, 7000);
     }
-
     function stopAuto() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
+      if (timer) { clearInterval(timer); timer = null; }
     }
 
     dots.forEach(function (dot, index) {
-      dot.addEventListener("click", function () {
-        goTo(index);
-        startAuto();
-      });
+      dot.addEventListener("click", function () { goTo(index); startAuto(); });
+      dot.addEventListener("focus", stopAuto);
     });
 
     slider.addEventListener("mouseenter", stopAuto);
     slider.addEventListener("mouseleave", startAuto);
+    slider.addEventListener("focusin", stopAuto);
+    slider.addEventListener("focusout", startAuto);
     startAuto();
   })();
 </script>

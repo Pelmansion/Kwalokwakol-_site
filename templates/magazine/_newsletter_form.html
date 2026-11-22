@@ -1,0 +1,9 @@
+<form class="mag-newsletter" method="post" action="{% url 'magazine:newsletter' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <div class="mag-newsletter__row">
+    {{ newsletter_form.full_name }}
+    {{ newsletter_form.email }}
+    <button class="btn" type="submit">S'inscrire</button>
+  </div>
+</form>

@@ -18,6 +18,8 @@ urlpatterns = [
     path("portraits/", views.portrait_list, name="portrait_list"),
     path("portraits/<slug:slug>/", views.portrait_detail, name="portrait_detail"),
     path("repertoire/", views.repertoire, name="repertoire"),
+    path("repertoire/referencement/", views.referencement, name="referencement"),
     path("repertoire/<slug:slug>/", views.personality_detail, name="personality_detail"),
     path("partenaires/", views.partners, name="partners"),
+    path("newsletter/", views.newsletter_signup, name="newsletter"),
 ]

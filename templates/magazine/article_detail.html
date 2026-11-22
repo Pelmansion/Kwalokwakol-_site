@@ -2,16 +2,38 @@
 {% load static media_tags %}
 {% block title %}{{ article.title }} — {{ magazine_name }}{% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">
+  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=3">
   <meta name="description" content="{{ article.excerpt|default:article.title|truncatechars:155 }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ article.title }}">
+  <meta property="og:description" content="{{ article.excerpt|default:article.title|truncatechars:155 }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  {% if article.cover_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ article.cover_image|file_url }}">{% endif %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ article.title|escapejs }}",
+    "datePublished": "{{ article.published_at|date:'c' }}",
+    "author": {"@type": "Person", "name": "{{ article.author_name|default:'Rédaction DPM'|escapejs }}"},
+    "description": "{{ article.excerpt|default:article.title|truncatechars:200|escapejs }}",
+    "mainEntityOfPage": "{{ canonical_url|escapejs }}"
+  }
+  </script>
 {% endblock %}
 {% block content %}
 <div class="mag-page">
   <div class="container" style="padding-top:28px;">
     {% include "magazine/_nav.html" with mag_nav="articles" %}
     <article class="mag-section mag-prose">
-      {% if article.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
-      <p class="mag-card__meta">{{ article.get_category_display }} · {{ article.published_at|date:"d/m/Y" }}{% if article.locality %} · {{ article.locality }}{% endif %}</p>
+      {% include "magazine/_sponsored_label.html" with obj=article %}
+      <p class="mag-card__meta">
+        {{ article.get_category_display }}
+        · {{ article.published_at|date:"d/m/Y" }}
+        {% if article.locality %} · {{ article.locality }}{% endif %}
+        · {{ article.reading_time_minutes }} min de lecture
+      </p>
       <h1>{{ article.title }}</h1>
       {% if article.author_name %}<p class="muted">Par {{ article.author_name }}</p>{% endif %}
       {% if article.cover_image %}
@@ -19,6 +41,7 @@
       {% endif %}
       {% if article.excerpt %}<p><strong>{{ article.excerpt }}</strong></p>{% endif %}
       <div>{{ article.body|linebreaks }}</div>
+      {% include "magazine/_share_whatsapp.html" %}
     </article>
     {% if related %}
     <section class="mag-section">
@@ -28,6 +51,7 @@
       </div>
     </section>
     {% endif %}
+    {% include "magazine/_editorial_footer.html" %}
   </div>
 </div>
 {% endblock %}

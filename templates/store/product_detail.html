@@ -146,7 +146,9 @@
         {% endif %}
       {% endif %}
 
-      <div class="product-detail__actions">
+      <p class="product-detail__delivery muted">Livraison estimée : 24–72 h selon la localité (Standard ou Express au panier).</p>
+
+      <div class="product-detail__actions" id="product-actions">
         {% if product.kind == 'service' %}
           {% if user.is_authenticated %}
             {% if owns_product %}
@@ -169,20 +171,30 @@
             <a class="btn btn--primary" href="{% url 'accounts:login' %}?next={% url 'store:product_detail' product.slug %}">Demander ce service</a>
           {% endif %}
         {% elif can_purchase or not user.is_authenticated %}
-          <a class="btn btn--primary js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">🛒 Ajouter au panier</a>
-          <a class="btn btn--ghost favorite-toggle favorite-toggle--inline {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
-             href="{% url 'store:toggle_favorite' product.id %}">
-            ♥ <span>{% if favorites and product.id in favorites %}Retirer{% else %}Ajouter aux favoris{% endif %}</span>
+          <a class="btn btn--primary js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
+          <a class="btn btn--secondary favorite-toggle favorite-toggle--inline {% if favorites and product.id in favorites %}favorite-toggle--active{% endif %}"
+             href="{% url 'store:toggle_favorite' product.id %}"
+             aria-label="Favoris">
+            <span>{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}</span>
           </a>
         {% elif owns_product %}
           <span class="muted">C'est votre produit — gérez-le depuis votre espace vendeur.</span>
         {% elif user|is_app_admin %}
           <span class="muted">Les comptes administration ne peuvent pas passer de commande.</span>
         {% endif %}
-        <a class="btn btn--ghost" href="{% url 'store:product_list' %}">← Retour</a>
+        <a class="btn btn--tertiary" href="{% url 'store:product_list' %}">Retour au catalogue</a>
       </div>
     </div>
   </section>
+
+  {% if product.kind != 'service' %}
+    {% if can_purchase or not user.is_authenticated %}
+    <div class="product-sticky-buy" aria-label="Actions d'achat">
+      <div class="product-sticky-buy__price">{% include "store/_product_price.html" with product=product variant="card" %}</div>
+      <a class="btn btn--primary js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
+    </div>
+    {% endif %}
+  {% endif %}
 
   <section class="container reviews">
     <div class="section-head">

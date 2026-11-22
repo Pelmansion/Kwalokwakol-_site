@@ -1,0 +1,7 @@
+<div class="empty-state kole-empty">
+  {% if title %}<h3 class="empty-state__title">{{ title }}</h3>{% endif %}
+  {% if text %}<p>{{ text }}</p>{% endif %}
+  {% if cta_url %}
+    <a class="btn btn--primary" href="{{ cta_url }}">{{ cta_label|default:"Découvrir" }}</a>
+  {% endif %}
+</div>

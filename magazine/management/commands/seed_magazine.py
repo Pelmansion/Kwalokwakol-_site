@@ -28,13 +28,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.MIGRATE_HEADING("Dan Prestige Magazine (demo)"))
         self._team()
+        self._partners()
         self._articles()
         self._videos()
         self._portraits()
         self._personalities()
         self._plans()
         self._issues()
-        self._partners()
         self.stdout.write(self.style.SUCCESS("Magazine seede."))
 
     def _team(self):
@@ -68,6 +68,7 @@ class Command(BaseCommand):
             ("Portrait d'un enseignant engagé", "portrait", "Biankouma", False, "Transmettre le savoir dans les montagnes de l'Ouest."),
             ("Édition spéciale tourisme", "actu", "Touba", True, "Contenu sponsorisé sur le potentiel touristique."),
         ]
+        sponsor = Partner.objects.filter(is_sponsor=True).first()
         for title, cat, loc, sponsored, excerpt in data:
             Article.objects.update_or_create(
                 slug=slugify(title),
@@ -76,11 +77,13 @@ class Command(BaseCommand):
                     "category": cat,
                     "locality": loc,
                     "is_sponsored": sponsored,
+                    "sponsor": sponsor if sponsored else None,
                     "excerpt": excerpt,
                     "body": excerpt + "\n\n" + ("Lorem ipsum editorial Dan Prestige. " * 12),
                     "author_name": "Rédaction DPM",
                     "is_published": True,
                     "is_featured": not sponsored,
+                    "is_demo": True,
                     "published_at": timezone.now() - timedelta(days=len(title)),
                 },
             )
@@ -88,21 +91,23 @@ class Command(BaseCommand):
 
     def _videos(self):
         data = [
-            ("Grand entretien — cadres Dan", "interview", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-            ("Reportage : marchés de l'Ouest", "reportage", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-            ("Émission spéciale diaspora", "emission", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+            ("Grand entretien — cadres Dan", "interview", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 1240),
+            ("Reportage : marchés de l'Ouest", "reportage", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 860),
+            ("Émission spéciale diaspora", "emission", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 2100),
         ]
-        for title, kind, url in data:
+        for title, kind, url, duration in data:
             Video.objects.update_or_create(
                 slug=slugify(title),
                 defaults={
                     "title": title,
                     "kind": kind,
                     "video_url": url,
+                    "duration_seconds": duration,
                     "description": "Vidéo de démonstration Dan Prestige Magazine.",
                     "locality": "Côte d'Ivoire",
                     "is_published": True,
                     "is_featured": True,
+                    "is_demo": True,
                 },
             )
         self.stdout.write(f"  Vidéos : {Video.objects.count()}")
@@ -123,7 +128,7 @@ class Command(BaseCommand):
         ]
         for name, loc in subjects:
             slug = slugify(f"portrait-{name}")
-            obj, created = Portrait.objects.get_or_create(
+            obj, created = Portrait.objects.update_or_create(
                 slug=slug,
                 defaults={
                     "title": f"Portrait — {name}",
@@ -133,9 +138,10 @@ class Command(BaseCommand):
                     "photographer": "Studio DPM",
                     "is_published": True,
                     "is_featured": True,
+                    "is_demo": True,
                 },
             )
-            if created or not obj.image:
+            if not obj.image:
                 obj.image = make_placeholder_image(name, size=(600, 600), bg=(44, 33, 24))
                 obj.save()
         self.stdout.write(f"  Portraits : {Portrait.objects.count()}")
@@ -162,6 +168,7 @@ class Command(BaseCommand):
                     "achievements": "Engagement communautaire et excellence professionnelle.",
                     "consent_validated": consent,
                     "is_featured": consent,
+                    "is_demo": True,
                 },
             )
             if not obj.photo:
@@ -255,6 +262,7 @@ class Command(BaseCommand):
                 defaults={
                     "description": "Partenaire de démonstration.",
                     "is_sponsor": i == 2,
+                    "is_demo": True,
                     "is_active": True,
                     "display_order": i,
                 },

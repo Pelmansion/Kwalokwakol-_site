@@ -52,6 +52,19 @@ class Article(models.Model):
     locality = models.CharField("région / localité", max_length=120, blank=True)
     author_name = models.CharField(max_length=120, blank=True)
     is_sponsored = models.BooleanField("publireportage", default=False)
+    sponsor = models.ForeignKey(
+        "Partner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sponsored_articles",
+        verbose_name="partenaire sponsor",
+    )
+    is_demo = models.BooleanField(
+        "contenu de démonstration",
+        default=False,
+        help_text="Masqué automatiquement lorsque DEBUG=False.",
+    )
     is_published = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     published_at = models.DateTimeField(default=timezone.now)
@@ -80,6 +93,12 @@ class Article(models.Model):
     def get_absolute_url(self) -> str:
         return reverse("magazine:article_detail", args=[self.slug])
 
+    @property
+    def reading_time_minutes(self) -> int:
+        from .helpers import reading_time_minutes
+
+        return reading_time_minutes(f"{self.excerpt} {self.body}")
+
 
 class Video(models.Model):
     KIND_INTERVIEW = "interview"
@@ -101,7 +120,26 @@ class Video(models.Model):
         "URL vidéo (YouTube / Vimeo / fichier)",
         help_text="Lien YouTube/Vimeo embarquable, ou URL directe MP4.",
     )
+    duration_seconds = models.PositiveIntegerField(
+        "durée (secondes)",
+        null=True,
+        blank=True,
+        help_text="Durée affichée et utilisée pour le balisage SEO.",
+    )
     is_sponsored = models.BooleanField("publireportage", default=False)
+    sponsor = models.ForeignKey(
+        "Partner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sponsored_videos",
+        verbose_name="partenaire sponsor",
+    )
+    is_demo = models.BooleanField(
+        "contenu de démonstration",
+        default=False,
+        help_text="Masqué automatiquement lorsque DEBUG=False.",
+    )
     is_published = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     published_at = models.DateTimeField(default=timezone.now)
@@ -130,6 +168,16 @@ class Video(models.Model):
         return reverse("magazine:video_detail", args=[self.slug])
 
     @property
+    def duration_display(self) -> str:
+        if not self.duration_seconds:
+            return ""
+        minutes, seconds = divmod(int(self.duration_seconds), 60)
+        hours, minutes = divmod(minutes, 60)
+        if hours:
+            return f"{hours}:{minutes:02d}:{seconds:02d}"
+        return f"{minutes}:{seconds:02d}"
+
+    @property
     def embed_url(self) -> str:
         url = (self.video_url or "").strip()
         if "youtube.com/watch" in url:
@@ -153,6 +201,19 @@ class Portrait(models.Model):
     image = models.ImageField(upload_to="magazine/portraits/")
     photographer = models.CharField(max_length=120, blank=True)
     is_sponsored = models.BooleanField("publireportage", default=False)
+    sponsor = models.ForeignKey(
+        "Partner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sponsored_portraits",
+        verbose_name="partenaire sponsor",
+    )
+    is_demo = models.BooleanField(
+        "contenu de démonstration",
+        default=False,
+        help_text="Masqué automatiquement lorsque DEBUG=False.",
+    )
     is_published = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     published_at = models.DateTimeField(default=timezone.now)
@@ -197,6 +258,11 @@ class Personality(models.Model):
         "consentement validé",
         default=False,
         help_text="La fiche n'est visible publiquement que si ce champ est coché.",
+    )
+    is_demo = models.BooleanField(
+        "contenu de démonstration",
+        default=False,
+        help_text="Masqué automatiquement lorsque DEBUG=False.",
     )
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -377,6 +443,11 @@ class Partner(models.Model):
     website = models.URLField(blank=True)
     description = models.TextField(blank=True)
     is_sponsor = models.BooleanField(default=False)
+    is_demo = models.BooleanField(
+        "contenu de démonstration",
+        default=False,
+        help_text="Masqué automatiquement lorsque DEBUG=False.",
+    )
     is_active = models.BooleanField(default=True)
     display_order = models.PositiveIntegerField(default=0)
 
@@ -387,6 +458,66 @@ class Partner(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class PersonalitySubmission(models.Model):
+    """Demande publique d'ajout / référencement au répertoire."""
+
+    STATUS_PENDING = "pending"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "En attente"),
+        (STATUS_APPROVED, "Approuvée"),
+        (STATUS_REJECTED, "Refusée"),
+    ]
+
+    first_name = models.CharField("prénom", max_length=80)
+    last_name = models.CharField("nom", max_length=80)
+    profession = models.CharField(max_length=160)
+    locality = models.CharField("localité d'origine", max_length=120, blank=True)
+    region = models.CharField(max_length=120, blank=True)
+    bio = models.TextField("parcours", blank=True)
+    achievements = models.TextField("réalisations", blank=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True)
+    photo = models.ImageField(upload_to="magazine/submissions/", blank=True, null=True)
+    consent = models.BooleanField(
+        "consentement à la publication",
+        default=False,
+        help_text="Obligatoire pour traiter la demande.",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    admin_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Demande de référencement"
+        verbose_name_plural = "Demandes de référencement"
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
+
+    def __str__(self) -> str:
+        return f"{self.full_name} ({self.get_status_display()})"
+
+
+class MagazineNewsletterSignup(models.Model):
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=160, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Inscription newsletter magazine"
+        verbose_name_plural = "Inscriptions newsletter magazine"
+
+    def __str__(self) -> str:
+        return self.email
 
 
 class PartnershipInquiry(models.Model):

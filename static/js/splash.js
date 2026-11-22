@@ -114,6 +114,9 @@
 
       exitTimer = setTimeout(function () {
         done = true;
+        try {
+          sessionStorage.setItem("kole_splash_seen", "1");
+        } catch (e) {}
         root.classList.remove("kole-splash-pending");
         if (splash.parentNode) splash.parentNode.removeChild(splash);
       }, EXIT_MS);

@@ -11,36 +11,54 @@
   </section>
 
   <section class="container filters">
-    <form method="get" class="filters__form">
-      <input type="text" name="q" placeholder="🔍 Recherche rapide" value="{{ request.GET.q }}">
-      <input type="number" name="min_price" placeholder="Prix min" value="{{ request.GET.min_price }}">
-      <input type="number" name="max_price" placeholder="Prix max" value="{{ request.GET.max_price }}">
-      <input type="text" name="localisation" placeholder="📍 Localisation" value="{{ request.GET.localisation }}">
-      <select name="categorie">
-        <option value="">Toutes les catégories</option>
-        {% for category in nav_categories %}
-          <option value="{{ category.slug }}" {% if request.GET.categorie == category.slug %}selected{% endif %}>{{ category.name }}</option>
+    <div class="filters__toolbar">
+      <button type="button" class="btn btn--secondary filters__open" id="kole-filters-open" aria-expanded="false" aria-controls="kole-filters-panel">Filtres</button>
+      <form method="get" class="filters__sort-only">
+        {% for key, value in request.GET.items %}
+          {% if key != 'tri' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
         {% endfor %}
-      </select>
-      <select name="sous_categorie">
-        <option value="">Sous-catégorie</option>
-        {% for sub in subcategories %}
-          <option value="{{ sub.slug }}" {% if request.GET.sous_categorie == sub.slug %}selected{% endif %}>{{ sub.name }}</option>
-        {% endfor %}
-      </select>
-      <select name="disponible">
-        <option value="">Disponibilité</option>
-        <option value="1" {% if request.GET.disponible == '1' %}selected{% endif %}>En stock</option>
-      </select>
-      <select name="tri">
-        <option value="">Trier par</option>
-        <option value="price_asc" {% if request.GET.tri == 'price_asc' %}selected{% endif %}>Prix croissant</option>
-        <option value="price_desc" {% if request.GET.tri == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
-        <option value="rating" {% if request.GET.tri == 'rating' %}selected{% endif %}>Meilleures notes</option>
-        <option value="popular" {% if request.GET.tri == 'popular' %}selected{% endif %}>Popularité</option>
-      </select>
-      <button class="btn btn--small" type="submit">Filtrer</button>
-    </form>
+        <label class="visually-hidden" for="kole-sort">Trier</label>
+        <select name="tri" id="kole-sort" onchange="this.form.submit()">
+          <option value="">Trier par</option>
+          <option value="price_asc" {% if request.GET.tri == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+          <option value="price_desc" {% if request.GET.tri == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+          <option value="rating" {% if request.GET.tri == 'rating' %}selected{% endif %}>Meilleures notes</option>
+          <option value="popular" {% if request.GET.tri == 'popular' %}selected{% endif %}>Popularité</option>
+        </select>
+      </form>
+    </div>
+    <div class="filters__backdrop" id="kole-filters-backdrop" hidden></div>
+    <aside class="filters__panel" id="kole-filters-panel" aria-label="Filtres catalogue">
+      <div class="filters__panel-head">
+        <h2>Filtres</h2>
+        <button type="button" class="btn btn--tertiary" id="kole-filters-close" aria-label="Fermer les filtres">Fermer</button>
+      </div>
+      <form method="get" class="filters__form">
+        <input type="search" name="q" placeholder="Recherche rapide" value="{{ request.GET.q }}" aria-label="Recherche">
+        <input type="number" name="min_price" placeholder="Prix min" value="{{ request.GET.min_price }}" aria-label="Prix minimum">
+        <input type="number" name="max_price" placeholder="Prix max" value="{{ request.GET.max_price }}" aria-label="Prix maximum">
+        <input type="text" name="localisation" placeholder="Localisation" value="{{ request.GET.localisation }}" aria-label="Localisation">
+        <select name="categorie" aria-label="Catégorie">
+          <option value="">Toutes les catégories</option>
+          {% for category in nav_categories %}
+            <option value="{{ category.slug }}" {% if request.GET.categorie == category.slug %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="sous_categorie" aria-label="Sous-catégorie">
+          <option value="">Sous-catégorie</option>
+          {% for sub in subcategories %}
+            <option value="{{ sub.slug }}" {% if request.GET.sous_categorie == sub.slug %}selected{% endif %}>{{ sub.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="disponible" aria-label="Disponibilité">
+          <option value="">Disponibilité</option>
+          <option value="1" {% if request.GET.disponible == '1' %}selected{% endif %}>En stock</option>
+        </select>
+        <input type="hidden" name="tri" value="{{ request.GET.tri }}">
+        <button class="btn btn--primary" type="submit">Appliquer</button>
+        <a class="btn btn--tertiary" href="{% url 'store:product_list' %}">Réinitialiser</a>
+      </form>
+    </aside>
   </section>
 
   <section class="container">
@@ -105,26 +123,35 @@
         {% include "store/_product_card.html" with product=product favorites=favorites %}
         {% endif %}
       {% empty %}
-        <div class="empty-state" style="grid-column: 1/-1;">
-          <div class="empty" style="padding:64px 24px;">
-            <div style="font-size:3rem; margin-bottom:12px;">🔍</div>
-            <h3 style="font-family: var(--font-serif); margin: 0 0 8px;">Aucun produit trouvé</h3>
-            <p style="margin: 0 0 16px; color: var(--muted);">
-              {% if search_query %}
-                Aucun article visible pour cette recherche. Essayez le nom exact de la boutique ou parcourez la liste des vendeurs.
-              {% else %}
-                Essayez de modifier vos filtres ou réinitialisez la recherche.
-              {% endif %}
-            </p>
-            {% if search_query %}
-              <a href="{% url 'store:vendor_list' %}" class="btn btn--ghost" style="margin-right:8px;">Voir les boutiques</a>
-            {% endif %}
-            {% if request.GET.q or request.GET.categorie or request.GET.type or request.GET.min_price or request.GET.max_price or request.GET.localisation or request.GET.disponible or request.GET.vendeur %}
-              <a href="{% url 'store:product_list' %}" class="btn">Voir tous les produits</a>
-            {% endif %}
-          </div>
+        <div style="grid-column: 1/-1;">
+          {% url 'store:product_list' as catalog_url %}
+          {% include "partials/_empty_state.html" with title="Aucun produit trouvé" text="Modifiez vos filtres ou parcourez tout le catalogue." cta_url=catalog_url cta_label="Voir tous les produits" %}
         </div>
       {% endfor %}
     </div>
   </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    var openBtn = document.getElementById("kole-filters-open");
+    var closeBtn = document.getElementById("kole-filters-close");
+    var panel = document.getElementById("kole-filters-panel");
+    var backdrop = document.getElementById("kole-filters-backdrop");
+    if (!openBtn || !panel) return;
+    function setOpen(open) {
+      panel.classList.toggle("is-open", open);
+      if (backdrop) {
+        backdrop.hidden = !open;
+        backdrop.classList.toggle("is-open", open);
+      }
+      openBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      document.body.style.overflow = open ? "hidden" : "";
+    }
+    openBtn.addEventListener("click", function () { setOpen(true); });
+    if (closeBtn) closeBtn.addEventListener("click", function () { setOpen(false); });
+    if (backdrop) backdrop.addEventListener("click", function () { setOpen(false); });
+  })();
+</script>
 {% endblock %}

@@ -5,6 +5,27 @@ KOLE_CONTACT_PHONE = "0799633113"
 KOLE_CONTACT_PHONE_INTL = "+2250799633113"
 KOLE_WHATSAPP_WA_ME = "2250799633113"
 
+# Réseaux sociaux (laisser vide pour masquer le lien dans le pied de page)
+KOLE_SOCIAL_FACEBOOK = ""
+KOLE_SOCIAL_INSTAGRAM = ""
+KOLE_SOCIAL_TIKTOK = ""
+KOLE_SOCIAL_YOUTUBE = ""
+
+# Pied de page éditorial Dan Prestige Magazine (configurable)
+MAGAZINE_EDITORIAL = {
+    "publisher": "Kolê Group",
+    "magazine_name": "Dan Prestige Magazine",
+    "director": "Directeur de publication",
+    "editor_in_chief": "Rédacteur en chef",
+    "email": KOLE_CONTACT_EMAIL,
+    "phone": KOLE_CONTACT_PHONE,
+    "legal_notice": (
+        "Dan Prestige Magazine est un média édité par Kolê Group. "
+        "Les publireportages sont clairement identifiés. "
+        "Reproduction interdite sans autorisation."
+    ),
+}
+
 
 def contact_page_content() -> str:
     return (

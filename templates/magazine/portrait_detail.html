@@ -1,22 +1,31 @@
 {% extends "base.html" %}
 {% load static media_tags %}
 {% block title %}{{ portrait.title }} — {{ magazine_name }}{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=1">{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/magazine.css' %}?v=2">
+  <meta name="description" content="{{ portrait.caption|default:portrait.title|truncatechars:155 }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ portrait.title }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+{% endblock %}
 {% block content %}
 <div class="mag-page">
   <div class="container" style="padding-top:28px;">
     {% include "magazine/_nav.html" with mag_nav="portraits" %}
     <article class="mag-section mag-prose">
-      {% if portrait.is_sponsored %}<span class="mag-badge mag-badge--publi">Publireportage</span>{% endif %}
+      {% include "magazine/_sponsored_label.html" with obj=portrait %}
+      <p class="mag-card__meta">{{ portrait.published_at|date:"d/m/Y" }}{% if portrait.locality %} · {{ portrait.locality }}{% endif %}</p>
       <h1>{{ portrait.title }}</h1>
       <img src="{{ portrait.image|file_url }}" alt="{{ portrait.title }}" loading="lazy" style="width:100%;max-width:720px;border-radius:16px;" {% img_onerror_attr %}>
       {% if portrait.caption %}<p>{{ portrait.caption }}</p>{% endif %}
       <p class="muted">
         {% if portrait.subject_name %}{{ portrait.subject_name }}{% endif %}
-        {% if portrait.locality %} · {{ portrait.locality }}{% endif %}
         {% if portrait.photographer %} · Photo : {{ portrait.photographer }}{% endif %}
       </p>
+      {% include "magazine/_share_whatsapp.html" %}
     </article>
+    {% include "magazine/_editorial_footer.html" %}
   </div>
 </div>
 {% endblock %}

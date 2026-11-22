@@ -3,18 +3,28 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from decimal import Decimal
 
+from django.conf import settings
 from django.contrib import messages
+from django.core.mail import mail_admins
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .forms import MagazineSubscribeForm, PartnershipInquiryForm
+from kwalo.contact_info import MAGAZINE_EDITORIAL
+
+from .forms import (
+    MagazineNewsletterForm,
+    MagazineSubscribeForm,
+    PartnershipInquiryForm,
+    PersonalitySubmissionForm,
+)
+from .helpers import public_queryset, whatsapp_share_url
 from .models import (
     Article,
     MagazineIssue,
+    MagazineNewsletterSignup,
     MagazineSubscription,
     MagazineSubscriptionPlan,
     Partner,
@@ -40,10 +50,10 @@ IMPACT_POINTS = [
 ]
 
 CONTENT_TYPES = [
-    {"icon": "🎥", "title": "Interviews vidéo", "text": "Rencontres filmées avec les figures qui font bouger la communauté Dan."},
-    {"icon": "📰", "title": "Reportages", "text": "Enquêtes et récits de terrain sur les enjeux locaux et diaspora."},
-    {"icon": "📷", "title": "Portraits photographiques", "text": "Une galerie élégante des personnalités et talents."},
-    {"icon": "🎙️", "title": "Émissions spéciales", "text": "Formats longs pour approfondir les réussites et les projets."},
+    {"icon": "interview", "title": "Interviews vidéo", "text": "Rencontres filmées avec les figures qui font bouger la communauté Dan."},
+    {"icon": "reportage", "title": "Reportages", "text": "Enquêtes et récits de terrain sur les enjeux locaux et diaspora."},
+    {"icon": "portrait", "title": "Portraits photographiques", "text": "Une galerie élégante des personnalités et talents."},
+    {"icon": "emission", "title": "Émissions spéciales", "text": "Formats longs pour approfondir les réussites et les projets."},
 ]
 
 CHARTE_POINTS = [
@@ -86,26 +96,78 @@ def _base_ctx(**extra):
     return {
         "magazine_name": "Dan Prestige Magazine",
         "vision": VISION,
+        "editorial": MAGAZINE_EDITORIAL,
+        "newsletter_form": MagazineNewsletterForm(),
         **extra,
     }
 
 
+def _articles_qs():
+    return public_queryset(Article.objects.filter(is_published=True))
+
+
+def _videos_qs():
+    return public_queryset(Video.objects.filter(is_published=True))
+
+
+def _portraits_qs():
+    return public_queryset(Portrait.objects.filter(is_published=True))
+
+
+def _personalities_qs():
+    return public_queryset(Personality.objects.filter(consent_validated=True))
+
+
+def _partners_qs():
+    return public_queryset(Partner.objects.filter(is_active=True))
+
+
+def _latest_issue():
+    latest = MagazineIssue.objects.filter(is_published=True, is_latest=True).select_related("product").first()
+    if not latest:
+        latest = MagazineIssue.objects.filter(is_published=True).select_related("product").first()
+    return latest
+
+
 def home(request):
-    latest_issue = MagazineIssue.objects.filter(is_published=True, is_latest=True).first()
-    if not latest_issue:
-        latest_issue = MagazineIssue.objects.filter(is_published=True).first()
+    latest_issue = _latest_issue()
+    buy_url = None
+    if latest_issue and latest_issue.product_id and getattr(latest_issue.product, "slug", None):
+        from django.urls import reverse
+
+        buy_url = reverse("store:product_detail", args=[latest_issue.product.slug])
+
+    newsletter_form = MagazineNewsletterForm(request.POST or None)
+    if request.method == "POST" and request.POST.get("form_kind") == "newsletter":
+        if newsletter_form.is_valid():
+            email = newsletter_form.cleaned_data["email"]
+            obj, created = MagazineNewsletterSignup.objects.get_or_create(
+                email=email,
+                defaults={"full_name": newsletter_form.cleaned_data.get("full_name") or ""},
+            )
+            if not created:
+                obj.is_active = True
+                if newsletter_form.cleaned_data.get("full_name"):
+                    obj.full_name = newsletter_form.cleaned_data["full_name"]
+                obj.save()
+            messages.success(request, "Merci ! Vous êtes inscrit(e) à la newsletter Dan Prestige.")
+            return redirect("magazine:home")
+        messages.error(request, "Vérifiez votre adresse e-mail pour la newsletter.")
+
     return render(
         request,
         "magazine/home.html",
         _base_ctx(
             latest_issue=latest_issue,
+            buy_url=buy_url,
             content_types=CONTENT_TYPES,
             impact_points=IMPACT_POINTS,
-            articles=Article.objects.filter(is_published=True)[:3],
-            videos=Video.objects.filter(is_published=True)[:3],
-            portraits=Portrait.objects.filter(is_published=True)[:4],
-            partners=Partner.objects.filter(is_active=True)[:8],
+            articles=_articles_qs()[:3],
+            videos=_videos_qs()[:3],
+            portraits=_portraits_qs()[:4],
+            partners=_partners_qs()[:8],
             plans=MagazineSubscriptionPlan.objects.filter(is_active=True)[:2],
+            newsletter_form=newsletter_form,
         ),
     )
 
@@ -127,7 +189,7 @@ def charter(request):
 
 
 def boutique(request):
-    issues = MagazineIssue.objects.filter(is_published=True)
+    issues = MagazineIssue.objects.filter(is_published=True).select_related("product")
     plans = MagazineSubscriptionPlan.objects.filter(is_active=True)
     subscribe_form = MagazineSubscribeForm(
         initial={"plan": plans.filter(is_featured=True).first() or plans.first()}
@@ -157,10 +219,6 @@ def subscribe(request):
         status=MagazineSubscription.STATUS_PENDING,
     )
 
-    # Activation démo / sandbox : sans flux Genius dédié magazine, on active directement
-    # si le montant est 0, sinon on marque actif en mode DEBUG pour faciliter les tests.
-    from django.conf import settings
-
     if plan.price_fcfa <= 0 or settings.DEBUG:
         now = timezone.now()
         delta = timedelta(days=365) if plan.period == plan.PERIOD_YEARLY else timedelta(days=30)
@@ -183,7 +241,7 @@ def subscribe(request):
 
 
 def article_list(request):
-    qs = Article.objects.filter(is_published=True)
+    qs = _articles_qs()
     category = (request.GET.get("categorie") or "").strip()
     locality = (request.GET.get("localite") or "").strip()
     q = (request.GET.get("q") or "").strip()
@@ -194,7 +252,7 @@ def article_list(request):
     if q:
         qs = qs.filter(Q(title__icontains=q) | Q(excerpt__icontains=q) | Q(body__icontains=q))
     localities = (
-        Article.objects.filter(is_published=True)
+        _articles_qs()
         .exclude(locality="")
         .values_list("locality", flat=True)
         .distinct()
@@ -213,17 +271,24 @@ def article_list(request):
 
 
 def article_detail(request, slug):
-    article = get_object_or_404(Article, slug=slug, is_published=True)
-    related = Article.objects.filter(is_published=True).exclude(pk=article.pk)[:3]
+    qs = _articles_qs().select_related("sponsor")
+    article = get_object_or_404(qs, slug=slug)
+    related = _articles_qs().exclude(pk=article.pk)[:3]
+    share_url = request.build_absolute_uri(article.get_absolute_url())
     return render(
         request,
         "magazine/article_detail.html",
-        _base_ctx(article=article, related=related),
+        _base_ctx(
+            article=article,
+            related=related,
+            share_whatsapp=whatsapp_share_url(article.title, share_url),
+            canonical_url=share_url,
+        ),
     )
 
 
 def video_list(request):
-    qs = Video.objects.filter(is_published=True)
+    qs = _videos_qs()
     kind = (request.GET.get("type") or "").strip()
     locality = (request.GET.get("localite") or "").strip()
     if kind:
@@ -242,12 +307,21 @@ def video_list(request):
 
 
 def video_detail(request, slug):
-    video = get_object_or_404(Video, slug=slug, is_published=True)
-    return render(request, "magazine/video_detail.html", _base_ctx(video=video))
+    video = get_object_or_404(_videos_qs().select_related("sponsor"), slug=slug)
+    share_url = request.build_absolute_uri(video.get_absolute_url())
+    return render(
+        request,
+        "magazine/video_detail.html",
+        _base_ctx(
+            video=video,
+            share_whatsapp=whatsapp_share_url(video.title, share_url),
+            canonical_url=share_url,
+        ),
+    )
 
 
 def portrait_list(request):
-    qs = Portrait.objects.filter(is_published=True)
+    qs = _portraits_qs()
     locality = (request.GET.get("localite") or "").strip()
     if locality:
         qs = qs.filter(locality__icontains=locality)
@@ -259,12 +333,21 @@ def portrait_list(request):
 
 
 def portrait_detail(request, slug):
-    portrait = get_object_or_404(Portrait, slug=slug, is_published=True)
-    return render(request, "magazine/portrait_detail.html", _base_ctx(portrait=portrait))
+    portrait = get_object_or_404(_portraits_qs().select_related("sponsor"), slug=slug)
+    share_url = request.build_absolute_uri(portrait.get_absolute_url())
+    return render(
+        request,
+        "magazine/portrait_detail.html",
+        _base_ctx(
+            portrait=portrait,
+            share_whatsapp=whatsapp_share_url(portrait.title, share_url),
+            canonical_url=share_url,
+        ),
+    )
 
 
 def repertoire(request):
-    qs = Personality.objects.filter(consent_validated=True)
+    qs = _personalities_qs()
     q = (request.GET.get("q") or "").strip()
     locality = (request.GET.get("localite") or "").strip()
     profession = (request.GET.get("profession") or "").strip()
@@ -290,8 +373,49 @@ def repertoire(request):
 
 
 def personality_detail(request, slug):
-    person = get_object_or_404(Personality, slug=slug, consent_validated=True)
-    return render(request, "magazine/personality_detail.html", _base_ctx(person=person))
+    person = get_object_or_404(_personalities_qs(), slug=slug)
+    share_url = request.build_absolute_uri(person.get_absolute_url())
+    return render(
+        request,
+        "magazine/personality_detail.html",
+        _base_ctx(
+            person=person,
+            share_whatsapp=whatsapp_share_url(person.full_name, share_url),
+            canonical_url=share_url,
+        ),
+    )
+
+
+def referencement(request):
+    form = PersonalitySubmissionForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        submission = form.save()
+        try:
+            mail_admins(
+                subject=f"[Dan Prestige] Demande de référencement — {submission.full_name}",
+                message=(
+                    f"Nouvelle demande en attente.\n\n"
+                    f"Nom : {submission.full_name}\n"
+                    f"Profession : {submission.profession}\n"
+                    f"Localité : {submission.locality}\n"
+                    f"E-mail : {submission.email}\n"
+                    f"Téléphone : {submission.phone}\n\n"
+                    f"Parcours :\n{submission.bio}\n"
+                ),
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+        messages.success(
+            request,
+            "Votre demande a été envoyée. Elle sera examinée par la rédaction avant publication.",
+        )
+        return redirect("magazine:referencement")
+    return render(
+        request,
+        "magazine/referencement.html",
+        _base_ctx(form=form),
+    )
 
 
 def partners(request):
@@ -306,9 +430,32 @@ def partners(request):
         _base_ctx(
             form=form,
             offers=PARTNERSHIP_OFFERS,
-            partners=Partner.objects.filter(is_active=True),
+            partners=_partners_qs(),
         ),
     )
+
+
+@require_POST
+def newsletter_signup(request):
+    form = MagazineNewsletterForm(request.POST)
+    next_url = request.POST.get("next") or "magazine:home"
+    if form.is_valid():
+        email = form.cleaned_data["email"]
+        obj, created = MagazineNewsletterSignup.objects.get_or_create(
+            email=email,
+            defaults={"full_name": form.cleaned_data.get("full_name") or ""},
+        )
+        if not created:
+            obj.is_active = True
+            if form.cleaned_data.get("full_name"):
+                obj.full_name = form.cleaned_data["full_name"]
+            obj.save()
+        messages.success(request, "Merci ! Vous êtes inscrit(e) à la newsletter Dan Prestige.")
+    else:
+        messages.error(request, "Vérifiez votre adresse e-mail pour la newsletter.")
+    if next_url.startswith("/"):
+        return redirect(next_url)
+    return redirect(next_url)
 
 
 @require_POST

@@ -10,13 +10,15 @@
     <script>
       (function () {
         try {
-          var p = window.location.pathname || "";
-          if (p !== "/" && p !== "") return;
+          var p = (window.location.pathname || "").replace(/\/+$/, "") || "/";
+          // Splash / onboarding : uniquement sur l'accueil — jamais magazine, culture, produit…
+          if (p !== "/") return;
+          if (/^\/(magazine|culture|produit|store|panier|compte)\b/i.test(p)) return;
           var qs = new URLSearchParams(window.location.search);
           if (qs.get("no_splash") || qs.get("no_onboarding")) return;
           if (!localStorage.getItem("kole_onboarding_v2")) {
             document.documentElement.classList.add("kole-onboarding-pending");
-          } else {
+          } else if (!sessionStorage.getItem("kole_splash_seen")) {
             document.documentElement.classList.add("kole-splash-pending");
           }
         } catch (e) {}
@@ -63,8 +65,10 @@
 
     <link rel="preload" href="{% static 'images/logo-kwalokwakole.png' %}" as="image">
     <link rel="preload" href="{% static 'images/onboarding/guide-vue-ensemble.jpeg' %}" as="image">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=59">
-    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=24">
+    <link rel="stylesheet" href="{% static 'css/kole-tokens.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=60">
+    <link rel="stylesheet" href="{% static 'css/kole-redesign.css' %}?v=25">
+    <link rel="stylesheet" href="{% static 'css/kole-chrome.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/onboarding.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'css/splash.css' %}?v=4">
     {% block extra_head %}{% endblock %}
@@ -166,30 +170,38 @@
       {% endif %}
     </div>
 
-    <header class="topbar">
+    <header class="topbar" id="kole-topbar">
       <div class="container topbar__inner">
+        <button type="button" class="topbar__burger" id="kole-nav-burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="kole-topnav">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+
         <a class="logo" href="{% if user.is_authenticated %}{% if user|is_app_admin %}{% url 'accounts:admin_dashboard' %}{% elif user|is_vendor %}{% url 'marketplace:dashboard' %}{% elif user|is_service_provider %}{% url 'marketplace:service_provider_dashboard' %}{% else %}{% url 'store:home' %}{% endif %}{% else %}{% url 'store:home' %}{% endif %}">
-          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" alt="Kolê Group">
+          <img class="logo__image" src="{% static 'images/logo-kwalokwakole.png' %}" width="120" height="52" alt="Kolê Group">
         </a>
 
-        <form class="search" action="{% url 'store:product_list' %}" method="get" role="search">
-          <input type="text" name="q" placeholder="Chercher un produit, une boutique, un service…" aria-label="Recherche">
-          <button type="submit">Rechercher</button>
+        <form class="topbar__search search" id="kole-search" action="{% url 'store:product_list' %}" method="get" role="search">
+          <input type="search" name="q" placeholder="Chercher un produit, une boutique, un service…" aria-label="Recherche" value="{{ request.GET.q|default:'' }}">
+          <button type="submit" aria-label="Lancer la recherche">Rechercher</button>
         </form>
 
-        <nav class="topbar__actions" aria-label="Actions compte et aide">
+        <nav class="topbar__actions" aria-label="Compte, favoris et panier">
+          <button type="button" class="topbar__search-toggle" id="kole-search-toggle" aria-label="Afficher la recherche" aria-expanded="false" aria-controls="kole-search">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+          </button>
+
           <div class="dropdown">
-            <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
+            <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true" aria-label="Compte">
               {% if user.is_authenticated %}
                 {% if user_profile and user_profile.avatar %}
-                  <img src="{{ user_profile.avatar|file_url }}" alt="" class="topbar__avatar" {% img_onerror_attr %}>
+                  <img src="{{ user_profile.avatar|file_url }}" alt="" class="topbar__avatar" width="28" height="28" {% img_onerror_attr %}>
                 {% else %}
                   <span class="icon icon-user" aria-hidden="true"></span>
                 {% endif %}
-                <span>{{ user.username|truncatechars:12 }}</span>
+                <span class="topbar__item--label">{{ user.username|truncatechars:12 }}</span>
               {% else %}
                 <span class="icon icon-user" aria-hidden="true"></span>
-                <span>Compte</span>
+                <span class="topbar__item--label">Compte</span>
               {% endif %}
             </button>
             <div class="dropdown__menu" role="menu">
@@ -199,36 +211,30 @@
                   <a href="{% url 'accounts:order_history' %}">Mes commandes</a>
                   <a href="{% url 'accounts:service_reservations' %}">Mes réservations</a>
                   <a href="{% url 'store:favorites' %}">Mes favoris</a>
-                  <a href="{% url 'culture:my_tickets' %}">🎫 Mes billets</a>
-                  <a href="{% url 'culture:my_purchases' %}">🎵 Mes achats musique</a>
+                  <a href="{% url 'culture:my_tickets' %}">Mes billets</a>
+                  <a href="{% url 'culture:my_purchases' %}">Mes achats musique</a>
                 {% endif %}
                 {% if user|is_vendor %}
-                  <a href="{% url 'store:home' %}">Boutique</a>
                   <a href="{% url 'marketplace:dashboard' %}">Espace vendeur</a>
-                {% else %}
-                  {% if not user|is_app_admin and not user|is_service_provider %}
+                {% elif not user|is_app_admin and not user|is_service_provider %}
                   <a href="{% url 'marketplace:vendor_register' %}">Devenir vendeur</a>
-                  {% endif %}
                 {% endif %}
                 {% if user|is_service_provider %}
-                  <a href="{% url 'store:home' %}">Boutique</a>
                   <a href="{% url 'marketplace:service_provider_dashboard' %}">Espace prestataire</a>
-                {% else %}
-                  {% if not user|is_app_admin and not user|is_vendor %}
+                {% elif not user|is_app_admin and not user|is_vendor %}
                   <a href="{% url 'marketplace:service_provider_register' %}">Devenir prestataire</a>
-                  {% endif %}
                 {% endif %}
                 {% if user|is_app_admin %}
                   <a href="{% url 'accounts:admin_dashboard' %}">Espace administration</a>
                 {% endif %}
                 {% if user|is_artist %}
-                  <a href="{% url 'culture:artist_dashboard' %}">🎤 Espace artiste</a>
+                  <a href="{% url 'culture:artist_dashboard' %}">Espace artiste</a>
                 {% elif user|can_become_artist %}
-                  <a href="{% url 'culture:artist_activate' %}">🎤 Activer profil artiste</a>
+                  <a href="{% url 'culture:artist_activate' %}">Activer profil artiste</a>
                 {% endif %}
                 <form method="post" action="{% url 'accounts:logout' %}">
                   {% csrf_token %}
-                  <button type="submit" style="width:100%; text-align:left; border:0; background:transparent; font:inherit; cursor:pointer; padding:11px 14px; border-radius:10px; color:var(--danger); font-weight:600;">Se déconnecter</button>
+                  <button type="submit" class="dropdown__logout">Se déconnecter</button>
                 </form>
               {% else %}
                 <a href="{% url 'accounts:login' %}">Connexion</a>
@@ -237,10 +243,10 @@
             </div>
           </div>
 
-          <div class="dropdown">
+          <div class="dropdown topbar__item--desktop-only">
             <button class="topbar__item has-caret dropdown__toggle" type="button" aria-haspopup="true">
               <span class="icon icon-help" aria-hidden="true"></span>
-              <span>Aide</span>
+              <span class="topbar__item--label">Aide</span>
             </button>
             <div class="dropdown__menu" role="menu">
               <a href="/page/faq/">FAQ</a>
@@ -250,30 +256,33 @@
             </div>
           </div>
 
-          <a class="topbar__item topbar__item--culture" href="{% url 'culture:home' %}" aria-label="Kolê Culture">
-            <span aria-hidden="true">🎤</span>
-            <span>Culture</span>
-          </a>
-          <a class="topbar__item" href="{% url 'magazine:home' %}" aria-label="Dan Prestige Magazine">
-            <span>Magazine</span>
-          </a>
-
           {% if not user.is_authenticated or user|is_client %}
-          <a class="topbar__item" href="{% url 'store:favorites' %}" aria-label="Mes favoris">
+          <a class="topbar__item" href="{% url 'store:favorites' %}" aria-label="Favoris">
             <span class="icon icon-heart" aria-hidden="true"></span>
+            <span class="topbar__item--label">Favoris</span>
             {% if favorites_count %}
               <span class="badge badge--danger">{{ favorites_count }}</span>
             {% endif %}
           </a>
 
-          <a class="topbar__item" href="{% url 'store:cart_detail' %}" aria-label="Mon panier">
+          <a class="topbar__item" href="{% url 'store:cart_detail' %}" aria-label="Panier">
             <span class="icon icon-cart" aria-hidden="true"></span>
-            <span>Panier</span>
+            <span class="topbar__item--label">Panier</span>
             <span class="badge badge--success js-cart-count" {% if not cart_count %}hidden{% endif %}>{{ cart_count|default:0 }}</span>
           </a>
           {% endif %}
         </nav>
       </div>
+
+      <nav class="topnav" id="kole-topnav" aria-label="Navigation principale">
+        <div class="container topnav__inner">
+          <a class="topnav__link" href="{% url 'store:product_list' %}">Catégories</a>
+          <a class="topnav__link" href="{% url 'store:product_list' %}?type=service">Services</a>
+          <a class="topnav__link" href="{% url 'store:vendor_list' %}">Boutiques</a>
+          <a class="topnav__link" href="{% url 'culture:home' %}">Culture</a>
+          <a class="topnav__link" href="{% url 'magazine:home' %}">Magazine</a>
+        </div>
+      </nav>
     </header>
 
     {% if user.is_authenticated and user_profile and user_profile.cover_photo %}
@@ -351,33 +360,52 @@
               ·
               <a href="tel:{{ kole_contact_phone_intl }}">{{ kole_contact_phone }}</a>
             </p>
-            <form class="newsletter" onsubmit="event.preventDefault(); alert('Merci pour votre inscription !');">
-              <input type="email" placeholder="Votre email" required>
-              <button type="submit">S'inscrire</button>
-            </form>
+            <div class="footer__newsletter">
+              <form class="newsletter" method="post" action="{% url 'magazine:newsletter' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <input type="email" name="email" placeholder="Votre e-mail" required aria-label="E-mail newsletter">
+                <button class="btn btn--primary" type="submit">S'inscrire</button>
+                <label class="footer__consent">
+                  <input type="checkbox" name="consent" value="1" required>
+                  <span>J'accepte de recevoir la newsletter Kolê et j'ai lu la politique de confidentialité.</span>
+                </label>
+              </form>
+            </div>
+            {% if kole_social.facebook or kole_social.instagram or kole_social.whatsapp or kole_social.tiktok or kole_social.youtube %}
             <div class="footer__social" aria-label="Réseaux sociaux">
-              <a href="#" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 22V12h3l1-4h-4V5.5c0-1.1.5-2 2-2h2V0c-.3 0-1.6-.2-3-.2C10.8-.2 9 2 9 5v3H6v4h3v10h4z"/></svg></a>
-              <a href="#" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
-              <a href="https://wa.me/{{ kole_whatsapp_wa_me }}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg></a>
-              <a href="#" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 5.4c-.9-.9-1.4-2.1-1.4-3.4h-3.7v14.4c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6.1.9.2v-3.8c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5V9.2c1.3.9 2.9 1.5 4.7 1.5V7c-1.2 0-2.3-.5-3.4-1.6z"/></svg></a>
+              {% if kole_social.facebook %}<a href="{{ kole_social.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 22V12h3l1-4h-4V5.5c0-1.1.5-2 2-2h2V0c-.3 0-1.6-.2-3-.2C10.8-.2 9 2 9 5v3H6v4h3v10h4z"/></svg></a>{% endif %}
+              {% if kole_social.instagram %}<a href="{{ kole_social.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>{% endif %}
+              {% if kole_social.whatsapp %}<a href="{{ kole_social.whatsapp }}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg></a>{% endif %}
+              {% if kole_social.tiktok %}<a href="{{ kole_social.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.3 5.4c-.9-.9-1.4-2.1-1.4-3.4h-3.7v14.4c0 1.5-1.2 2.7-2.7 2.7s-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7c.3 0 .6.1.9.2v-3.8c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5V9.2c1.3.9 2.9 1.5 4.7 1.5V7c-1.2 0-2.3-.5-3.4-1.6z"/></svg></a>{% endif %}
+              {% if kole_social.youtube %}<a href="{{ kole_social.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.8 15.5v-7l6.2 3.5-6.2 3.5z"/></svg></a>{% endif %}
+            </div>
+            {% endif %}
+            <div class="footer__payments" aria-label="Moyens de paiement">
+              <span class="footer__pay-badge">Orange Money</span>
+              <span class="footer__pay-badge">MTN MoMo</span>
+              <span class="footer__pay-badge">Wave</span>
             </div>
           </div>
 
-          <div>
+          <div class="footer__col">
             <h4>Découvrir</h4>
-            <ul>
+            <button type="button" class="footer__acc-toggle" aria-expanded="false">Découvrir <span aria-hidden="true">+</span></button>
+            <ul class="footer__acc-panel">
               <li><a href="{% url 'store:product_list' %}">Tous les produits</a></li>
               <li><a href="{% url 'store:service_provider_list' %}">Prestataires</a></li>
               <li><a href="{% url 'store:product_list' %}?type=service">Services</a></li>
               <li><a href="{% url 'store:vendor_list' %}">Boutiques</a></li>
               <li><a href="{% url 'culture:home' %}">Culture</a></li>
               <li><a href="{% url 'magazine:home' %}">Dan Prestige Magazine</a></li>
+              <li><a href="{% url 'magazine:partners' %}">Annonceurs</a></li>
             </ul>
           </div>
 
-          <div>
+          <div class="footer__col">
             <h4>Assistance</h4>
-            <ul>
+            <button type="button" class="footer__acc-toggle" aria-expanded="false">Assistance <span aria-hidden="true">+</span></button>
+            <ul class="footer__acc-panel">
               <li><a href="/page/faq/">FAQ</a></li>
               <li><a href="/page/contact/">Nous contacter</a></li>
               <li><a href="/page/conditions-generales/">Conditions générales</a></li>
@@ -385,17 +413,15 @@
             </ul>
           </div>
 
-          <div>
+          <div class="footer__col">
             <h4>Espaces pro</h4>
-            <ul>
+            <button type="button" class="footer__acc-toggle" aria-expanded="false">Espaces pro <span aria-hidden="true">+</span></button>
+            <ul class="footer__acc-panel">
               {% if not user|is_vendor %}
               <li><a href="{% url 'accounts:login' %}?next={% url 'marketplace:dashboard' %}">Connexion vendeur</a></li>
               {% endif %}
               {% if not user|is_service_provider %}
               <li><a href="{% url 'accounts:login' %}?next={% url 'marketplace:service_provider_dashboard' %}">Connexion prestataire</a></li>
-              {% endif %}
-              {% if not user|is_app_admin %}
-              <li><a href="{% url 'accounts:admin_login' %}?next={% url 'accounts:admin_dashboard' %}">Connexion admin</a></li>
               {% endif %}
               <li><a href="{% url 'marketplace:vendor_register' %}">Devenir vendeur</a></li>
               <li><a href="{% url 'marketplace:service_provider_register' %}">Devenir prestataire</a></li>
@@ -405,10 +431,14 @@
 
         <div class="footer__bottom">
           <p>© {% now "Y" %} Kolê Group — Tous droits réservés.</p>
-          <p>Fait avec <span style="color:var(--accent);">♥</span> en Afrique.</p>
+          <p>Fait en Afrique.</p>
         </div>
       </div>
     </footer>
+
+    <a class="kole-wa-float" href="https://wa.me/{{ kole_whatsapp_wa_me }}" target="_blank" rel="noopener" aria-label="Contacter Kolê sur WhatsApp">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-1.3-.7-2.3-1.2-3.3-2.8-.3-.5.3-.4.7-1.4.1-.2 0-.3-.1-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 22c-2 0-3.8-.6-5.4-1.6L2 22l1.7-4.4C2.6 15.9 2 14 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/></svg>
+    </a>
     {% block extra_scripts %}{% endblock %}
 
     <script>
@@ -680,15 +710,57 @@
       (function () {
         var back = document.getElementById('mobile-nav-back');
         var bar = document.querySelector('.mobile-app-bar');
-        if (!bar) return;
-        if (!back) return;
-        back.addEventListener('click', function () {
-          var homeHref = bar.getAttribute('data-fallback-home') || '/';
-          if (window.history.length > 1) {
-            window.history.back();
-            return;
-          }
-          window.location.href = homeHref;
+        if (bar && back) {
+          back.addEventListener('click', function () {
+            var homeHref = bar.getAttribute('data-fallback-home') || '/';
+            if (window.history.length > 1) {
+              window.history.back();
+              return;
+            }
+            window.location.href = homeHref;
+          });
+        }
+
+        var topbar = document.getElementById('kole-topbar');
+        if (topbar) {
+          var onScroll = function () {
+            topbar.classList.toggle('is-compact', window.scrollY > 24);
+          };
+          window.addEventListener('scroll', onScroll, { passive: true });
+          onScroll();
+        }
+
+        var burger = document.getElementById('kole-nav-burger');
+        var topnav = document.getElementById('kole-topnav');
+        if (burger && topnav) {
+          burger.addEventListener('click', function () {
+            var open = topnav.classList.toggle('is-open');
+            burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+          });
+        }
+
+        var searchToggle = document.getElementById('kole-search-toggle');
+        var search = document.getElementById('kole-search');
+        if (searchToggle && search) {
+          searchToggle.addEventListener('click', function () {
+            var open = search.classList.toggle('is-open');
+            searchToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) {
+              var input = search.querySelector('input');
+              if (input) input.focus();
+            }
+          });
+        }
+
+        document.querySelectorAll('.footer__acc-toggle').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var col = btn.closest('.footer__col');
+            if (!col) return;
+            var open = col.classList.toggle('is-open');
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            var mark = btn.querySelector('span');
+            if (mark) mark.textContent = open ? '−' : '+';
+          });
         });
       })();
     </script>

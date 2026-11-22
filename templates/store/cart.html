@@ -6,6 +6,11 @@
 {% block content %}
   <section class="container jumia-cart">
     {% if items %}
+      <div class="cart-steps" aria-label="Étapes de commande">
+        <span class="is-active">1. Panier</span>
+        <span>2. Livraison</span>
+        <span>3. Paiement</span>
+      </div>
       <div class="jumia-cart__layout">
         <div class="jumia-cart__main">
           <div class="cart-panel">
@@ -186,14 +191,19 @@
               </a>
             {% endif %}
 
+            <div class="cart-pay-logos" aria-label="Moyens de paiement acceptés">
+              <span class="footer__pay-badge" style="background:var(--ink);">Orange Money</span>
+              <span class="footer__pay-badge" style="background:var(--ink);">MTN MoMo</span>
+              <span class="footer__pay-badge" style="background:var(--ink);">Wave</span>
+            </div>
             <ul class="cart-summary__perks">
-              <li>🚚 Livraison sécurisée</li>
+              <li>Livraison sécurisée</li>
               {% if genius_payment %}
-                <li>💳 Paiement en ligne ou à la livraison</li>
+                <li>Paiement en ligne ou à la livraison</li>
               {% else %}
-                <li>💳 Paiement à la livraison disponible</li>
+                <li>Paiement à la livraison disponible</li>
               {% endif %}
-              <li>↩️ Retour possible sous 7 jours</li>
+              <li>Retour possible sous 7 jours</li>
             </ul>
           </div>
 

@@ -1,48 +1,71 @@
 {% load marketplace_tags %}
 <article class="product-card{% if compact %} product-card--compact{% endif %}">
-  <div class="product-card__image">
-    <div class="product-card__placeholder" aria-hidden="true">{{ product|product_category_emoji }}</div>
-    {% product_image_url product as img_src %}
-    {% if img_src %}
-      <img
-        class="product-card__photo"
-        src="{{ img_src }}"
-        alt="{{ product.name }}"
-        loading="lazy"
-        decoding="async"
-        onerror="this.remove()"
-      >
-    {% endif %}
-    <div class="product-card__image-top">
-      {% if product.category %}
-        <span class="product-card__category">{{ product.category.name }}</span>
+  <a class="product-card__media-link" href="{% url 'store:product_detail' product.slug %}">
+    <div class="product-card__image">
+      {% product_image_url product as img_src %}
+      {% if img_src %}
+        <img
+          class="product-card__photo"
+          src="{{ img_src }}"
+          alt="{{ product.name }}"
+          width="400"
+          height="400"
+          loading="lazy"
+          decoding="async"
+          {% img_onerror_attr %}
+        >
       {% else %}
-        <span></span>
+        <div class="product-card__placeholder" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
       {% endif %}
-      <a
-        class="product-card__wish favorite-toggle{% if favorites and product.id in favorites %} favorite-toggle--active{% endif %}"
-        href="{% url 'store:toggle_favorite' product.id %}"
-        title="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
-        aria-label="Favori"
-      >{% if favorites and product.id in favorites %}♥{% else %}♡{% endif %}</a>
+      {% if product.promo_discount_percent %}
+        <span class="badge badge--promo product-card__promo-badge">-{{ product.promo_discount_percent }}&nbsp;%</span>
+      {% endif %}
     </div>
-  </div>
+  </a>
   <div class="product-card__body">
     <h3 class="product-card__name">
-      {% if product.name|is_demo_product %}
-        <span class="product-card__demo">Démo</span>
-      {% endif %}
-      {{ product.name|product_card_title }}
+      <a href="{% url 'store:product_detail' product.slug %}">{{ product.name|product_card_title }}</a>
     </h3>
-    <div class="product-card__footer">
-      {% include "store/_product_price.html" with product=product variant="card" %}
-      <div class="product-card__actions">
-        <a class="product-card__btn product-card__btn--outline" href="{% url 'store:product_detail' product.slug %}">Voir</a>
-        {% if product.kind == 'service' %}
-          <a class="product-card__btn product-card__btn--filled" href="{% url 'store:product_detail' product.slug %}">Réserver</a>
-        {% elif user|is_client or not user.is_authenticated %}
-          <a class="product-card__btn product-card__btn--filled js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Acheter</a>
+    {% include "store/_product_price.html" with product=product variant="card" %}
+    {% if product.vendor %}
+      <p class="product-card__shop">
+        <a href="{% url 'store:vendor_detail' product.vendor.slug %}">{{ product.vendor.name }}</a>
+        {% if product.vendor.verification_status == 'verified' %}
+          <span class="badge badge--verified">Vérifié</span>
         {% endif %}
+      </p>
+      {% if product.vendor.location %}
+        <p class="product-card__locality">{{ product.vendor.location }}</p>
+      {% endif %}
+    {% elif product.service_provider %}
+      <p class="product-card__shop">
+        <a href="{% url 'store:service_provider_detail' product.service_provider.slug %}">{{ product.service_provider.name }}</a>
+        {% if product.service_provider.verification_status == 'verified' %}
+          <span class="badge badge--verified">Vérifié</span>
+        {% endif %}
+      </p>
+      {% if product.service_provider.location %}
+        <p class="product-card__locality">{{ product.service_provider.location }}</p>
+      {% endif %}
+    {% endif %}
+    <div class="product-card__footer">
+      <div class="product-card__actions">
+        {% if product.kind == 'service' %}
+          <a class="btn btn--primary btn--small" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+        {% elif user|is_client or not user.is_authenticated %}
+          <a class="btn btn--primary btn--small js-add-to-cart" href="{% url 'store:add_to_cart' product.id %}">Ajouter au panier</a>
+        {% else %}
+          <a class="btn btn--secondary btn--small" href="{% url 'store:product_detail' product.slug %}">Voir</a>
+        {% endif %}
+        <a
+          class="product-card__wish favorite-toggle{% if favorites and product.id in favorites %} favorite-toggle--active{% endif %}"
+          href="{% url 'store:toggle_favorite' product.id %}"
+          aria-label="{% if favorites and product.id in favorites %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="{% if favorites and product.id in favorites %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </a>
       </div>
     </div>
   </div>

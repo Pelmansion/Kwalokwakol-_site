@@ -1,60 +1,11 @@
 /**
- * Kolê Group 2.0 — surcharge visuelle (inspirée de kole-group-redesign.html)
- * Charge après style.css ; réutilise les classes Django existantes.
+ * Kolê Group 2.0 — surcharge visuelle
+ * Tokens : kole-tokens.css. Ne pas redéfinir :root ici.
  */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap");
-
-:root {
-  --cream: #faf7f2;
-  --cream-dark: #f0ebe1;
-  --rust: #c8461a;
-  --rust-hover: #a83814;
-  --amber: #d4891a;
-  --amber-light: #f5c96a;
-
-  --primary: var(--rust);
-  --primary-dark: var(--rust-hover);
-  --primary-light: #e85d2c;
-  --primary-50: #fff5f0;
-  --primary-100: #fde8dc;
-  --accent: var(--amber);
-  --accent-dark: #b8720f;
-  --accent-soft: var(--amber-light);
-  --cream: #faf7f2;
-  --cream-2: var(--cream-dark);
-  --surface: #ffffff;
-  --surface-alt: var(--cream-dark);
-  --ink: #1a1310;
-  --ink-soft: #4a3f38;
-  --muted: #9c8f87;
-  --line: #e8e0d5;
-  --line-strong: rgba(26, 19, 16, 0.14);
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --font-serif: "Playfair Display", Georgia, serif;
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-body: "DM Sans", system-ui, sans-serif;
-  --ink-light: #4a3f38;
-  --ink-muted: #9c8f87;
-  --border: #e8e0d5;
-  --card-bg: #ffffff;
-  --shadow-sm: 0 2px 8px rgba(26, 19, 16, 0.06);
-  --shadow: 0 8px 32px rgba(26, 19, 16, 0.1);
-  --shadow-lg: 0 20px 60px rgba(26, 19, 16, 0.14);
-  --shadow-primary: 0 8px 28px rgba(200, 70, 26, 0.35);
-}
 
 body {
   background: var(--cream);
-  color: var(--ink-light);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  color: var(--ink-soft);
   overflow-x: clip;
 }
 

@@ -1,0 +1,8 @@
+{% if obj.is_sponsored %}
+  <span class="mag-badge mag-badge--publi">Publireportage</span>
+  {% if obj.sponsor %}
+    <p class="mag-sponsored-by">Contenu sponsorisé par {{ obj.sponsor.name }}</p>
+  {% else %}
+    <p class="mag-sponsored-by">Contenu sponsorisé</p>
+  {% endif %}
+{% endif %}

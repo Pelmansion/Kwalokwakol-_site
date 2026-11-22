@@ -3,6 +3,10 @@ from kwalo.contact_info import (
     KOLE_CONTACT_EMAIL,
     KOLE_CONTACT_PHONE,
     KOLE_CONTACT_PHONE_INTL,
+    KOLE_SOCIAL_FACEBOOK,
+    KOLE_SOCIAL_INSTAGRAM,
+    KOLE_SOCIAL_TIKTOK,
+    KOLE_SOCIAL_YOUTUBE,
     KOLE_WHATSAPP_WA_ME,
 )
 
@@ -39,4 +43,11 @@ def category_nav(request):
         "kole_contact_phone": KOLE_CONTACT_PHONE,
         "kole_contact_phone_intl": KOLE_CONTACT_PHONE_INTL,
         "kole_whatsapp_wa_me": KOLE_WHATSAPP_WA_ME,
+        "kole_social": {
+            "facebook": KOLE_SOCIAL_FACEBOOK,
+            "instagram": KOLE_SOCIAL_INSTAGRAM,
+            "tiktok": KOLE_SOCIAL_TIKTOK,
+            "youtube": KOLE_SOCIAL_YOUTUBE,
+            "whatsapp": f"https://wa.me/{KOLE_WHATSAPP_WA_ME}" if KOLE_WHATSAPP_WA_ME else "",
+        },
     }
